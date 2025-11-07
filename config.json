@@ -1,0 +1,19 @@
+{
+  "team1": {
+    "name": "Le Crès Volley-Ball",
+    "logo": "assets/logo-lcvb.svg",
+    "score": 0,
+    "sets": [0, 0, 0, 0, 0]
+  },
+  "team2": {
+    "name": "Équipe 2",
+    "logo": "assets/logo-equipe2.svg",
+    "score": 0,
+    "sets": [0, 0, 0, 0, 0]
+  },
+  "currentSet": 1,
+  "maxSets": 5,
+  "lastUpdate": 0
+}
+
+

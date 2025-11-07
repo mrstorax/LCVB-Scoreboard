@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCVB Scoreboard - Contrôle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="control-container">
+        <!-- En-tête -->
+        <div class="control-header">
+            <h1>Le Crès Volley-Ball - Panneau de Contrôle</h1>
+            <div class="obs-warning" id="obs-warning" style="margin-top: 15px; padding: 10px; background: rgba(76, 175, 80, 0.2); border: 2px solid #4CAF50; border-radius: 5px; font-size: 0.9em;">
+                <strong>✅ Téléchargement automatique activé :</strong> Le fichier <code>data/score-data.json</code> se télécharge automatiquement à chaque modification. Copiez-le dans <code>LCVB_Scoreboard/data/</code> pour synchroniser avec OBS.
+            </div>
+        </div>
+
+        <!-- Grille principale -->
+        <div class="control-grid">
+            <!-- Équipe 1 -->
+            <div class="control-panel">
+                <h2>Équipe 1</h2>
+                
+                <!-- Informations de l'équipe -->
+                <div class="team-info">
+                    <div class="input-group">
+                        <label for="team1-name">Nom de l'équipe :</label>
+                        <input type="text" id="team1-name" placeholder="Nom équipe 1">
+                    </div>
+                    <div class="input-group">
+                        <label for="team1-niveau">Niveau de l'équipe :</label>
+                        <select id="team1-niveau" class="niveau-select">
+                            <option value="">-- Aucun niveau --</option>
+                            <option value="Loisirs">Loisirs</option>
+                            <option value="Départemental 1">Départemental 1</option>
+                            <option value="Départemental 2">Départemental 2</option>
+                            <option value="Départemental 3">Départemental 3</option>
+                            <option value="Régional 1">Régional 1</option>
+                            <option value="Régional 2">Régional 2</option>
+                            <option value="Régional 3">Régional 3</option>
+                            <option value="Prénational">Prénational</option>
+                            <option value="National 1">National 1</option>
+                            <option value="National 2">National 2</option>
+                            <option value="National 3">National 3</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="team1-logo">Chemin du logo :</label>
+                        <div class="logo-selector">
+                            <input type="file" 
+                                   id="team1-logo-file" 
+                                   accept="image/*" 
+                                   class="logo-file-input"
+                                   onchange="handleLogoFileSelect('team1', this)">
+                            <input type="text" 
+                                   id="team1-logo" 
+                                   placeholder="logos/logo-lcvb.png"
+                                   class="logo-path-input">
+                            <button type="button" 
+                                    class="btn btn-logo-browse" 
+                                    onclick="document.getElementById('team1-logo-file').click()">
+                                📁 Parcourir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contrôles de score -->
+                <div class="score-controls">
+                    <div class="score-row">
+                        <span class="score-label">Score :</span>
+                        <input type="number" 
+                               id="team1-score-input" 
+                               class="score-input" 
+                               min="0" 
+                               max="999" 
+                               value="0"
+                               onchange="setScoreDirect('team1', this.value)"
+                               oninput="validateScoreInput(this)">
+                        <button class="btn btn-plus" onclick="changeScore('team1', 1)">+</button>
+                        <button class="btn btn-minus" onclick="changeScore('team1', -1)">−</button>
+                    </div>
+                    <button class="btn btn-reset" onclick="resetScore('team1')">Réinitialiser Score</button>
+                </div>
+
+                <!-- Contrôles des sets -->
+                <div class="sets-controls">
+                    <h3 style="color: var(--lcvb-rose); margin-top: 20px; margin-bottom: 10px;">Sets :</h3>
+                    <div id="team1-sets-controls">
+                        <!-- Générés dynamiquement -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Équipe 2 -->
+            <div class="control-panel">
+                <h2>Équipe 2</h2>
+                
+                <!-- Informations de l'équipe -->
+                <div class="team-info">
+                    <div class="input-group">
+                        <label for="team2-name">Nom de l'équipe :</label>
+                        <input type="text" id="team2-name" placeholder="Nom équipe 2">
+                    </div>
+                    <div class="input-group">
+                        <label for="team2-niveau">Niveau de l'équipe :</label>
+                        <select id="team2-niveau" class="niveau-select">
+                            <option value="">-- Aucun niveau --</option>
+                            <option value="Loisirs">Loisirs</option>
+                            <option value="Départemental 1">Départemental 1</option>
+                            <option value="Départemental 2">Départemental 2</option>
+                            <option value="Départemental 3">Départemental 3</option>
+                            <option value="Régional 1">Régional 1</option>
+                            <option value="Régional 2">Régional 2</option>
+                            <option value="Régional 3">Régional 3</option>
+                            <option value="Prénational">Prénational</option>
+                            <option value="National 1">National 1</option>
+                            <option value="National 2">National 2</option>
+                            <option value="National 3">National 3</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="team2-logo">Chemin du logo :</label>
+                        <div class="logo-selector">
+                            <input type="file" 
+                                   id="team2-logo-file" 
+                                   accept="image/*" 
+                                   class="logo-file-input"
+                                   onchange="handleLogoFileSelect('team2', this)">
+                            <input type="text" 
+                                   id="team2-logo" 
+                                   placeholder="logos/logo-equipe2.png"
+                                   class="logo-path-input">
+                            <button type="button" 
+                                    class="btn btn-logo-browse" 
+                                    onclick="document.getElementById('team2-logo-file').click()">
+                                📁 Parcourir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contrôles de score -->
+                <div class="score-controls">
+                    <div class="score-row">
+                        <span class="score-label">Score :</span>
+                        <input type="number" 
+                               id="team2-score-input" 
+                               class="score-input" 
+                               min="0" 
+                               max="999" 
+                               value="0"
+                               onchange="setScoreDirect('team2', this.value)"
+                               oninput="validateScoreInput(this)">
+                        <button class="btn btn-plus" onclick="changeScore('team2', 1)">+</button>
+                        <button class="btn btn-minus" onclick="changeScore('team2', -1)">−</button>
+                    </div>
+                    <button class="btn btn-reset" onclick="resetScore('team2')">Réinitialiser Score</button>
+                </div>
+
+                <!-- Contrôles des sets -->
+                <div class="sets-controls">
+                    <h3 style="color: var(--lcvb-rose); margin-top: 20px; margin-bottom: 10px;">Sets :</h3>
+                    <div id="team2-sets-controls">
+                        <!-- Générés dynamiquement -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contrôles globaux -->
+            <div class="global-controls">
+                <div class="match-type-selector">
+                    <label for="match-amical" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: rgba(233, 30, 99, 0.1); border-radius: 5px; border: 2px solid var(--lcvb-rose);">
+                        <input type="checkbox" 
+                               id="match-amical" 
+                               onchange="updateMatchAmicalCommon(this.checked)"
+                               style="width: auto; margin: 0;">
+                        <strong>Match amical</strong>
+                    </label>
+                </div>
+                <div class="set-selector">
+                    <label for="set-selector">Set actuel :</label>
+                    <select id="set-selector" onchange="changeCurrentSet()">
+                        <option value="1">Set 1</option>
+                        <option value="2">Set 2</option>
+                        <option value="3">Set 3</option>
+                        <option value="4">Set 4</option>
+                        <option value="5">Set 5</option>
+                    </select>
+                </div>
+                <div class="template-selector">
+                    <label for="template-selector">Style :</label>
+                    <select id="template-selector" onchange="changeTemplateMode(this.value)" title="Choisir le style d'affichage">
+                        <option value="actuel">Actuel (Club - Rose/Noir)</option>
+                        <option value="neutre">Neutre (Minimaliste)</option>
+                        <option value="sobre">Sobre (Couleurs adoucies)</option>
+                        <option value="pro">Pro (Style professionnel)</option>
+                        <option value="custom">Couleurs personnalisées</option>
+                    </select>
+                </div>
+                <div id="custom-colors-panel" class="custom-colors-panel" style="display: none;">
+                    <div class="colors-grid">
+                        <div class="color-item">
+                            <label for="color-primary">Couleur principale :</label>
+                            <input type="color" id="color-primary" value="#E91E63" onchange="updateCustomColor('primary', this.value)">
+                            <span class="color-desc">(Scores, bordures, accents)</span>
+                        </div>
+                        <div class="color-item">
+                            <label for="color-secondary">Couleur secondaire :</label>
+                            <input type="color" id="color-secondary" value="#FF69B4" onchange="updateCustomColor('secondary', this.value)">
+                            <span class="color-desc">(Niveaux, accents clairs)</span>
+                        </div>
+                        <div class="color-item">
+                            <label for="color-background">Fond principal :</label>
+                            <input type="color" id="color-background" value="#000000" onchange="updateCustomColor('background', this.value)">
+                            <span class="color-desc">(Background du bandeau)</span>
+                        </div>
+                        <div class="color-item">
+                            <label for="color-background-secondary">Fond secondaire :</label>
+                            <input type="color" id="color-background-secondary" value="#0f0f0f" onchange="updateCustomColor('backgroundSecondary', this.value)">
+                            <span class="color-desc">(Gradient de fond)</span>
+                        </div>
+                        <div class="color-item">
+                            <label for="color-text">Couleur du texte :</label>
+                            <input type="color" id="color-text" value="#FFFFFF" onchange="updateCustomColor('text', this.value)">
+                            <span class="color-desc">(Noms, textes)</span>
+                        </div>
+                        <div class="color-item">
+                            <label for="color-set-active">Sets actifs :</label>
+                            <input type="color" id="color-set-active" value="#E91E63" onchange="updateCustomColor('setActive', this.value)">
+                            <span class="color-desc">(Sets gagnés/actifs)</span>
+                        </div>
+                    </div>
+                    <div class="save-config-section">
+                        <input type="text" id="config-name-input" placeholder="Nom de la configuration..." maxlength="30" style="padding: 8px; border-radius: 5px; border: 1px solid var(--lcvb-rose); background: var(--lcvb-noir); color: var(--lcvb-blanc); margin-right: 10px;">
+                        <button class="btn btn-save-config" onclick="saveConfig()">💾 Sauvegarder</button>
+                        <select id="load-config-select" onchange="loadConfig(this.value)" style="padding: 8px; border-radius: 5px; border: 1px solid var(--lcvb-rose); background: var(--lcvb-noir); color: var(--lcvb-blanc); margin-left: 10px;">
+                            <option value="">Charger une configuration...</option>
+                        </select>
+                        <button class="btn btn-delete-config" onclick="deleteCurrentConfig()" style="margin-left: 10px; padding: 8px 15px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">🗑️ Supprimer</button>
+                    </div>
+                </div>
+                <button class="btn btn-next-set" onclick="nextSet()">Set Suivant</button>
+                <button class="btn btn-toggle-logos" id="toggle-logos-btn" onclick="toggleLogos()" title="Afficher/Masquer les logos">🖼️ Logos</button>
+                <button class="btn btn-sponsors" onclick="toggleSponsors()" title="Afficher/Masquer les sponsors">💰 Sponsors</button>
+                <button class="btn btn-social" onclick="showSocialShare()" title="Publier sur les réseaux sociaux">📱 Publier</button>
+                <button class="btn btn-full-reset" onclick="resetEverything()">Réinitialiser Tout</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Initialisation
+        LCVBScoreboard.initScoreData();
+
+        // Fonction pour mettre à jour l'affichage
+        function updateDisplay() {
+            const data = LCVBScoreboard.getScoreData();
+            
+            // Mise à jour des champs de noms
+            document.getElementById('team1-name').value = data.team1.name;
+            document.getElementById('team2-name').value = data.team2.name;
+            
+            // Mise à jour des champs de niveaux
+            document.getElementById('team1-niveau').value = data.team1.niveau || '';
+            document.getElementById('team2-niveau').value = data.team2.niveau || '';
+            
+            // Mise à jour du checkbox "Match amical" (commun)
+            const matchAmical = document.getElementById('match-amical');
+            if (matchAmical) {
+                matchAmical.checked = data.matchAmical === true;
+            }
+            
+            // Mise à jour du sélecteur de template
+            const templateSelector = document.getElementById('template-selector');
+            if (templateSelector) {
+                const template = data.template || 'actuel';
+                templateSelector.value = template;
+                
+                // Gérer l'affichage du panneau de couleurs personnalisées
+                const customPanel = document.getElementById('custom-colors-panel');
+                if (template === 'custom') {
+                    customPanel.style.display = 'flex';
+                    const colors = data.customColors || {};
+                    document.getElementById('color-primary').value = colors.primary || '#E91E63';
+                    document.getElementById('color-secondary').value = colors.secondary || '#FF69B4';
+                    document.getElementById('color-background').value = colors.background || '#000000';
+                    document.getElementById('color-background-secondary').value = colors.backgroundSecondary || '#0f0f0f';
+                    document.getElementById('color-text').value = colors.text || '#FFFFFF';
+                    document.getElementById('color-set-active').value = colors.setActive || '#E91E63';
+                    applyCustomColors();
+                    updateConfigSelect();
+                } else {
+                    customPanel.style.display = 'none';
+                    // Appliquer le template
+                    document.body.className = document.body.className.replace(/template-\w+/g, '');
+                    document.body.classList.add(`template-${template}`);
+                }
+            }
+            
+            // Mettre à jour le sélecteur de configurations
+            updateConfigSelect();
+            
+            // Mise à jour des champs de logos
+            document.getElementById('team1-logo').value = data.team1.logo;
+            document.getElementById('team2-logo').value = data.team2.logo;
+            
+            // Mise à jour du bouton toggle logos
+            const toggleLogosBtn = document.getElementById('toggle-logos-btn');
+            if (toggleLogosBtn) {
+                const showLogos = data.showLogos !== false;
+                toggleLogosBtn.textContent = showLogos ? '🖼️ Masquer Logos' : '🖼️ Afficher Logos';
+                toggleLogosBtn.classList.toggle('btn-toggle-logos-off', !showLogos);
+            }
+            
+            // Mise à jour des scores (vérifier que les inputs existent et ne sont pas en focus)
+            const score1Input = document.getElementById('team1-score-input');
+            const score2Input = document.getElementById('team2-score-input');
+            if (score1Input && document.activeElement !== score1Input && score1Input.value != data.team1.score) {
+                score1Input.value = data.team1.score;
+            }
+            if (score2Input && document.activeElement !== score2Input && score2Input.value != data.team2.score) {
+                score2Input.value = data.team2.score;
+            }
+            
+            // Mise à jour du sélecteur de set
+            document.getElementById('set-selector').value = data.currentSet;
+            
+            // Mise à jour des contrôles de sets
+            updateSetsControls();
+        }
+
+        // Fonction pour mettre à jour les contrôles de sets
+        function updateSetsControls() {
+            const data = LCVBScoreboard.getScoreData();
+            const team1Controls = document.getElementById('team1-sets-controls');
+            const team2Controls = document.getElementById('team2-sets-controls');
+            
+            team1Controls.innerHTML = '';
+            team2Controls.innerHTML = '';
+            
+            for (let i = 0; i < data.maxSets; i++) {
+                const setNum = i + 1;
+                
+                // Contrôles équipe 1
+                const row1 = document.createElement('div');
+                row1.className = 'sets-row';
+                
+                const label1 = document.createElement('span');
+                label1.className = 'set-label';
+                label1.textContent = `Set ${setNum} :`;
+                
+                const input1 = document.createElement('input');
+                input1.type = 'number';
+                input1.id = `team1-set${setNum}-input`;
+                input1.className = 'set-input';
+                input1.min = '0';
+                input1.max = '99';
+                input1.value = data.team1.sets[i] || 0;
+                input1.addEventListener('change', () => setSetDirect('team1', i, input1.value));
+                input1.addEventListener('input', () => validateSetInput(input1));
+                
+                const plus1 = document.createElement('button');
+                plus1.className = 'btn btn-plus';
+                plus1.style.cssText = 'padding: 10px 15px; font-size: 1em;';
+                plus1.textContent = '+';
+                plus1.onclick = () => changeSet('team1', i, 1);
+                
+                const minus1 = document.createElement('button');
+                minus1.className = 'btn btn-minus';
+                minus1.style.cssText = 'padding: 10px 15px; font-size: 1em;';
+                minus1.textContent = '−';
+                minus1.onclick = () => changeSet('team1', i, -1);
+                
+                row1.appendChild(label1);
+                row1.appendChild(input1);
+                row1.appendChild(plus1);
+                row1.appendChild(minus1);
+                team1Controls.appendChild(row1);
+                
+                // Contrôles équipe 2
+                const row2 = document.createElement('div');
+                row2.className = 'sets-row';
+                
+                const label2 = document.createElement('span');
+                label2.className = 'set-label';
+                label2.textContent = `Set ${setNum} :`;
+                
+                const input2 = document.createElement('input');
+                input2.type = 'number';
+                input2.id = `team2-set${setNum}-input`;
+                input2.className = 'set-input';
+                input2.min = '0';
+                input2.max = '99';
+                input2.value = data.team2.sets[i] || 0;
+                input2.addEventListener('change', () => setSetDirect('team2', i, input2.value));
+                input2.addEventListener('input', () => validateSetInput(input2));
+                
+                const plus2 = document.createElement('button');
+                plus2.className = 'btn btn-plus';
+                plus2.style.cssText = 'padding: 10px 15px; font-size: 1em;';
+                plus2.textContent = '+';
+                plus2.onclick = () => changeSet('team2', i, 1);
+                
+                const minus2 = document.createElement('button');
+                minus2.className = 'btn btn-minus';
+                minus2.style.cssText = 'padding: 10px 15px; font-size: 1em;';
+                minus2.textContent = '−';
+                minus2.onclick = () => changeSet('team2', i, -1);
+                
+                row2.appendChild(label2);
+                row2.appendChild(input2);
+                row2.appendChild(plus2);
+                row2.appendChild(minus2);
+                team2Controls.appendChild(row2);
+            }
+        }
+
+        // Fonction pour changer le score avec les boutons +/-
+        function changeScore(team, delta) {
+            LCVBScoreboard.updateScore(team, delta);
+            updateDisplay();
+        }
+        
+        // Fonction pour définir le score directement via input
+        function setScoreDirect(team, value) {
+            const score = parseInt(value) || 0;
+            const data = LCVBScoreboard.getScoreData();
+            data[team].score = Math.max(0, Math.min(999, score));
+            LCVBScoreboard.saveScoreData(data);
+            updateDisplay();
+        }
+        
+        // Validation de l'input de score
+        function validateScoreInput(input) {
+            let value = parseInt(input.value);
+            if (isNaN(value) || value < 0) {
+                value = 0;
+            }
+            if (value > 999) {
+                value = 999;
+            }
+            input.value = value;
+        }
+
+        // Fonction pour réinitialiser le score d'une équipe
+        function resetScore(team) {
+            const data = LCVBScoreboard.getScoreData();
+            data[team].score = 0;
+            LCVBScoreboard.saveScoreData(data);
+            updateDisplay();
+        }
+
+        // Fonction pour changer le set avec les boutons +/-
+        function changeSet(team, setIndex, delta) {
+            LCVBScoreboard.updateSet(team, setIndex, delta);
+            // Mettre à jour l'input directement pour feedback immédiat
+            const data = LCVBScoreboard.getScoreData();
+            const input = document.getElementById(`${team}-set${setIndex + 1}-input`);
+            if (input && document.activeElement !== input) {
+                input.value = data[team].sets[setIndex] || 0;
+            }
+            updateDisplay();
+        }
+        
+        // Fonction pour définir le set directement via input
+        function setSetDirect(team, setIndex, value) {
+            const score = parseInt(value) || 0;
+            const data = LCVBScoreboard.getScoreData();
+            data[team].sets[setIndex] = Math.max(0, Math.min(99, score));
+            LCVBScoreboard.saveScoreData(data);
+            updateDisplay();
+        }
+        
+        // Validation de l'input de set
+        function validateSetInput(input) {
+            let value = parseInt(input.value);
+            if (isNaN(value) || value < 0) {
+                value = 0;
+            }
+            if (value > 99) {
+                value = 99;
+            }
+            input.value = value;
+        }
+
+        // Fonction pour changer le set actuel
+        function changeCurrentSet() {
+            const setNum = parseInt(document.getElementById('set-selector').value);
+            const data = LCVBScoreboard.getScoreData();
+            
+            // Sauvegarder les scores du set actuel avant de changer
+            const currentSetIndex = data.currentSet - 1;
+            data.team1.sets[currentSetIndex] = data.team1.score;
+            data.team2.sets[currentSetIndex] = data.team2.score;
+            LCVBScoreboard.saveScoreData(data);
+            
+            // Charger les scores du nouveau set si disponible
+            const newSetIndex = setNum - 1;
+            if (data.team1.sets[newSetIndex] > 0 || data.team2.sets[newSetIndex] > 0) {
+                // Le set a déjà été joué, on charge les scores sauvegardés
+                data.team1.score = data.team1.sets[newSetIndex];
+                data.team2.score = data.team2.sets[newSetIndex];
+            } else {
+                // Nouveau set, on réinitialise
+                data.team1.score = 0;
+                data.team2.score = 0;
+            }
+            
+            LCVBScoreboard.changeSet(setNum);
+            updateDisplay();
+        }
+
+        // Fonction pour passer au set suivant
+        function nextSet() {
+            LCVBScoreboard.nextSet();
+            updateDisplay();
+        }
+
+        // Fonction pour réinitialiser tout
+        function resetEverything() {
+            if (confirm('Êtes-vous sûr de vouloir tout réinitialiser ?')) {
+                LCVBScoreboard.resetAll();
+                updateDisplay();
+            }
+        }
+        
+        // Fonction pour toggle l'affichage des logos
+        function toggleLogos() {
+            LCVBScoreboard.toggleShowLogos();
+            updateDisplay();
+        }
+        
+        // Fonction pour mettre à jour le flag "Match amical" (commun)
+        function updateMatchAmicalCommon(isAmical) {
+            LCVBScoreboard.updateMatchAmicalCommon(isAmical);
+            updateDisplay();
+        }
+
+        // Fonction pour basculer l'affichage des sponsors
+        function toggleSponsors() {
+            // Stocker l'état dans localStorage pour que OBS puisse le lire
+            const data = LCVBScoreboard.getScoreData();
+            data.showSponsors = !data.showSponsors;
+            LCVBScoreboard.saveScoreData(data);
+            
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const url = isLocalhost 
+                ? `http://localhost:8000/sponsors.html` 
+                : `file://${window.location.pathname.replace('control.html', 'sponsors.html')}`;
+            
+            alert('Pour afficher les sponsors dans OBS :\n\n' +
+                  '1. Ajoutez une nouvelle Browser Source\n' +
+                  `2. URL: ${url}\n` +
+                  '3. Dimensions: 1920x120 pixels\n' +
+                  '4. Placez vos logos dans le dossier "sponsors/" ou créez "sponsors/sponsors.json"\n' +
+                  '5. Vous pouvez utiliser des scènes OBS pour basculer entre scoreboard et sponsors');
+        }
+
+        // Fonction pour afficher la modal de partage réseaux sociaux
+        function showSocialShare() {
+            const modal = document.getElementById('social-modal');
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        }
+
+        // Fonction pour fermer la modal
+        function closeSocialModal() {
+            const modal = document.getElementById('social-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Fermer la modal en cliquant en dehors
+        window.onclick = function(event) {
+            const modal = document.getElementById('social-modal');
+            if (event.target === modal) {
+                closeSocialModal();
+            }
+        }
+
+        // Fonction pour changer le mode (template ou custom)
+        function changeTemplateMode(mode) {
+            const data = LCVBScoreboard.getScoreData();
+            data.template = mode;
+            LCVBScoreboard.saveScoreData(data);
+            
+            // Afficher/masquer le panneau de couleurs personnalisées
+            const customPanel = document.getElementById('custom-colors-panel');
+            if (mode === 'custom') {
+                customPanel.style.display = 'flex';
+                // Charger toutes les couleurs actuelles
+                const colors = data.customColors || {};
+                document.getElementById('color-primary').value = colors.primary || '#E91E63';
+                document.getElementById('color-secondary').value = colors.secondary || '#FF69B4';
+                document.getElementById('color-background').value = colors.background || '#000000';
+                document.getElementById('color-background-secondary').value = colors.backgroundSecondary || '#0f0f0f';
+                document.getElementById('color-text').value = colors.text || '#FFFFFF';
+                document.getElementById('color-set-active').value = colors.setActive || '#E91E63';
+                applyCustomColors();
+                updateConfigSelect();
+            } else {
+                customPanel.style.display = 'none';
+                // Appliquer le template à la page courante
+                document.body.className = document.body.className.replace(/template-\w+/g, '');
+                document.body.classList.add(`template-${mode}`);
+                // Si c'est le template PRO, pas besoin d'appliquer ici car c'est géré dans index.html
+            }
+        }
+
+        // Fonction pour mettre à jour les couleurs personnalisées
+        function updateCustomColor(type, color) {
+            const data = LCVBScoreboard.getScoreData();
+            if (!data.customColors) {
+                data.customColors = {
+                    primary: '#E91E63',
+                    secondary: '#FF69B4',
+                    background: '#000000',
+                    backgroundSecondary: '#0f0f0f',
+                    text: '#FFFFFF',
+                    setActive: '#E91E63'
+                };
+            }
+            data.customColors[type] = color;
+            data.template = 'custom';
+            LCVBScoreboard.saveScoreData(data);
+            applyCustomColors();
+        }
+
+        // Fonction pour appliquer les couleurs personnalisées
+        function applyCustomColors() {
+            const data = LCVBScoreboard.getScoreData();
+            if (data.template !== 'custom' || !data.customColors) return;
+            
+            const colors = data.customColors;
+            const primary = colors.primary || '#E91E63';
+            const secondary = colors.secondary || '#FF69B4';
+            const background = colors.background || '#000000';
+            const backgroundSecondary = colors.backgroundSecondary || '#0f0f0f';
+            const text = colors.text || '#FFFFFF';
+            const setActive = colors.setActive || '#E91E63';
+            
+            // Convertir hex en RGB
+            function hexToRgb(hex) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '233, 30, 99';
+            }
+            
+            const primaryRgb = hexToRgb(primary);
+            const backgroundRgb = hexToRgb(background);
+            const backgroundSecondaryRgb = hexToRgb(backgroundSecondary);
+            
+            // Appliquer le template custom et définir les variables CSS
+            document.body.className = document.body.className.replace(/template-\w+/g, '');
+            document.body.classList.add('template-custom');
+            
+            // Définir toutes les variables CSS dynamiquement
+            document.documentElement.style.setProperty('--template-primary', primary);
+            document.documentElement.style.setProperty('--template-primary-light', secondary);
+            document.documentElement.style.setProperty('--template-primary-rgb', primaryRgb);
+            document.documentElement.style.setProperty('--template-border', primary);
+            document.documentElement.style.setProperty('--template-accent', primary);
+            document.documentElement.style.setProperty('--template-bg', background);
+            document.documentElement.style.setProperty('--template-bg-gradient', `linear-gradient(180deg, ${background} 0%, ${backgroundSecondary} 100%)`);
+            document.documentElement.style.setProperty('--template-text', text);
+            
+            // Variable pour les sets actifs (utilisée dans .set-badge.active)
+            const style = document.createElement('style');
+            style.id = 'custom-colors-style';
+            if (document.getElementById('custom-colors-style')) {
+                document.getElementById('custom-colors-style').remove();
+            }
+            style.textContent = `
+                body.template-custom .set-badge.active,
+                body.template-custom .set-badge.won {
+                    background: ${setActive};
+                    border-color: ${setActive};
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Fonction pour sauvegarder la configuration actuelle
+        function saveConfig() {
+            const nameInput = document.getElementById('config-name-input');
+            const configName = nameInput.value.trim();
+            
+            if (!configName) {
+                alert('Veuillez entrer un nom pour la configuration');
+                return;
+            }
+            
+            const data = LCVBScoreboard.getScoreData();
+            if (!data.savedConfigs) {
+                data.savedConfigs = {};
+            }
+            
+            // Sauvegarder la configuration actuelle
+            data.savedConfigs[configName] = {
+                customColors: JSON.parse(JSON.stringify(data.customColors || {})),
+                template: 'custom',
+                savedAt: new Date().toISOString()
+            };
+            
+            LCVBScoreboard.saveScoreData(data);
+            nameInput.value = '';
+            updateConfigSelect();
+            alert(`Configuration "${configName}" sauvegardée avec succès !`);
+        }
+
+        // Fonction pour charger une configuration sauvegardée
+        function loadConfig(configName) {
+            if (!configName) return;
+            
+            const data = LCVBScoreboard.getScoreData();
+            if (!data.savedConfigs || !data.savedConfigs[configName]) {
+                alert('Configuration introuvable');
+                return;
+            }
+            
+            const config = data.savedConfigs[configName];
+            data.customColors = JSON.parse(JSON.stringify(config.customColors));
+            data.template = 'custom';
+            LCVBScoreboard.saveScoreData(data);
+            
+            // Mettre à jour les inputs
+            document.getElementById('color-primary').value = data.customColors.primary || '#E91E63';
+            document.getElementById('color-secondary').value = data.customColors.secondary || '#FF69B4';
+            document.getElementById('color-background').value = data.customColors.background || '#000000';
+            document.getElementById('color-background-secondary').value = data.customColors.backgroundSecondary || '#0f0f0f';
+            document.getElementById('color-text').value = data.customColors.text || '#FFFFFF';
+            document.getElementById('color-set-active').value = data.customColors.setActive || '#E91E63';
+            
+            applyCustomColors();
+            updateDisplay();
+        }
+
+        // Fonction pour supprimer la configuration actuellement sélectionnée
+        function deleteCurrentConfig() {
+            const select = document.getElementById('load-config-select');
+            const configName = select.value;
+            
+            if (!configName) {
+                alert('Aucune configuration sélectionnée');
+                return;
+            }
+            
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer la configuration "${configName}" ?`)) {
+                return;
+            }
+            
+            const data = LCVBScoreboard.getScoreData();
+            if (data.savedConfigs && data.savedConfigs[configName]) {
+                delete data.savedConfigs[configName];
+                LCVBScoreboard.saveScoreData(data);
+                updateConfigSelect();
+                select.value = '';
+                alert(`Configuration "${configName}" supprimée`);
+            }
+        }
+
+        // Fonction pour mettre à jour le sélecteur de configurations
+        function updateConfigSelect() {
+            const select = document.getElementById('load-config-select');
+            const data = LCVBScoreboard.getScoreData();
+            const savedConfigs = data.savedConfigs || {};
+            
+            // Garder l'option par défaut
+            const defaultOption = select.querySelector('option[value=""]');
+            select.innerHTML = '';
+            select.appendChild(defaultOption);
+            
+            // Ajouter toutes les configurations sauvegardées
+            Object.keys(savedConfigs).sort().forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+        }
+
+        // Fonction pour changer le template (ancienne fonction, gardée pour compatibilité)
+        function changeTemplate(templateName) {
+            changeTemplateMode(templateName);
+        }
+        
+        // Écouter les changements des champs de nom
+        document.getElementById('team1-name').addEventListener('input', function() {
+            LCVBScoreboard.updateTeamName('team1', this.value);
+        });
+
+        document.getElementById('team2-name').addEventListener('input', function() {
+            LCVBScoreboard.updateTeamName('team2', this.value);
+        });
+        
+        // Écouter les changements des champs de niveau (select)
+        document.getElementById('team1-niveau').addEventListener('change', function() {
+            LCVBScoreboard.updateTeamNiveau('team1', this.value);
+        });
+
+        document.getElementById('team2-niveau').addEventListener('change', function() {
+            LCVBScoreboard.updateTeamNiveau('team2', this.value);
+        });
+
+        // Fonction pour gérer la sélection de fichier logo
+        function handleLogoFileSelect(team, fileInput) {
+            const file = fileInput.files[0];
+            if (file) {
+                // Créer une URL locale pour l'image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Utiliser l'URL du fichier pour l'affichage immédiat
+                    const logoPath = `logos/${file.name}`;
+                    const logoInput = document.getElementById(`${team}-logo`);
+                    
+                    // Mettre à jour le champ texte
+                    logoInput.value = logoPath;
+                    
+                    // Sauvegarder dans localStorage
+                    LCVBScoreboard.updateTeamLogo(team, logoPath);
+                    
+                    // Note: Pour que ça fonctionne vraiment, vous devez copier le fichier 
+                    // dans le dossier logos manuellement ou utiliser un serveur local
+                    alert(`Logo sélectionné: ${file.name}\n\nPour que le logo s'affiche correctement, copiez le fichier dans le dossier "logos/" et renommez-le si nécessaire.\n\nChemin suggéré: logos/${file.name}`);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Écouter les changements des champs de logo (saisie manuelle)
+        document.getElementById('team1-logo').addEventListener('input', function() {
+            LCVBScoreboard.updateTeamLogo('team1', this.value);
+        });
+
+        document.getElementById('team2-logo').addEventListener('input', function() {
+            LCVBScoreboard.updateTeamLogo('team2', this.value);
+        });
+
+        // Mise à jour initiale
+        updateDisplay();
+
+        // Surveiller les changements localStorage (pour synchronisation multi-fenêtres)
+        let lastControlHash = '';
+        setInterval(() => {
+            const currentHash = JSON.stringify(LCVBScoreboard.getScoreData());
+            if (currentHash !== lastControlHash) {
+                lastControlHash = currentHash;
+                updateDisplay();
+            }
+        }, 100);
+        
+        // Pour les changements depuis une autre fenêtre/onglet
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'lcvb_score') {
+                lastControlHash = '';
+                updateDisplay();
+            }
+        });
+    </script>
+
+    <!-- Modal pour le partage réseaux sociaux -->
+    <div id="social-modal" class="social-modal">
+        <div class="social-modal-content">
+            <div class="social-modal-header">
+                <h2>📱 Publier sur les réseaux sociaux</h2>
+                <span class="social-close" onclick="closeSocialModal()">&times;</span>
+            </div>
+            
+            <div class="social-platforms">
+                <!-- Instagram -->
+                <div class="social-platform">
+                    <h3>📷 Instagram</h3>
+                    <p><strong>Stories :</strong></p>
+                    <p>1. Lancez votre live sur Instagram</p>
+                    <p>2. Utilisez l'option "Ajouter à votre story" pendant le live</p>
+                    <p>3. Le live sera visible dans vos stories pendant 24h</p>
+                    <a href="https://help.instagram.com/196801932981584" target="_blank" class="social-link-btn">Guide Instagram</a>
+                </div>
+
+                <!-- Facebook -->
+                <div class="social-platform">
+                    <h3>👥 Facebook</h3>
+                    <p><strong>Live / Stories :</strong></p>
+                    <p>1. Créez une publication "Live"</p>
+                    <p>2. Partagez le live directement depuis OBS</p>
+                    <p>3. Utilisez Facebook Live Producer pour la diffusion</p>
+                    <a href="https://www.facebook.com/live/producer" target="_blank" class="social-link-btn">Facebook Live Producer</a>
+                </div>
+
+                <!-- TikTok -->
+                <div class="social-platform">
+                    <h3>🎵 TikTok</h3>
+                    <p><strong>Live Streaming :</strong></p>
+                    <p>1. Ouvrez TikTok et créez un Live</p>
+                    <p>2. Utilisez un outil de streaming (OBS avec plugin)</p>
+                    <p>3. Configurez la clé de stream dans OBS</p>
+                    <a href="https://support.tiktok.com/fr/using-tiktok/starting-out-with-live" target="_blank" class="social-link-btn">Guide TikTok Live</a>
+                </div>
+
+                <!-- YouTube -->
+                <div class="social-platform">
+                    <h3>▶️ YouTube</h3>
+                    <p><strong>Streaming :</strong></p>
+                    <p>1. Créez un live event sur YouTube Studio</p>
+                    <p>2. Récupérez la clé de stream</p>
+                    <p>3. Configurez OBS avec cette clé</p>
+                    <a href="https://studio.youtube.com" target="_blank" class="social-link-btn">YouTube Studio</a>
+                </div>
+            </div>
+
+            <div class="social-guide">
+                <h3>🎯 Multi-diffusion (simultanée sur plusieurs plateformes)</h3>
+                <p>Pour diffuser en simultané sur plusieurs plateformes, vous pouvez utiliser :</p>
+                <ul>
+                    <li><strong>Restream.io</strong> : Service de multi-diffusion professionnel</li>
+                    <li><strong>OBS avec plugins</strong> : RTMP vers plusieurs destinations</li>
+                    <li><strong>Streamlabs</strong> : Solution tout-en-un pour le streaming</li>
+                    <li><strong>XSplit</strong> : Alternative à OBS avec multi-diffusion</li>
+                </ul>
+                <a href="https://restream.io" target="_blank" class="social-link-btn">Essayer Restream.io</a>
+            </div>
+
+            <div class="social-guide" style="margin-top: 20px;">
+                <h3>💡 Conseils pour le partage</h3>
+                <ul>
+                    <li>Ajoutez des hashtags pertinents (#volley #sport #live)</li>
+                    <li>Planifiez vos lives à l'avance pour informer votre audience</li>
+                    <li>Interagissez avec les commentaires pendant le live</li>
+                    <li>Partagez le replay après le match</li>
+                    <li>Utilisez des vignettes attrayantes pour annoncer le live</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

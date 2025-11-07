@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0">
+    <title>LCVB Scoreboard - Sponsors</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 1920px;
+            height: 120px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="sponsors-banner">
+        <div class="sponsors-container" id="sponsors-container">
+            <!-- Les logos seront chargés dynamiquement -->
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Configuration des sponsors
+        const SPONSORS_CONFIG = {
+            folder: 'sponsors/',
+            logos: [], // Sera rempli dynamiquement
+            displayDuration: 3000, // Durée d'affichage par sponsor (ms)
+            transitionDuration: 500, // Durée de transition (ms)
+            autoRotate: true
+        };
+
+        // Fonction pour scanner le dossier sponsors et charger les logos
+        async function loadSponsors() {
+            const container = document.getElementById('sponsors-container');
+            const imageExtensions = ['.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp'];
+            const foundLogos = [];
+            
+            // Liste de noms possibles à tester (basée sur les fichiers courants)
+            const testNames = [];
+            // Tester sponsor1, sponsor2, etc.
+            for (let i = 1; i <= 20; i++) {
+                testNames.push(`sponsor${i}`, `logo${i}`, `sponsor-${i}`, `logo-${i}`);
+            }
+            // Ajouter quelques noms génériques
+            testNames.push('sponsor', 'logo', 'partner', 'partenaire');
+            
+            // Tester chaque combinaison nom + extension
+            let pendingTests = 0;
+            const testPromises = [];
+            
+            for (const name of testNames) {
+                for (const ext of imageExtensions) {
+                    const path = `${SPONSORS_CONFIG.folder}${name}${ext}`;
+                    pendingTests++;
+                    
+                    const testPromise = new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = function() {
+                            if (!foundLogos.includes(path)) {
+                                foundLogos.push(path);
+                            }
+                            resolve();
+                        };
+                        img.onerror = function() {
+                            resolve();
+                        };
+                        img.src = path + '?t=' + Date.now(); // Cache busting
+                    });
+                    
+                    testPromises.push(testPromise);
+                }
+            }
+            
+            // Attendre que tous les tests soient terminés
+            await Promise.all(testPromises);
+            
+            // Si des logos ont été trouvés
+            if (foundLogos.length > 0) {
+                SPONSORS_CONFIG.logos = foundLogos.sort(); // Trier par nom
+                displaySponsors();
+            } else {
+                container.innerHTML = '<div class="sponsors-message">Placez vos logos dans le dossier "sponsors/" (ex: sponsor1.png, sponsor2.png, etc.)</div>';
+            }
+        }
+
+        // Fonction pour afficher les sponsors
+        function displaySponsors() {
+            const container = document.getElementById('sponsors-container');
+            
+            if (SPONSORS_CONFIG.logos.length === 0) {
+                container.innerHTML = '<div class="sponsors-message">Aucun sponsor configuré</div>';
+                return;
+            }
+
+            // Si un seul logo, affichage simple
+            if (SPONSORS_CONFIG.logos.length === 1) {
+                container.innerHTML = '';
+                const sponsorItem = document.createElement('div');
+                sponsorItem.className = 'sponsor-item';
+                sponsorItem.style.position = 'relative';
+                
+                const img = document.createElement('img');
+                img.src = SPONSORS_CONFIG.logos[0];
+                img.alt = 'Sponsor';
+                img.onerror = function() {
+                    container.innerHTML = '<div class="sponsors-message">Erreur de chargement du logo</div>';
+                };
+                
+                sponsorItem.appendChild(img);
+                container.appendChild(sponsorItem);
+                return;
+            }
+
+            // Créer les éléments de logos avec position absolue pour rotation
+            container.innerHTML = '';
+            SPONSORS_CONFIG.logos.forEach((logoPath, index) => {
+                const sponsorItem = document.createElement('div');
+                sponsorItem.className = 'sponsor-item';
+                sponsorItem.style.position = 'absolute';
+                sponsorItem.style.left = '50%';
+                sponsorItem.style.opacity = index === 0 ? '1' : '0';
+                sponsorItem.style.transform = index === 0 ? 'translateX(-50%)' : 'translateX(calc(-50% + 20px))';
+                
+                const img = document.createElement('img');
+                img.src = logoPath;
+                img.alt = `Sponsor ${index + 1}`;
+                img.onerror = function() {
+                    // Ignorer les erreurs silencieusement
+                };
+                
+                sponsorItem.appendChild(img);
+                container.appendChild(sponsorItem);
+            });
+
+            // Rotation automatique si activée
+            if (SPONSORS_CONFIG.autoRotate && SPONSORS_CONFIG.logos.length > 1) {
+                let currentIndex = 0;
+                setInterval(() => {
+                    const items = container.querySelectorAll('.sponsor-item');
+                    if (items.length > 1) {
+                        // Masquer l'ancien
+                        items[currentIndex].style.opacity = '0';
+                        items[currentIndex].style.transform = 'translateX(calc(-50% - 20px))';
+                        
+                        // Afficher le suivant
+                        currentIndex = (currentIndex + 1) % items.length;
+                        items[currentIndex].style.opacity = '1';
+                        items[currentIndex].style.transform = 'translateX(-50%)';
+                    }
+                }, SPONSORS_CONFIG.displayDuration);
+            }
+        }
+
+        // Charger les sponsors au démarrage
+        loadSponsors();
+        
+        // Recharger périodiquement pour détecter de nouveaux logos
+        setInterval(loadSponsors, 10000); // Toutes les 10 secondes
+    </script>
+</body>
+</html>
+
