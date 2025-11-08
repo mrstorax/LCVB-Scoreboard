@@ -401,21 +401,42 @@
             // Mettre à jour le header avec "Match du (date)" ou "Match amical du (date)"
             const proMatchType = document.getElementById('pro-match-type');
             if (proMatchType) {
-                // Formater la date en "Lundi 3 novembre 2025"
-                const today = new Date();
-                const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-                const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-                const dayName = days[today.getDay()];
-                const day = today.getDate();
-                const monthName = months[today.getMonth()];
-                const year = today.getFullYear();
-                const dateStr = `${dayName} ${day} ${monthName} ${year}`;
+                const matchInfo = data.matchInfo || {};
+                let dateStr = '';
+                
+                // Utiliser la date du match si disponible, sinon date du jour
+                if (matchInfo.date) {
+                    const matchDate = new Date(matchInfo.date + 'T00:00:00');
+                    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+                    const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+                    const dayName = days[matchDate.getDay()];
+                    const day = matchDate.getDate();
+                    const monthName = months[matchDate.getMonth()];
+                    const year = matchDate.getFullYear();
+                    dateStr = `${dayName} ${day} ${monthName} ${year}`;
+                } else {
+                    // Date du jour par défaut
+                    const today = new Date();
+                    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+                    const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+                    const dayName = days[today.getDay()];
+                    const day = today.getDate();
+                    const monthName = months[today.getMonth()];
+                    const year = today.getFullYear();
+                    dateStr = `${dayName} ${day} ${monthName} ${year}`;
+                }
                 
                 // Construire le texte selon si c'est un match amical ou non
                 const isMatchAmical = data.matchAmical === true;
                 const matchText = isMatchAmical ? 'Match amical du' : 'Match du';
                 
-                proMatchType.textContent = `${matchText} ${dateStr}`;
+                // Ajouter la compétition si disponible
+                let headerText = `${matchText} ${dateStr}`;
+                if (matchInfo.competition && matchInfo.competition.trim() !== '') {
+                    headerText = `${matchInfo.competition.toUpperCase()} - ${headerText}`;
+                }
+                
+                proMatchType.textContent = headerText;
                 proMatchType.style.display = 'flex';
             }
             

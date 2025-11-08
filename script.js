@@ -30,7 +30,17 @@ const DEFAULT_SCORE_DATA = {
         text: '#FFFFFF',               // Texte principal
         setActive: '#E91E63'           // Couleur des sets actifs/gagnés
     },
-    savedConfigs: {} // Configurations sauvegardées : { "Nom config": { customColors: {...}, template: 'custom' }, ... }
+    savedConfigs: {}, // Configurations sauvegardées : { "Nom config": { customColors: {...}, template: 'custom' }, ... }
+    history: [], // Historique des actions pour undo : [{ action: 'updateScore', team: 'team1', oldValue: {...}, newValue: {...}, timestamp: ... }, ...]
+    historyIndex: -1, // Index actuel dans l'historique (-1 = pas d'historique)
+    matchInfo: {
+        date: '', // Date du match (format: YYYY-MM-DD)
+        time: '', // Heure du match (format: HH:MM)
+        location: '', // Lieu du match
+        competition: '', // Compétition (ex: "Championnat", "Coupe", etc.)
+        referee: '', // Nom de l'arbitre
+        notes: '' // Notes supplémentaires
+    }
 };
 
 // Fonction pour initialiser les données si elles n'existent pas
@@ -155,11 +165,75 @@ function saveScoreData(data) {
     }
 }
 
+// Fonction pour ajouter une action à l'historique
+function addToHistory(action, oldValue, newValue, metadata = {}) {
+    const data = getScoreData();
+    if (!data.history) {
+        data.history = [];
+        data.historyIndex = -1;
+    }
+    
+    // Supprimer les actions après l'index actuel si on fait une nouvelle action après un undo
+    if (data.historyIndex < data.history.length - 1) {
+        data.history = data.history.slice(0, data.historyIndex + 1);
+    }
+    
+    // Ajouter la nouvelle action
+    const historyEntry = {
+        action: action,
+        oldValue: JSON.parse(JSON.stringify(oldValue)), // Deep copy
+        newValue: JSON.parse(JSON.stringify(newValue)), // Deep copy
+        timestamp: Date.now(),
+        ...metadata
+    };
+    
+    data.history.push(historyEntry);
+    data.historyIndex = data.history.length - 1;
+    
+    // Limiter l'historique à 50 actions maximum
+    if (data.history.length > 50) {
+        data.history.shift();
+        data.historyIndex = data.history.length - 1;
+    }
+    
+    // Ne pas sauvegarder ici, sera fait par la fonction appelante
+    return data;
+}
+
+// Fonction pour annuler la dernière action
+function undoLastAction() {
+    const data = getScoreData();
+    if (!data.history || data.history.length === 0 || data.historyIndex < 0) {
+        return null; // Pas d'historique ou déjà au début
+    }
+    
+    const lastAction = data.history[data.historyIndex];
+    
+    // Restaurer l'ancienne valeur
+    const restoredData = JSON.parse(JSON.stringify(lastAction.oldValue));
+    
+    // Mettre à jour les données avec l'ancienne valeur
+    Object.assign(data, restoredData);
+    
+    // Décrémenter l'index
+    data.historyIndex--;
+    
+    // Sauvegarder
+    saveScoreData(data);
+    
+    return data;
+}
+
 // Fonction pour mettre à jour le score d'une équipe
 function updateScore(team, delta) {
     const data = getScoreData();
+    const oldData = JSON.parse(JSON.stringify(data)); // Sauvegarder l'état avant
     const newScore = Math.max(0, data[team].score + delta);
     data[team].score = newScore;
+    
+    // Ajouter à l'historique
+    addToHistory('updateScore', oldData, data, { team: team, delta: delta });
+    
     saveScoreData(data);
     return data;
 }
@@ -167,9 +241,14 @@ function updateScore(team, delta) {
 // Fonction pour mettre à jour le set d'une équipe
 function updateSet(team, setIndex, delta) {
     const data = getScoreData();
+    const oldData = JSON.parse(JSON.stringify(data)); // Sauvegarder l'état avant
     const currentSetIndex = data.currentSet - 1;
     const newSetScore = Math.max(0, data[team].sets[setIndex] + delta);
     data[team].sets[setIndex] = newSetScore;
+    
+    // Ajouter à l'historique
+    addToHistory('updateSet', oldData, data, { team: team, setIndex: setIndex, delta: delta });
+    
     saveScoreData(data);
     return data;
 }
@@ -178,7 +257,12 @@ function updateSet(team, setIndex, delta) {
 function changeSet(setNumber) {
     const data = getScoreData();
     if (setNumber >= 1 && setNumber <= data.maxSets) {
+        const oldData = JSON.parse(JSON.stringify(data)); // Sauvegarder l'état avant
         data.currentSet = setNumber;
+        
+        // Ajouter à l'historique
+        addToHistory('changeSet', oldData, data, { setNumber: setNumber });
+        
         saveScoreData(data);
     }
     return data;
@@ -187,6 +271,7 @@ function changeSet(setNumber) {
 // Fonction pour passer au set suivant
 function nextSet() {
     const data = getScoreData();
+    const oldData = JSON.parse(JSON.stringify(data)); // Sauvegarder l'état avant
     const currentSetIndex = data.currentSet - 1;
     
     // Sauvegarder les scores finaux du set actuel
@@ -200,6 +285,9 @@ function nextSet() {
         data.team1.score = 0;
         data.team2.score = 0;
     }
+    
+    // Ajouter à l'historique
+    addToHistory('nextSet', oldData, data);
     
     saveScoreData(data);
     return data;
@@ -223,7 +311,12 @@ function resetAll() {
 // Fonction pour mettre à jour le nom d'une équipe
 function updateTeamName(team, name) {
     const data = getScoreData();
+    const oldData = JSON.parse(JSON.stringify(data)); // Sauvegarder l'état avant
     data[team].name = name;
+    
+    // Ajouter à l'historique
+    addToHistory('updateTeamName', oldData, data, { team: team, name: name });
+    
     saveScoreData(data);
     return data;
 }
@@ -260,6 +353,24 @@ function toggleShowLogos() {
     return data;
 }
 
+// Fonction pour mettre à jour les informations du match
+function updateMatchInfo(field, value) {
+    const data = getScoreData();
+    if (!data.matchInfo) {
+        data.matchInfo = {
+            date: '',
+            time: '',
+            location: '',
+            competition: '',
+            referee: '',
+            notes: ''
+        };
+    }
+    data.matchInfo[field] = value;
+    saveScoreData(data);
+    return data;
+}
+
 // Fonction pour écouter les changements de localStorage (pour index.html)
 // Note: Cette fonction est dépréciée, utilisez directement setInterval dans index.html
 function watchScoreChanges(callback) {
@@ -289,6 +400,9 @@ if (typeof window !== 'undefined') {
         updateMatchAmicalCommon,
         toggleShowLogos,
         watchScoreChanges,
+        addToHistory,
+        undoLastAction,
+        updateMatchInfo,
         downloadScoreData: function() {
             const data = getScoreData();
             window.shouldDownloadScoreData = true;

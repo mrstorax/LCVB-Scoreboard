@@ -904,6 +904,24 @@ body {
     box-shadow: 0 0 20px rgba(233, 30, 99, 0.6);
 }
 
+.btn-undo {
+    background: #2196F3;
+    color: var(--lcvb-blanc);
+    padding: 15px 40px;
+    font-size: 1.2em;
+}
+
+.btn-undo:hover:not(:disabled) {
+    background: #1976D2;
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(33, 150, 243, 0.6);
+}
+
+.btn-undo:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .btn-full-reset {
     background: #ff4444;
     color: var(--lcvb-blanc);

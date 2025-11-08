@@ -241,7 +241,37 @@
                         <button class="btn btn-delete-config" onclick="deleteCurrentConfig()" style="margin-left: 10px; padding: 8px 15px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">🗑️ Supprimer</button>
                     </div>
                 </div>
+                <div class="match-info-panel" style="grid-column: 1 / -1; background: rgba(233, 30, 99, 0.1); padding: 20px; border-radius: 10px; border: 2px solid var(--lcvb-rose); margin: 10px 0;">
+                    <h3 style="color: var(--lcvb-rose); margin-bottom: 15px; text-align: center;">📋 Informations du Match</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div class="input-group">
+                            <label for="match-date">Date du match :</label>
+                            <input type="date" id="match-date" onchange="updateMatchInfo('date', this.value)" style="padding: 10px; border: 2px solid var(--lcvb-rose); border-radius: 5px; background: var(--lcvb-noir); color: var(--lcvb-blanc);">
+                        </div>
+                        <div class="input-group">
+                            <label for="match-time">Heure du match :</label>
+                            <input type="time" id="match-time" onchange="updateMatchInfo('time', this.value)" style="padding: 10px; border: 2px solid var(--lcvb-rose); border-radius: 5px; background: var(--lcvb-noir); color: var(--lcvb-blanc);">
+                        </div>
+                        <div class="input-group">
+                            <label for="match-location">Lieu :</label>
+                            <input type="text" id="match-location" placeholder="Ex: Salle des sports" onchange="updateMatchInfo('location', this.value)" style="padding: 10px; border: 2px solid var(--lcvb-rose); border-radius: 5px; background: var(--lcvb-noir); color: var(--lcvb-blanc);">
+                        </div>
+                        <div class="input-group">
+                            <label for="match-competition">Compétition :</label>
+                            <input type="text" id="match-competition" placeholder="Ex: Championnat, Coupe..." onchange="updateMatchInfo('competition', this.value)" style="padding: 10px; border: 2px solid var(--lcvb-rose); border-radius: 5px; background: var(--lcvb-noir); color: var(--lcvb-blanc);">
+                        </div>
+                        <div class="input-group">
+                            <label for="match-referee">Arbitre :</label>
+                            <input type="text" id="match-referee" placeholder="Nom de l'arbitre" onchange="updateMatchInfo('referee', this.value)" style="padding: 10px; border: 2px solid var(--lcvb-rose); border-radius: 5px; background: var(--lcvb-noir); color: var(--lcvb-blanc);">
+                        </div>
+                        <div class="input-group">
+                            <label for="match-notes">Notes :</label>
+                            <input type="text" id="match-notes" placeholder="Notes supplémentaires" onchange="updateMatchInfo('notes', this.value)" style="padding: 10px; border: 2px solid var(--lcvb-rose); border-radius: 5px; background: var(--lcvb-noir); color: var(--lcvb-blanc);">
+                        </div>
+                    </div>
+                </div>
                 <button class="btn btn-next-set" onclick="nextSet()">Set Suivant</button>
+                <button class="btn btn-undo" id="btn-undo" onclick="undoAction()" title="Annuler la dernière action (Ctrl+Z)">↶ Annuler</button>
                 <button class="btn btn-toggle-logos" id="toggle-logos-btn" onclick="toggleLogos()" title="Afficher/Masquer les logos">🖼️ Logos</button>
                 <button class="btn btn-social" onclick="showSocialShare()" title="Publier sur les réseaux sociaux">📱 Publier</button>
                 <button class="btn btn-full-reset" onclick="resetEverything()">Réinitialiser Tout</button>
@@ -326,6 +356,31 @@
             
             // Mise à jour du sélecteur de set
             document.getElementById('set-selector').value = data.currentSet;
+            
+            // Mise à jour des informations du match
+            const matchInfo = data.matchInfo || {};
+            const matchDateInput = document.getElementById('match-date');
+            const matchTimeInput = document.getElementById('match-time');
+            const matchLocationInput = document.getElementById('match-location');
+            const matchCompetitionInput = document.getElementById('match-competition');
+            const matchRefereeInput = document.getElementById('match-referee');
+            const matchNotesInput = document.getElementById('match-notes');
+            
+            if (matchDateInput) matchDateInput.value = matchInfo.date || '';
+            if (matchTimeInput) matchTimeInput.value = matchInfo.time || '';
+            if (matchLocationInput) matchLocationInput.value = matchInfo.location || '';
+            if (matchCompetitionInput) matchCompetitionInput.value = matchInfo.competition || '';
+            if (matchRefereeInput) matchRefereeInput.value = matchInfo.referee || '';
+            if (matchNotesInput) matchNotesInput.value = matchInfo.notes || '';
+            
+            // Mise à jour du bouton Undo (actif/inactif selon l'historique)
+            const undoBtn = document.getElementById('btn-undo');
+            if (undoBtn) {
+                const hasHistory = data.history && data.history.length > 0 && data.historyIndex >= 0;
+                undoBtn.disabled = !hasHistory;
+                undoBtn.style.opacity = hasHistory ? '1' : '0.5';
+                undoBtn.style.cursor = hasHistory ? 'pointer' : 'not-allowed';
+            }
             
             // Mise à jour des contrôles de sets
             updateSetsControls();
@@ -427,7 +482,12 @@
         function setScoreDirect(team, value) {
             const score = parseInt(value) || 0;
             const data = LCVBScoreboard.getScoreData();
+            const oldData = JSON.parse(JSON.stringify(data)); // Sauvegarder l'état avant
             data[team].score = Math.max(0, Math.min(999, score));
+            
+            // Ajouter à l'historique
+            LCVBScoreboard.addToHistory('setScoreDirect', oldData, data, { team: team, score: score });
+            
             LCVBScoreboard.saveScoreData(data);
             updateDisplay();
         }
@@ -468,7 +528,12 @@
         function setSetDirect(team, setIndex, value) {
             const score = parseInt(value) || 0;
             const data = LCVBScoreboard.getScoreData();
+            const oldData = JSON.parse(JSON.stringify(data)); // Sauvegarder l'état avant
             data[team].sets[setIndex] = Math.max(0, Math.min(99, score));
+            
+            // Ajouter à l'historique
+            LCVBScoreboard.addToHistory('setSetDirect', oldData, data, { team: team, setIndex: setIndex, score: score });
+            
             LCVBScoreboard.saveScoreData(data);
             updateDisplay();
         }
@@ -518,6 +583,16 @@
             updateDisplay();
         }
 
+        // Fonction pour annuler la dernière action
+        function undoAction() {
+            const result = LCVBScoreboard.undoLastAction();
+            if (result) {
+                updateDisplay();
+            } else {
+                alert('Aucune action à annuler');
+            }
+        }
+
         // Fonction pour réinitialiser tout
         function resetEverything() {
             if (confirm('Êtes-vous sûr de vouloir tout réinitialiser ?')) {
@@ -535,6 +610,12 @@
         // Fonction pour mettre à jour le flag "Match amical" (commun)
         function updateMatchAmicalCommon(isAmical) {
             LCVBScoreboard.updateMatchAmicalCommon(isAmical);
+            updateDisplay();
+        }
+
+        // Fonction pour mettre à jour les informations du match
+        function updateMatchInfo(field, value) {
+            LCVBScoreboard.updateMatchInfo(field, value);
             updateDisplay();
         }
 
