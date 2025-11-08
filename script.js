@@ -40,6 +40,22 @@ const DEFAULT_SCORE_DATA = {
         competition: '', // Compétition (ex: "Championnat", "Coupe", etc.)
         referee: '', // Nom de l'arbitre
         notes: '' // Notes supplémentaires
+    },
+    timers: {
+        match: {
+            startTime: null, // Timestamp de démarrage
+            pausedTime: 0, // Temps accumulé en pause (en ms)
+            isRunning: false, // État du chronomètre
+            isPaused: false // Si le chronomètre est en pause
+        },
+        sets: [
+            // Un chronomètre par set (5 sets max)
+            { startTime: null, pausedTime: 0, isRunning: false, isPaused: false },
+            { startTime: null, pausedTime: 0, isRunning: false, isPaused: false },
+            { startTime: null, pausedTime: 0, isRunning: false, isPaused: false },
+            { startTime: null, pausedTime: 0, isRunning: false, isPaused: false },
+            { startTime: null, pausedTime: 0, isRunning: false, isPaused: false }
+        ]
     }
 };
 
@@ -229,7 +245,47 @@ function updateScore(team, delta) {
     const data = getScoreData();
     const oldData = JSON.parse(JSON.stringify(data)); // Sauvegarder l'état avant
     const newScore = Math.max(0, data[team].score + delta);
+    
+    // Vérifier si c'est le premier point du match (les deux équipes étaient à 0)
+    const wasFirstPointOfMatch = data.team1.score === 0 && data.team2.score === 0 && newScore > 0 && delta > 0;
+    
+    // Vérifier si c'est le premier point du set actuel
+    // (les scores du set actuel dans l'historique sont à 0 ET les scores actuels étaient à 0)
+    const currentSetIndex = data.currentSet - 1;
+    const setScore1 = data.team1.sets[currentSetIndex] || 0;
+    const setScore2 = data.team2.sets[currentSetIndex] || 0;
+    const wasFirstPointOfSet = (setScore1 === 0 && setScore2 === 0 && 
+                                 data.team1.score === 0 && data.team2.score === 0 && 
+                                 newScore > 0 && delta > 0);
+    
     data[team].score = newScore;
+    
+    // Initialiser les timers si nécessaire
+    if (!data.timers) {
+        data.timers = {
+            match: { startTime: null, pausedTime: 0, isRunning: false, isPaused: false },
+            sets: Array(5).fill(null).map(() => ({ startTime: null, pausedTime: 0, isRunning: false, isPaused: false }))
+        };
+    }
+    
+    // Démarrer automatiquement le chronomètre du match au premier point du match
+    if (wasFirstPointOfMatch && !data.timers.match.isRunning) {
+        data.timers.match.startTime = Date.now();
+        data.timers.match.isRunning = true;
+        data.timers.match.isPaused = false;
+        data.timers.match.pausedTime = 0;
+    }
+    
+    // Démarrer automatiquement le chronomètre du set au premier point du set
+    if (wasFirstPointOfSet && currentSetIndex >= 0 && currentSetIndex < 5) {
+        const timer = data.timers.sets[currentSetIndex];
+        if (!timer.isRunning) {
+            timer.startTime = Date.now();
+            timer.isRunning = true;
+            timer.isPaused = false;
+            timer.pausedTime = 0;
+        }
+    }
     
     // Ajouter à l'historique
     addToHistory('updateScore', oldData, data, { team: team, delta: delta });
@@ -274,6 +330,11 @@ function nextSet() {
     const oldData = JSON.parse(JSON.stringify(data)); // Sauvegarder l'état avant
     const currentSetIndex = data.currentSet - 1;
     
+    // Arrêter le chronomètre du set actuel
+    if (data.timers && data.timers.sets[currentSetIndex]) {
+        stopSetTimer(currentSetIndex);
+    }
+    
     // Sauvegarder les scores finaux du set actuel
     data.team1.sets[currentSetIndex] = data.team1.score;
     data.team2.sets[currentSetIndex] = data.team2.score;
@@ -284,6 +345,9 @@ function nextSet() {
         // Réinitialiser les scores du nouveau set
         data.team1.score = 0;
         data.team2.score = 0;
+        
+        // Réinitialiser le chronomètre du nouveau set (il démarrera automatiquement au premier point)
+        resetSetTimer(data.currentSet - 1);
     }
     
     // Ajouter à l'historique
@@ -298,12 +362,26 @@ function resetCurrentSet() {
     const data = getScoreData();
     data.team1.score = 0;
     data.team2.score = 0;
+    
+    // Réinitialiser le chronomètre du set actuel
+    const currentSetIndex = data.currentSet - 1;
+    resetSetTimer(currentSetIndex);
+    
     saveScoreData(data);
     return data;
 }
 
 // Fonction pour réinitialiser complètement (match entier)
 function resetAll() {
+    // Réinitialiser les chronomètres avant de réinitialiser tout
+    const data = getScoreData();
+    if (data.timers) {
+        resetMatchTimer();
+        for (let i = 0; i < 5; i++) {
+            resetSetTimer(i);
+        }
+    }
+    
     localStorage.setItem('lcvb_score', JSON.stringify(DEFAULT_SCORE_DATA));
     return DEFAULT_SCORE_DATA;
 }
@@ -371,6 +449,189 @@ function updateMatchInfo(field, value) {
     return data;
 }
 
+// ========== FONCTIONS CHRONOMÈTRES ==========
+
+// Fonction pour démarrer le chronomètre du match
+function startMatchTimer(dataToUse = null) {
+    const data = dataToUse || getScoreData();
+    if (!data.timers) {
+        data.timers = {
+            match: { startTime: null, pausedTime: 0, isRunning: false, isPaused: false },
+            sets: Array(5).fill(null).map(() => ({ startTime: null, pausedTime: 0, isRunning: false, isPaused: false }))
+        };
+    }
+    if (!data.timers.match.isRunning && !data.timers.match.isPaused) {
+        // Nouveau démarrage
+        data.timers.match.startTime = Date.now();
+        data.timers.match.isRunning = true;
+        data.timers.match.isPaused = false;
+        data.timers.match.pausedTime = 0;
+        if (!dataToUse) {
+            saveScoreData(data);
+        }
+    } else if (data.timers.match.isPaused) {
+        // Reprendre après une pause
+        const elapsedBeforePause = data.timers.match.pausedTime - data.timers.match.startTime;
+        data.timers.match.startTime = Date.now() - elapsedBeforePause;
+        data.timers.match.isRunning = true;
+        data.timers.match.isPaused = false;
+        if (!dataToUse) {
+            saveScoreData(data);
+        }
+    }
+    return data;
+}
+
+// Fonction pour arrêter/pause le chronomètre du match
+function stopMatchTimer() {
+    const data = getScoreData();
+    if (data.timers && data.timers.match && data.timers.match.isRunning) {
+        // Sauvegarder le temps écoulé jusqu'à maintenant
+        const elapsed = Date.now() - data.timers.match.startTime;
+        data.timers.match.pausedTime = data.timers.match.startTime + elapsed;
+        data.timers.match.isRunning = false;
+        data.timers.match.isPaused = true;
+        saveScoreData(data);
+    }
+    return data;
+}
+
+// Fonction pour réinitialiser le chronomètre du match
+function resetMatchTimer() {
+    const data = getScoreData();
+    if (!data.timers) {
+        data.timers = {
+            match: { startTime: null, pausedTime: 0, isRunning: false, isPaused: false },
+            sets: Array(5).fill(null).map(() => ({ startTime: null, pausedTime: 0, isRunning: false, isPaused: false }))
+        };
+    }
+    data.timers.match = { startTime: null, pausedTime: 0, isRunning: false, isPaused: false };
+    saveScoreData(data);
+    return data;
+}
+
+// Fonction pour obtenir le temps écoulé du match (en millisecondes)
+function getMatchElapsedTime() {
+    const data = getScoreData();
+    if (!data.timers || !data.timers.match) {
+        return 0;
+    }
+    const timer = data.timers.match;
+    if (!timer.startTime) {
+        return 0;
+    }
+    if (timer.isRunning) {
+        return Date.now() - timer.startTime;
+    } else if (timer.isPaused && timer.pausedTime) {
+        // Temps écoulé jusqu'à la pause
+        return timer.pausedTime - timer.startTime;
+    }
+    return 0;
+}
+
+// Fonction pour formater le temps du match (HH:MM:SS)
+function formatMatchTime(milliseconds) {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+// Fonction pour démarrer le chronomètre d'un set
+function startSetTimer(setIndex, dataToUse = null) {
+    const data = dataToUse || getScoreData();
+    if (!data.timers) {
+        data.timers = {
+            match: { startTime: null, pausedTime: 0, isRunning: false, isPaused: false },
+            sets: Array(5).fill(null).map(() => ({ startTime: null, pausedTime: 0, isRunning: false, isPaused: false }))
+        };
+    }
+    if (setIndex >= 0 && setIndex < 5) {
+        const timer = data.timers.sets[setIndex];
+        if (!timer.isRunning && !timer.isPaused) {
+            // Nouveau démarrage
+            timer.startTime = Date.now();
+            timer.isRunning = true;
+            timer.isPaused = false;
+            timer.pausedTime = 0;
+            if (!dataToUse) {
+                saveScoreData(data);
+            }
+        } else if (timer.isPaused) {
+            // Reprendre après une pause
+            const elapsedBeforePause = timer.pausedTime - timer.startTime;
+            timer.startTime = Date.now() - elapsedBeforePause;
+            timer.isRunning = true;
+            timer.isPaused = false;
+            if (!dataToUse) {
+                saveScoreData(data);
+            }
+        }
+    }
+    return data;
+}
+
+// Fonction pour arrêter/pause le chronomètre d'un set
+function stopSetTimer(setIndex) {
+    const data = getScoreData();
+    if (data.timers && setIndex >= 0 && setIndex < 5) {
+        const timer = data.timers.sets[setIndex];
+        if (timer && timer.isRunning) {
+            // Sauvegarder le temps écoulé jusqu'à maintenant
+            const elapsed = Date.now() - timer.startTime;
+            timer.pausedTime = timer.startTime + elapsed;
+            timer.isRunning = false;
+            timer.isPaused = true;
+            saveScoreData(data);
+        }
+    }
+    return data;
+}
+
+// Fonction pour réinitialiser le chronomètre d'un set
+function resetSetTimer(setIndex) {
+    const data = getScoreData();
+    if (!data.timers) {
+        data.timers = {
+            match: { startTime: null, pausedTime: 0, isRunning: false, isPaused: false },
+            sets: Array(5).fill(null).map(() => ({ startTime: null, pausedTime: 0, isRunning: false, isPaused: false }))
+        };
+    }
+    if (setIndex >= 0 && setIndex < 5) {
+        data.timers.sets[setIndex] = { startTime: null, pausedTime: 0, isRunning: false, isPaused: false };
+        saveScoreData(data);
+    }
+    return data;
+}
+
+// Fonction pour obtenir le temps écoulé d'un set (en millisecondes)
+function getSetElapsedTime(setIndex) {
+    const data = getScoreData();
+    if (!data.timers || setIndex < 0 || setIndex >= 5) {
+        return 0;
+    }
+    const timer = data.timers.sets[setIndex];
+    if (!timer || !timer.startTime) {
+        return 0;
+    }
+    if (timer.isRunning) {
+        return Date.now() - timer.startTime;
+    } else if (timer.isPaused && timer.pausedTime) {
+        // Temps écoulé jusqu'à la pause
+        return timer.pausedTime - timer.startTime;
+    }
+    return 0;
+}
+
+// Fonction pour formater le temps d'un set (MM:SS)
+function formatSetTime(milliseconds) {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
 // Fonction pour écouter les changements de localStorage (pour index.html)
 // Note: Cette fonction est dépréciée, utilisez directement setInterval dans index.html
 function watchScoreChanges(callback) {
@@ -403,6 +664,16 @@ if (typeof window !== 'undefined') {
         addToHistory,
         undoLastAction,
         updateMatchInfo,
+        startMatchTimer,
+        stopMatchTimer,
+        resetMatchTimer,
+        getMatchElapsedTime,
+        formatMatchTime,
+        startSetTimer,
+        stopSetTimer,
+        resetSetTimer,
+        getSetElapsedTime,
+        formatSetTime,
         downloadScoreData: function() {
             const data = getScoreData();
             window.shouldDownloadScoreData = true;

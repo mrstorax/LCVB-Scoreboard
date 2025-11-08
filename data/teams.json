@@ -1,0 +1,302 @@
+{
+  "clubName": "Le Crès Volley-Ball",
+  "clubCode": "0348589",
+  "clubLogo": "logos/logo-lcvb.png",
+  "season": "2025-2026",
+  "teams": [
+    {
+      "id": "pma",
+      "name": "Prénational Masculine",
+      "shortName": "PMA",
+      "division": "Prénational",
+      "gender": "M",
+      "category": "Senior",
+      "ranking": "5ème",
+      "players": [
+        { "id": 1, "number": 1, "firstName": "Lucas", "lastName": "Moreau", "position": "Passeur", "captain": false, "libero": false },
+        { "id": 2, "number": 4, "firstName": "Antoine", "lastName": "Bernard", "position": "Pointu", "captain": true, "libero": false },
+        { "id": 3, "number": 5, "firstName": "Thomas", "lastName": "Petit", "position": "Central", "captain": false, "libero": false },
+        { "id": 4, "number": 7, "firstName": "Maxime", "lastName": "Dubois", "position": "Réceptionneur", "captain": false, "libero": false },
+        { "id": 5, "number": 8, "firstName": "Hugo", "lastName": "Garcia", "position": "Libéro", "captain": false, "libero": true },
+        { "id": 6, "number": 9, "firstName": "Nathan", "lastName": "Martin", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 7, "number": 11, "firstName": "Julien", "lastName": "Rousseau", "position": "Central", "captain": false, "libero": false },
+        { "id": 8, "number": 12, "firstName": "Alexandre", "lastName": "Lefevre", "position": "Réceptionneur", "captain": false, "libero": false },
+        { "id": 9, "number": 14, "firstName": "Nicolas", "lastName": "Simon", "position": "Passeur", "captain": false, "libero": false },
+        { "id": 10, "number": 15, "firstName": "Bastien", "lastName": "Laurent", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 11, "number": 18, "firstName": "Romain", "lastName": "Girard", "position": "Central", "captain": false, "libero": false },
+        { "id": 12, "number": 21, "firstName": "Vincent", "lastName": "Durand", "position": "Réceptionneur", "captain": false, "libero": false }
+      ],
+      "staff": [
+        { "name": "Michel Durand", "role": "Entraîneur principal" },
+        { "name": "Jean-Luc Martin", "role": "Entraîneur adjoint" }
+      ]
+    },
+    {
+      "id": "pfa",
+      "name": "Prénational Féminine",
+      "shortName": "PFA",
+      "division": "Prénational",
+      "gender": "F",
+      "category": "Senior",
+      "ranking": "6ème",
+      "players": [
+        { "id": 1, "number": 2, "firstName": "Emma", "lastName": "Dubois", "position": "Passeuse", "captain": true, "libero": false },
+        { "id": 2, "number": 3, "firstName": "Léa", "lastName": "Thomas", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 3, "number": 5, "firstName": "Chloé", "lastName": "Robert", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 4, "number": 6, "firstName": "Sarah", "lastName": "Richard", "position": "Réceptionneuse", "captain": false, "libero": false },
+        { "id": 5, "number": 7, "firstName": "Julie", "lastName": "Petit", "position": "Libéro", "captain": false, "libero": true },
+        { "id": 6, "number": 9, "firstName": "Marie", "lastName": "Durand", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 7, "number": 10, "firstName": "Camille", "lastName": "Laurent", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 8, "number": 11, "firstName": "Laura", "lastName": "Simon", "position": "Réceptionneuse", "captain": false, "libero": false },
+        { "id": 9, "number": 12, "firstName": "Manon", "lastName": "Michel", "position": "Passeuse", "captain": false, "libero": false },
+        { "id": 10, "number": 14, "firstName": "Clara", "lastName": "Leroy", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 11, "number": 16, "firstName": "Anaïs", "lastName": "Moreau", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 12, "number": 18, "firstName": "Océane", "lastName": "Garcia", "position": "Réceptionneuse", "captain": false, "libero": false }
+      ],
+      "staff": [
+        { "name": "Sophie Leclerc", "role": "Entraîneuse principale" },
+        { "name": "Isabelle Martin", "role": "Entraîneuse adjointe" }
+      ]
+    },
+    {
+      "id": "rm2",
+      "name": "Régionale 2 Masculine",
+      "shortName": "RM2",
+      "division": "Régionale 2",
+      "gender": "M",
+      "category": "Senior",
+      "ranking": "2ème",
+      "players": [
+        { "id": 1, "number": 1, "firstName": "Pierre", "lastName": "Fontaine", "position": "Passeur", "captain": false, "libero": false },
+        { "id": 2, "number": 3, "firstName": "Mathieu", "lastName": "Rousseau", "position": "Pointu", "captain": true, "libero": false },
+        { "id": 3, "number": 4, "firstName": "Valentin", "lastName": "Blanc", "position": "Central", "captain": false, "libero": false },
+        { "id": 4, "number": 6, "firstName": "Clément", "lastName": "Fournier", "position": "Réceptionneur", "captain": false, "libero": false },
+        { "id": 5, "number": 8, "firstName": "Sébastien", "lastName": "Chevalier", "position": "Libéro", "captain": false, "libero": true },
+        { "id": 6, "number": 9, "firstName": "Florian", "lastName": "Giraud", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 7, "number": 10, "firstName": "Kevin", "lastName": "Morel", "position": "Central", "captain": false, "libero": false },
+        { "id": 8, "number": 12, "firstName": "Damien", "lastName": "Faure", "position": "Réceptionneur", "captain": false, "libero": false },
+        { "id": 9, "number": 13, "firstName": "Jordan", "lastName": "Mercier", "position": "Passeur", "captain": false, "libero": false },
+        { "id": 10, "number": 15, "firstName": "Dylan", "lastName": "Perrin", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 11, "number": 17, "firstName": "Quentin", "lastName": "Noel", "position": "Central", "captain": false, "libero": false },
+        { "id": 12, "number": 19, "firstName": "Axel", "lastName": "Gauthier", "position": "Réceptionneur", "captain": false, "libero": false }
+      ],
+      "staff": [
+        { "name": "Patrick Renaud", "role": "Entraîneur principal" }
+      ]
+    },
+    {
+      "id": "rf2",
+      "name": "Régionale 2 Féminine",
+      "shortName": "RF2",
+      "division": "Régionale 2",
+      "gender": "F",
+      "category": "Senior",
+      "ranking": "9ème",
+      "players": [
+        { "id": 1, "number": 1, "firstName": "Margot", "lastName": "Garnier", "position": "Passeuse", "captain": true, "libero": false },
+        { "id": 2, "number": 4, "firstName": "Lucie", "lastName": "Fabre", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 3, "number": 5, "firstName": "Pauline", "lastName": "Bertrand", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 4, "number": 7, "firstName": "Marion", "lastName": "Lemoine", "position": "Réceptionneuse", "captain": false, "libero": false },
+        { "id": 5, "number": 8, "firstName": "Justine", "lastName": "Renard", "position": "Libéro", "captain": false, "libero": true },
+        { "id": 6, "number": 9, "firstName": "Amélie", "lastName": "Dufour", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 7, "number": 11, "firstName": "Elise", "lastName": "Blanc", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 8, "number": 12, "firstName": "Jade", "lastName": "Mathieu", "position": "Réceptionneuse", "captain": false, "libero": false },
+        { "id": 9, "number": 13, "firstName": "Nina", "lastName": "Girard", "position": "Passeuse", "captain": false, "libero": false },
+        { "id": 10, "number": 15, "firstName": "Inès", "lastName": "Roux", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 11, "number": 17, "firstName": "Lisa", "lastName": "Vincent", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 12, "number": 19, "firstName": "Mathilde", "lastName": "Lopez", "position": "Réceptionneuse", "captain": false, "libero": false }
+      ],
+      "staff": [
+        { "name": "Caroline Dubois", "role": "Entraîneuse principale" }
+      ]
+    },
+    {
+      "id": "n3f",
+      "name": "Nationale 3 Féminine",
+      "shortName": "N3F",
+      "division": "Nationale 3",
+      "gender": "F",
+      "category": "Senior",
+      "ranking": "N/A",
+      "players": [
+        { "id": 1, "number": 2, "firstName": "Zoé", "lastName": "Marchand", "position": "Passeuse", "captain": true, "libero": false },
+        { "id": 2, "number": 3, "firstName": "Lina", "lastName": "Legrand", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 3, "number": 5, "firstName": "Alicia", "lastName": "Perrot", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 4, "number": 6, "firstName": "Salomé", "lastName": "Guerin", "position": "Réceptionneuse", "captain": false, "libero": false },
+        { "id": 5, "number": 7, "firstName": "Noémie", "lastName": "Colin", "position": "Libéro", "captain": false, "libero": true },
+        { "id": 6, "number": 9, "firstName": "Charlotte", "lastName": "Muller", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 7, "number": 10, "firstName": "Mélissa", "lastName": "Barbier", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 8, "number": 11, "firstName": "Alice", "lastName": "Brun", "position": "Réceptionneuse", "captain": false, "libero": false },
+        { "id": 9, "number": 12, "firstName": "Louise", "lastName": "Renault", "position": "Passeuse", "captain": false, "libero": false },
+        { "id": 10, "number": 14, "firstName": "Eva", "lastName": "Caron", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 11, "number": 16, "firstName": "Maëva", "lastName": "Robin", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 12, "number": 18, "firstName": "Adèle", "lastName": "Picard", "position": "Réceptionneuse", "captain": false, "libero": false }
+      ],
+      "staff": [
+        { "name": "Véronique Garnier", "role": "Entraîneuse principale" },
+        { "name": "Sylvie Morel", "role": "Entraîneuse adjointe" }
+      ]
+    },
+    {
+      "id": "cma",
+      "name": "Cadets M18 Masculins",
+      "shortName": "CMA",
+      "division": "M18 Masculins",
+      "gender": "M",
+      "category": "Cadets",
+      "ranking": "2ème",
+      "players": [
+        { "id": 1, "number": 1, "firstName": "Tom", "lastName": "Dubois", "position": "Passeur", "captain": true, "libero": false },
+        { "id": 2, "number": 3, "firstName": "Enzo", "lastName": "Martin", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 3, "number": 5, "firstName": "Mathis", "lastName": "Bernard", "position": "Central", "captain": false, "libero": false },
+        { "id": 4, "number": 7, "firstName": "Louis", "lastName": "Petit", "position": "Réceptionneur", "captain": false, "libero": false },
+        { "id": 5, "number": 8, "firstName": "Jules", "lastName": "Robert", "position": "Libéro", "captain": false, "libero": true },
+        { "id": 6, "number": 9, "firstName": "Léo", "lastName": "Richard", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 7, "number": 11, "firstName": "Paul", "lastName": "Durand", "position": "Central", "captain": false, "libero": false },
+        { "id": 8, "number": 12, "firstName": "Arthur", "lastName": "Simon", "position": "Réceptionneur", "captain": false, "libero": false },
+        { "id": 9, "number": 14, "firstName": "Noah", "lastName": "Laurent", "position": "Passeur", "captain": false, "libero": false },
+        { "id": 10, "number": 16, "firstName": "Adam", "lastName": "Michel", "position": "Pointu", "captain": false, "libero": false }
+      ],
+      "staff": [
+        { "name": "David Leroy", "role": "Entraîneur principal" }
+      ]
+    },
+    {
+      "id": "cfd",
+      "name": "Cadettes Féminines",
+      "shortName": "CFD",
+      "division": "Cadettes",
+      "gender": "F",
+      "category": "Cadettes",
+      "ranking": "3ème",
+      "players": [
+        { "id": 1, "number": 2, "firstName": "Léna", "lastName": "Garcia", "position": "Passeuse", "captain": true, "libero": false },
+        { "id": 2, "number": 4, "firstName": "Chloé", "lastName": "Martinez", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 3, "number": 5, "firstName": "Emma", "lastName": "Lopez", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 4, "number": 7, "firstName": "Léa", "lastName": "Fernandez", "position": "Réceptionneuse", "captain": false, "libero": false },
+        { "id": 5, "number": 8, "firstName": "Zoé", "lastName": "Rodriguez", "position": "Libéro", "captain": false, "libero": true },
+        { "id": 6, "number": 9, "firstName": "Sarah", "lastName": "Sanchez", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 7, "number": 11, "firstName": "Julie", "lastName": "Ramirez", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 8, "number": 12, "firstName": "Camille", "lastName": "Torres", "position": "Réceptionneuse", "captain": false, "libero": false },
+        { "id": 9, "number": 14, "firstName": "Laura", "lastName": "Flores", "position": "Passeuse", "captain": false, "libero": false },
+        { "id": 10, "number": 16, "firstName": "Manon", "lastName": "Gomez", "position": "Pointu", "captain": false, "libero": false }
+      ],
+      "staff": [
+        { "name": "Anne-Marie Dupont", "role": "Entraîneuse principale" }
+      ]
+    },
+    {
+      "id": "mfd",
+      "name": "Minimes Féminines",
+      "shortName": "MFD",
+      "division": "Minimes",
+      "gender": "F",
+      "category": "Minimes",
+      "ranking": "2ème",
+      "players": [
+        { "id": 1, "number": 1, "firstName": "Luna", "lastName": "Moreau", "position": "Passeuse", "captain": true, "libero": false },
+        { "id": 2, "number": 3, "firstName": "Jade", "lastName": "Blanc", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 3, "number": 5, "firstName": "Rose", "lastName": "Girard", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 4, "number": 7, "firstName": "Lola", "lastName": "Roux", "position": "Réceptionneuse", "captain": false, "libero": false },
+        { "id": 5, "number": 8, "firstName": "Mia", "lastName": "Morel", "position": "Libéro", "captain": false, "libero": true },
+        { "id": 6, "number": 9, "firstName": "Iris", "lastName": "Fournier", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 7, "number": 11, "firstName": "Lou", "lastName": "Fontaine", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 8, "number": 12, "firstName": "Nina", "lastName": "Chevalier", "position": "Réceptionneuse", "captain": false, "libero": false }
+      ],
+      "staff": [
+        { "name": "Christine Leclerc", "role": "Entraîneuse principale" }
+      ]
+    },
+    {
+      "id": "mmb",
+      "name": "Minimes Masculins",
+      "shortName": "MMB",
+      "division": "Minimes",
+      "gender": "M",
+      "category": "Minimes",
+      "ranking": "6ème",
+      "players": [
+        { "id": 1, "number": 2, "firstName": "Gabriel", "lastName": "Faure", "position": "Passeur", "captain": true, "libero": false },
+        { "id": 2, "number": 4, "firstName": "Raphaël", "lastName": "Renard", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 3, "number": 5, "firstName": "Ethan", "lastName": "Roussel", "position": "Central", "captain": false, "libero": false },
+        { "id": 4, "number": 7, "firstName": "Lucas", "lastName": "Caron", "position": "Réceptionneur", "captain": false, "libero": false },
+        { "id": 5, "number": 8, "firstName": "Hugo", "lastName": "Dumas", "position": "Libéro", "captain": false, "libero": true },
+        { "id": 6, "number": 9, "firstName": "Maxime", "lastName": "Robin", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 7, "number": 11, "firstName": "Nathan", "lastName": "Gerard", "position": "Central", "captain": false, "libero": false },
+        { "id": 8, "number": 12, "firstName": "Thomas", "lastName": "Lefevre", "position": "Réceptionneur", "captain": false, "libero": false }
+      ],
+      "staff": [
+        { "name": "Fabien Moreau", "role": "Entraîneur principal" }
+      ]
+    },
+    {
+      "id": "bfc",
+      "name": "Benjamines",
+      "shortName": "BFC",
+      "division": "Benjamines",
+      "gender": "F",
+      "category": "Benjamines",
+      "ranking": "3ème",
+      "players": [
+        { "id": 1, "number": 1, "firstName": "Lily", "lastName": "Noel", "position": "Passeuse", "captain": true, "libero": false },
+        { "id": 2, "number": 3, "firstName": "Eva", "lastName": "Gauthier", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 3, "number": 5, "firstName": "Alice", "lastName": "Perrin", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 4, "number": 7, "firstName": "Chloé", "lastName": "Mercier", "position": "Réceptionneuse", "captain": false, "libero": false },
+        { "id": 5, "number": 8, "firstName": "Sarah", "lastName": "Colin", "position": "Libéro", "captain": false, "libero": true },
+        { "id": 6, "number": 9, "firstName": "Lina", "lastName": "Marchand", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 7, "number": 11, "firstName": "Emma", "lastName": "Barbier", "position": "Centrale", "captain": false, "libero": false },
+        { "id": 8, "number": 12, "firstName": "Léa", "lastName": "Brun", "position": "Réceptionneuse", "captain": false, "libero": false }
+      ],
+      "staff": [
+        { "name": "Sandrine Vincent", "role": "Entraîneuse principale" }
+      ]
+    },
+    {
+      "id": "bmb",
+      "name": "Benjamins",
+      "shortName": "BMB",
+      "division": "Benjamins",
+      "gender": "M",
+      "category": "Benjamins",
+      "ranking": "3ème",
+      "players": [
+        { "id": 1, "number": 2, "firstName": "Théo", "lastName": "Renault", "position": "Passeur", "captain": true, "libero": false },
+        { "id": 2, "number": 4, "firstName": "Timéo", "lastName": "Picard", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 3, "number": 5, "firstName": "Léon", "lastName": "Lemoine", "position": "Central", "captain": false, "libero": false },
+        { "id": 4, "number": 7, "firstName": "Malo", "lastName": "Bertrand", "position": "Réceptionneur", "captain": false, "libero": false },
+        { "id": 5, "number": 8, "firstName": "Nolan", "lastName": "Guerin", "position": "Libéro", "captain": false, "libero": true },
+        { "id": 6, "number": 9, "firstName": "Valentin", "lastName": "Muller", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 7, "number": 11, "firstName": "Jules", "lastName": "Legrand", "position": "Central", "captain": false, "libero": false },
+        { "id": 8, "number": 12, "firstName": "Léo", "lastName": "Perrot", "position": "Réceptionneur", "captain": false, "libero": false }
+      ],
+      "staff": [
+        { "name": "Olivier Garnier", "role": "Entraîneur principal" }
+      ]
+    },
+    {
+      "id": "l6a",
+      "name": "Loisir 6x6 1ère division",
+      "shortName": "L6A",
+      "division": "Loisir",
+      "gender": "Mixte",
+      "category": "Loisirs",
+      "ranking": "4ème",
+      "players": [
+        { "id": 1, "number": 1, "firstName": "Marc", "lastName": "Dupuis", "position": "Passeur", "captain": true, "libero": false },
+        { "id": 2, "number": 3, "firstName": "Sophie", "lastName": "Boyer", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 3, "number": 4, "firstName": "Laurent", "lastName": "Henry", "position": "Central", "captain": false, "libero": false },
+        { "id": 4, "number": 6, "firstName": "Isabelle", "lastName": "Moulin", "position": "Réceptionneuse", "captain": false, "libero": false },
+        { "id": 5, "number": 7, "firstName": "Philippe", "lastName": "Lecomte", "position": "Libéro", "captain": false, "libero": true },
+        { "id": 6, "number": 9, "firstName": "Nathalie", "lastName": "Brunet", "position": "Pointu", "captain": false, "libero": false },
+        { "id": 7, "number": 10, "firstName": "Christophe", "lastName": "Clement", "position": "Central", "captain": false, "libero": false },
+        { "id": 8, "number": 11, "firstName": "Valérie", "lastName": "Denis", "position": "Réceptionneuse", "captain": false, "libero": false },
+        { "id": 9, "number": 12, "firstName": "Frédéric", "lastName": "Barre", "position": "Passeur", "captain": false, "libero": false },
+        { "id": 10, "number": 14, "firstName": "Catherine", "lastName": "André", "position": "Pointu", "captain": false, "libero": false }
+      ],
+      "staff": [
+        { "name": "Jean-Pierre Rousseau", "role": "Entraîneur" }
+      ]
+    }
+  ]
+}
+

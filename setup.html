@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initialisation du Match - LCVB Scoreboard</title>
+    <link rel="stylesheet" href="shared-style.css">
+    <style>
+        /* Styles spécifiques setup */
+        .setup-progress {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--app-spacing-xl);
+            padding: var(--app-spacing-lg);
+            background: var(--app-bg-secondary);
+            border-radius: var(--app-radius-lg);
+            border: 1px solid var(--app-border);
+        }
+        
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            padding: var(--app-spacing-md);
+            position: relative;
+        }
+        
+        .progress-step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            width: 100%;
+            height: 2px;
+            background: var(--app-border);
+            z-index: -1;
+        }
+        
+        .progress-step:last-child::after {
+            display: none;
+        }
+        
+        .progress-step.active .step-number {
+            background: var(--app-accent);
+            color: white;
+        }
+        
+        .progress-step.completed .step-number {
+            background: var(--app-success);
+            color: white;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            border-radius: 50%;
+            background: var(--app-bg-tertiary);
+            color: var(--app-text-muted);
+            font-weight: 600;
+            margin-bottom: var(--app-spacing-xs);
+        }
+        
+        .step-label {
+            font-size: 0.875rem;
+            color: var(--app-text-secondary);
+        }
+        
+        .setup-section {
+            display: none;
+        }
+        
+        .setup-section.active {
+            display: block;
+        }
+        
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--app-spacing-md);
+            margin-top: var(--app-spacing-md);
+        }
+        
+        .player-card {
+            background: var(--app-bg-tertiary);
+            border-radius: var(--app-radius);
+            padding: var(--app-spacing-md);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .player-card:hover {
+            border-color: var(--app-border-hover);
+        }
+        
+        .player-card.selected {
+            border-color: var(--app-accent);
+            background: var(--app-accent-light);
+        }
+        
+        .player-card.captain {
+            border-color: var(--app-warning);
+        }
+        
+        .player-number {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            line-height: 32px;
+            text-align: center;
+            border-radius: 50%;
+            background: var(--app-accent);
+            color: white;
+            font-weight: 600;
+            margin-bottom: var(--app-spacing-xs);
+        }
+        
+        .player-name {
+            font-weight: 500;
+            color: var(--app-text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .player-position {
+            font-size: 0.75rem;
+            color: var(--app-text-secondary);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.35em 0.65em;
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            border-radius: var(--app-radius);
+        }
+        
+        .badge-primary {
+            background: var(--app-primary);
+            color: white;
+        }
+        
+        .opponent-player-input {
+            display: flex;
+            gap: var(--app-spacing-sm);
+            margin-bottom: var(--app-spacing-sm);
+        }
+        
+        .opponent-player-input input {
+            flex: 1;
+        }
+        
+        .opponent-player-input button {
+            padding: var(--app-spacing-sm);
+        }
+        
+        .setup-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: var(--app-spacing-xl);
+            padding-top: var(--app-spacing-lg);
+            border-top: 1px solid var(--app-border);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--app-spacing-md);
+        }
+        
+        .selected-players {
+            margin-top: var(--app-spacing-md);
+            padding: var(--app-spacing-md);
+            background: var(--app-success-light);
+            border-radius: var(--app-radius);
+            border: 1px solid var(--app-success);
+        }
+        
+        .selected-count {
+            font-weight: 600;
+            color: var(--app-success);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation -->
+        <nav class="app-nav">
+            <a href="home.html" class="app-nav-brand">
+                🏐 LCVB Scoreboard Pro
+            </a>
+            <ul class="app-nav-links">
+                <li><a href="setup.html" class="app-nav-link active">Initialisation</a></li>
+                <li><a href="control.html" class="app-nav-link">Suivi Live</a></li>
+                <li><a href="stats.html" class="app-nav-link">Statistiques</a></li>
+                <li><a href="dashboard.html" class="app-nav-link">Dashboard</a></li>
+            </ul>
+        </nav>
+        
+        <!-- En-tête -->
+        <div class="app-header">
+            <h1 class="app-title">⚙️ Initialisation du Match</h1>
+            <p class="app-subtitle">Configuration complète avant le début de la rencontre</p>
+        </div>
+        
+        <!-- Progression -->
+        <div class="setup-progress">
+            <div class="progress-step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Informations</div>
+            </div>
+            <div class="progress-step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Joueurs présents</div>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Équipe adverse</div>
+            </div>
+            <div class="progress-step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Options</div>
+            </div>
+        </div>
+        
+        <!-- Section 1: Informations générales -->
+        <div class="setup-section active" id="section-1">
+            <div class="card">
+                <h2 class="card-title">📋 Informations générales du match</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">🏐 Équipe du club qui joue</label>
+                    <select id="team-selector" class="form-select" onchange="loadTeamPlayers()" required>
+                        <option value="">-- Sélectionner l'équipe --</option>
+                        <optgroup label="👨 Seniors Masculins">
+                            <option value="pma">PMA - Prénational Masculine (5ème)</option>
+                            <option value="rm2">RM2 - Régionale 2 Masculine (2ème)</option>
+                        </optgroup>
+                        <optgroup label="👩 Seniors Féminins">
+                            <option value="pfa">PFA - Prénational Féminine (6ème)</option>
+                            <option value="n3f">N3F - Nationale 3 Féminine</option>
+                            <option value="rf2">RF2 - Régionale 2 Féminine (9ème)</option>
+                        </optgroup>
+                        <optgroup label="👦 Jeunes Masculins">
+                            <option value="cma">CMA - Cadets M18 (2ème)</option>
+                            <option value="mmb">MMB - Minimes Masculins (6ème)</option>
+                            <option value="bmb">BMB - Benjamins (3ème)</option>
+                        </optgroup>
+                        <optgroup label="👧 Jeunes Féminines">
+                            <option value="cfd">CFD - Cadettes (3ème)</option>
+                            <option value="mfd">MFD - Minimes Féminines (2ème)</option>
+                            <option value="bfc">BFC - Benjamines (3ème)</option>
+                        </optgroup>
+                        <optgroup label="🎯 Loisirs">
+                            <option value="l6a">L6A - Loisir 6x6 (4ème)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type de rencontre</label>
+                        <select id="match-type" class="form-select">
+                            <option value="championnat">Championnat</option>
+                            <option value="coupe">Coupe</option>
+                            <option value="amical">Match amical</option>
+                            <option value="tournoi">Tournoi</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Division affichée</label>
+                        <input type="text" id="division" class="form-input" placeholder="Auto-rempli selon l'équipe" readonly>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Date du match</label>
+                        <input type="date" id="match-date" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Heure du match</label>
+                        <input type="time" id="match-time" class="form-input" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Lieu</label>
+                        <select id="match-location-type" class="form-select">
+                            <option value="domicile">Domicile</option>
+                            <option value="exterieur">Extérieur</option>
+                            <option value="neutre">Terrain neutre</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Nom du gymnase / Salle</label>
+                        <input type="text" id="venue-name" class="form-input" placeholder="Ex: Salle Le Crès" value="Salle Le Crès">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Arbitre principal</label>
+                        <input type="text" id="referee-1" class="form-input" placeholder="Nom de l'arbitre">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Arbitre adjoint</label>
+                        <input type="text" id="referee-2" class="form-input" placeholder="Nom de l'arbitre adjoint">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Observateur / Délégué (optionnel)</label>
+                    <input type="text" id="observer" class="form-input" placeholder="Nom de l'observateur">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 2: Joueurs présents -->
+        <div class="setup-section" id="section-2">
+            <div class="card">
+                <h2 class="card-title" id="team-title-step2">🏠 Joueurs présents</h2>
+                
+                <div class="alert alert-success mb-lg">
+                    <strong>✅ Tous les joueurs sont sélectionnés par défaut</strong><br>
+                    Décochez uniquement les joueurs ABSENTS pour ce match.
+                </div>
+                
+                <div class="selected-players" id="home-selected-info">
+                    <span class="selected-count">12 joueurs présents</span>
+                </div>
+                
+                <div class="players-grid" id="home-players-grid">
+                    <!-- Généré dynamiquement -->
+                </div>
+                
+                <div class="form-group mt-lg">
+                    <label class="form-label">Coach / Entraîneur</label>
+                    <input type="text" id="home-coach" class="form-input" placeholder="Nom de l'entraîneur">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 3: Équipe adverse -->
+        <div class="setup-section" id="section-3">
+            <div class="card">
+                <h2 class="card-title">👥 Équipe adverse</h2>
+                
+                <div class="form-group mb-lg">
+                    <label class="form-label">Nom du club</label>
+                    <input type="text" id="away-team-name" class="form-input" placeholder="Ex: Montpellier VUC" required>
+                </div>
+                
+                <div class="form-group mb-lg">
+                    <label class="form-label">Logo de l'équipe (optionnel)</label>
+                    <input type="file" id="away-team-logo" class="form-input" accept="image/*">
+                    <small style="color: var(--app-text-muted); display: block; margin-top: 0.25rem;">
+                        Formats acceptés : PNG, JPG, SVG
+                    </small>
+                </div>
+                
+                <h3 style="margin: var(--app-spacing-lg) 0 var(--app-spacing-md) 0; color: var(--app-text-primary);">Numéros des joueurs adverses</h3>
+                
+                <div class="alert alert-info mb-lg">
+                    <strong>⚡ Saisie rapide</strong><br>
+                    Saisissez les numéros de maillot séparés par des espaces ou des virgules.<br>
+                    Exemple : <code>4 7 9 11 12 15 18 21 23 25</code>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Numéros de maillot</label>
+                    <textarea id="away-players-numbers" class="form-input" rows="3" placeholder="4, 7, 9, 11, 12, 15, 18, 21, 23, 25, 27, 30" style="font-family: 'Monaco', monospace; font-size: 1.1em;" oninput="parseAwayNumbers()"></textarea>
+                    <small style="color: var(--app-text-muted); display: block; margin-top: 0.5rem;">
+                        Séparez les numéros par des espaces, virgules ou retours à la ligne
+                    </small>
+                </div>
+                
+                <div id="away-numbers-preview" style="padding: var(--app-spacing-md); background: var(--app-success-light); border-radius: var(--app-radius); border: 1px solid var(--app-success); margin-top: var(--app-spacing-md); display: none;">
+                    <strong style="color: var(--app-success);">✓ <span id="away-count">0</span> joueurs détectés</strong>
+                    <div id="away-badges" style="display: flex; flex-wrap: wrap; gap: var(--app-spacing-xs); margin-top: var(--app-spacing-sm);"></div>
+                </div>
+                
+                <div class="form-group mt-lg">
+                    <label class="form-label">Coach / Entraîneur</label>
+                    <input type="text" id="away-coach" class="form-input" placeholder="Nom de l'entraîneur">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section 4: Options techniques -->
+        <div class="setup-section" id="section-4">
+            <div class="card">
+                <h2 class="card-title">⚙️ Options techniques</h2>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: var(--app-spacing-sm); cursor: pointer;">
+                        <input type="checkbox" id="enable-streaming" class="form-checkbox">
+                        <strong>Activer la diffusion en direct (OBS/Streaming)</strong>
+                    </label>
+                    <small style="color: var(--app-text-muted); display: block; margin-top: 0.25rem; margin-left: 26px;">
+                        Affichage optimisé pour OBS, Twitch, YouTube
+                    </small>
+                </div>
+                
+                <div class="form-group mt-lg">
+                    <label class="form-label">URL du stream (optionnel)</label>
+                    <input type="url" id="stream-url" class="form-input" placeholder="https://...">
+                </div>
+                
+                <h3 style="margin: var(--app-spacing-lg) 0 var(--app-spacing-md) 0; color: var(--app-text-primary);">Sponsors à afficher</h3>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: var(--app-spacing-sm); cursor: pointer;">
+                        <input type="checkbox" class="form-checkbox" checked>
+                        <span>Sponsor principal</span>
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: var(--app-spacing-sm); cursor: pointer;">
+                        <input type="checkbox" class="form-checkbox" checked>
+                        <span>Sponsors secondaires</span>
+                    </label>
+                </div>
+                
+                <h3 style="margin: var(--app-spacing-lg) 0 var(--app-spacing-md) 0; color: var(--app-text-primary);">Mode de saisie des statistiques</h3>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: var(--app-spacing-sm); cursor: pointer;">
+                        <input type="radio" name="stats-mode" value="complete" checked>
+                        <strong>Statistiques complètes</strong>
+                    </label>
+                    <small style="color: var(--app-text-muted); display: block; margin-top: 0.25rem; margin-left: 26px;">
+                        Enregistrement détaillé de toutes les actions (attaques, services, blocs, etc.)
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: var(--app-spacing-sm); cursor: pointer;">
+                        <input type="radio" name="stats-mode" value="simplified">
+                        <strong>Statistiques simplifiées</strong>
+                    </label>
+                    <small style="color: var(--app-text-muted); display: block; margin-top: 0.25rem; margin-left: 26px;">
+                        Saisie rapide des actions principales uniquement
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: var(--app-spacing-sm); cursor: pointer;">
+                        <input type="radio" name="stats-mode" value="none">
+                        <strong>Scores uniquement</strong>
+                    </label>
+                    <small style="color: var(--app-text-muted); display: block; margin-top: 0.25rem; margin-left: 26px;">
+                        Pas de statistiques détaillées, juste le scoreboard
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions de navigation -->
+        <div class="setup-actions">
+            <button class="btn btn-secondary" id="btn-previous" onclick="previousStep()" style="display: none;">
+                ← Précédent
+            </button>
+            <div style="flex: 1;"></div>
+            <button class="btn btn-secondary" onclick="saveAsDraft()">
+                💾 Enregistrer brouillon
+            </button>
+            <button class="btn btn-primary" id="btn-next" onclick="nextStep()">
+                Suivant →
+            </button>
+            <button class="btn btn-success" id="btn-launch" onclick="launchMatch()" style="display: none;">
+                🚀 Lancer le match
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // État global
+        let currentStep = 1;
+        let allTeamsData = null; // Toutes les équipes du club
+        let selectedTeamData = null; // Équipe sélectionnée
+        let selectedPlayers = []; // IDs des joueurs PRÉSENTS (tous par défaut)
+        let awayNumbers = []; // Numéros adverses
+        
+        // Charger toutes les équipes
+        async function loadTeamsData() {
+            try {
+                const response = await fetch('data/teams.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                allTeamsData = await response.json();
+                console.log('✅ Équipes chargées:', allTeamsData.teams.length, 'équipes');
+            } catch (error) {
+                console.error('❌ Erreur chargement équipes:', error);
+                alert('Erreur lors du chargement des équipes du club: ' + error.message);
+            }
+        }
+        
+        // Charger les joueurs de l'équipe sélectionnée
+        function loadTeamPlayers() {
+            console.log('🔄 loadTeamPlayers appelé');
+            const teamId = document.getElementById('team-selector').value;
+            console.log('Team ID sélectionné:', teamId);
+            
+            if (!teamId) {
+                console.log('⚠️ Aucune équipe sélectionnée');
+                return;
+            }
+            
+            if (!allTeamsData) {
+                console.log('❌ allTeamsData n\'est pas chargé !');
+                alert('Les données des équipes ne sont pas encore chargées. Veuillez rafraîchir la page.');
+                return;
+            }
+            
+            // Trouver l'équipe
+            selectedTeamData = allTeamsData.teams.find(t => t.id === teamId);
+            console.log('Équipe trouvée:', selectedTeamData ? selectedTeamData.name : 'NON TROUVÉE');
+            
+            if (!selectedTeamData) {
+                console.log('❌ Équipe non trouvée dans les données');
+                return;
+            }
+            
+            // Mettre à jour la division
+            document.getElementById('division').value = selectedTeamData.division;
+            
+            // Tous les joueurs sont sélectionnés PAR DÉFAUT (sauf si déjà défini = brouillon)
+            if (selectedPlayers.length === 0) {
+                selectedPlayers = selectedTeamData.players.map(p => p.id);
+                console.log('✅ Joueurs chargés:', selectedPlayers.length, 'joueurs (tous présents par défaut)');
+            } else {
+                console.log('✅ Joueurs déjà définis:', selectedPlayers.length, 'joueurs (brouillon ou précédent)');
+            }
+            
+            // Afficher les joueurs
+            renderHomePlayers();
+            
+            // Mettre à jour le coach si défini
+            if (selectedTeamData.staff && selectedTeamData.staff.length > 0) {
+                document.getElementById('home-coach').value = selectedTeamData.staff[0].name;
+            }
+            
+            // Mettre à jour le titre
+            document.getElementById('team-title-step2').textContent = `🏠 ${selectedTeamData.name}`;
+        }
+        
+        // Afficher les joueurs du club - TOUS SÉLECTIONNÉS PAR DÉFAUT
+        function renderHomePlayers() {
+            console.log('🎨 renderHomePlayers appelé');
+            if (!selectedTeamData) {
+                console.log('❌ selectedTeamData est null');
+                return;
+            }
+            
+            const grid = document.getElementById('home-players-grid');
+            if (!grid) {
+                console.log('❌ Élément home-players-grid non trouvé dans le DOM');
+                return;
+            }
+            
+            console.log('Rendu de', selectedTeamData.players.length, 'joueurs');
+            grid.innerHTML = selectedTeamData.players.map(player => `
+                <div class="player-card selected ${player.captain ? 'captain' : ''}" onclick="togglePlayer(${player.id})" data-player-id="${player.id}">
+                    <div class="player-number">${player.number}</div>
+                    <div class="player-name">${player.firstName} ${player.lastName}</div>
+                    <div class="player-position">${player.position}${player.captain ? ' (C)' : ''}${player.libero ? ' (L)' : ''}</div>
+                </div>
+            `).join('');
+            console.log('✅ HTML généré et inséré dans la grille');
+            updateSelectedCount();
+        }
+        
+        // LOGIQUE INVERSÉE : Cliquer RETIRE le joueur
+        function togglePlayer(playerId) {
+            const card = document.querySelector(`[data-player-id="${playerId}"]`);
+            const index = selectedPlayers.indexOf(playerId);
+            
+            if (index > -1) {
+                // Le joueur est présent → le retirer (absent)
+                selectedPlayers.splice(index, 1);
+                card.classList.remove('selected');
+            } else {
+                // Le joueur est absent → le remettre (présent)
+                selectedPlayers.push(playerId);
+                card.classList.add('selected');
+            }
+            
+            updateSelectedCount();
+        }
+        
+        // Mettre à jour le compteur
+        function updateSelectedCount() {
+            const info = document.getElementById('home-selected-info');
+            const count = selectedPlayers.length;
+            info.innerHTML = `<span class="selected-count">${count} joueur${count > 1 ? 's' : ''} présent${count > 1 ? 's' : ''}</span>`;
+        }
+        
+        // Charger les dropdowns de positionnement (Étape 4)
+        // Fonction supprimée : loadPositioningDropdowns (positionnement fait dans control.html)
+        
+        // Parser les numéros adverses depuis le textarea
+        function parseAwayNumbers() {
+            const textarea = document.getElementById('away-players-numbers');
+            const input = textarea.value;
+            
+            // Extraire tous les nombres (séparés par espaces, virgules, retours à la ligne, etc.)
+            const numbers = input.match(/\d+/g);
+            
+            if (numbers && numbers.length > 0) {
+                // Convertir en entiers et enlever doublons
+                awayNumbers = [...new Set(numbers.map(n => parseInt(n)))].sort((a, b) => a - b);
+                
+                // Afficher l'aperçu
+                const preview = document.getElementById('away-numbers-preview');
+                const count = document.getElementById('away-count');
+                const badges = document.getElementById('away-badges');
+                
+                count.textContent = awayNumbers.length;
+                badges.innerHTML = awayNumbers.map(n => 
+                    `<span class="badge badge-primary">#${n}</span>`
+                ).join('');
+                
+                preview.style.display = 'block';
+            } else {
+                // Cacher l'aperçu si vide
+                document.getElementById('away-numbers-preview').style.display = 'none';
+                awayNumbers = [];
+            }
+        }
+        
+        // Navigation entre étapes
+        function nextStep() {
+            if (!validateCurrentStep()) return;
+            
+            currentStep++;
+            updateStepDisplay();
+        }
+        
+        function previousStep() {
+            currentStep--;
+            updateStepDisplay();
+        }
+        
+        function updateStepDisplay() {
+            // Masquer toutes les sections
+            document.querySelectorAll('.setup-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Afficher la section active
+            document.getElementById(`section-${currentStep}`).classList.add('active');
+            
+            // Mettre à jour la progression
+            document.querySelectorAll('.progress-step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < currentStep) {
+                    step.classList.add('completed');
+                } else if (index + 1 === currentStep) {
+                    step.classList.add('active');
+                }
+            });
+            
+            // Gérer les boutons - 4 étapes maintenant
+            document.getElementById('btn-previous').style.display = currentStep > 1 ? 'block' : 'none';
+            document.getElementById('btn-next').style.display = currentStep < 4 ? 'block' : 'none';
+            document.getElementById('btn-launch').style.display = currentStep === 4 ? 'block' : 'none';
+            
+            // Scroll vers le haut
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Validation
+        function validateCurrentStep() {
+            switch(currentStep) {
+                case 1:
+                    const teamId = document.getElementById('team-selector').value;
+                    if (!teamId) {
+                        alert('Veuillez sélectionner l\'équipe qui joue');
+                        return false;
+                    }
+                    const date = document.getElementById('match-date').value;
+                    const time = document.getElementById('match-time').value;
+                    if (!date || !time) {
+                        alert('Veuillez renseigner la date et l\'heure du match');
+                        return false;
+                    }
+                    return true;
+                    
+                case 2:
+                    if (selectedPlayers.length < 6) {
+                        alert('Il doit y avoir au moins 6 joueurs présents');
+                        return false;
+                    }
+                    return true;
+                    
+                case 3:
+                    const awayName = document.getElementById('away-team-name').value;
+                    if (!awayName) {
+                        alert('Veuillez saisir le nom de l\'équipe adverse');
+                        return false;
+                    }
+                    if (awayNumbers.length < 6) {
+                        alert('Veuillez saisir au moins 6 numéros de joueurs adverses');
+                        return false;
+                    }
+                    return true;
+                    
+                case 4:
+                    // Étape 4 : Options (pas de validation requise)
+                    return true;
+            }
+        }
+        
+        // Sauvegarder en brouillon
+        function saveAsDraft() {
+            const matchData = collectMatchData();
+            localStorage.setItem('lcvb_match_draft', JSON.stringify(matchData));
+            alert('Brouillon sauvegardé avec succès !');
+        }
+        
+        // Collecter toutes les données
+        function collectMatchData() {
+            if (!selectedTeamData) return null;
+            
+            return {
+                general: {
+                    teamId: selectedTeamData.id,
+                    teamName: selectedTeamData.name,
+                    type: document.getElementById('match-type').value,
+                    division: document.getElementById('division').value,
+                    date: document.getElementById('match-date').value,
+                    time: document.getElementById('match-time').value,
+                    locationType: document.getElementById('match-location-type').value,
+                    venue: document.getElementById('venue-name').value,
+                    referee1: document.getElementById('referee-1').value,
+                    referee2: document.getElementById('referee-2').value,
+                    observer: document.getElementById('observer').value
+                },
+                homeTeam: {
+                    id: selectedTeamData.id,
+                    name: selectedTeamData.name,
+                    shortName: selectedTeamData.shortName,
+                    clubName: allTeamsData.clubName || 'Le Crès Volley-Ball', // Nom du club
+                    allPlayers: selectedTeamData.players, // TOUS les joueurs de l'équipe
+                    presentPlayers: selectedTeamData.players.filter(p => selectedPlayers.includes(p.id)), // Joueurs présents
+                    coach: document.getElementById('home-coach').value
+                },
+                // Sauvegarder les sélections pour la restauration
+                selections: {
+                    selectedPlayers: [...selectedPlayers], // IDs des joueurs sélectionnés
+                    awayNumbers: [...awayNumbers] // Numéros adverses
+                },
+                awayTeam: {
+                    name: document.getElementById('away-team-name').value,
+                    numbers: awayNumbers, // Garder les numéros
+                    players: awayNumbers.map(num => ({ number: num, name: `Joueur #${num}` })),
+                    coach: document.getElementById('away-coach').value
+                },
+                options: {
+                    streaming: document.getElementById('enable-streaming').checked,
+                    streamUrl: document.getElementById('stream-url').value,
+                    statsMode: document.querySelector('input[name="stats-mode"]:checked')?.value || 'complete'
+                },
+                timestamp: new Date().toISOString()
+            };
+        }
+        
+        // Lancer le match
+        function launchMatch() {
+            if (!validateCurrentStep()) return;
+            
+            const matchData = collectMatchData();
+            
+            // Sauvegarder dans localStorage (temporaire avant IndexedDB)
+            localStorage.setItem('lcvb_current_match', JSON.stringify(matchData));
+            
+            // Mettre à jour les données du scoreboard existant
+            const scoreData = {
+                team1: {
+                    name: matchData.homeTeam.name,
+                    score: 0,
+                    sets: [0, 0, 0, 0, 0],
+                    niveau: matchData.general.division
+                },
+                team2: {
+                    name: matchData.awayTeam.name,
+                    score: 0,
+                    sets: [0, 0, 0, 0, 0],
+                    niveau: matchData.general.division
+                },
+                currentSet: 1,
+                maxSets: 5,
+                matchInfo: {
+                    date: matchData.general.date,
+                    time: matchData.general.time,
+                    location: matchData.general.venue,
+                    competition: matchData.general.type,
+                    referee: matchData.general.referee1
+                }
+            };
+            
+            localStorage.setItem('lcvb_score', JSON.stringify(scoreData));
+            
+            // Rediriger vers le contrôle
+            if (confirm('Match initialisé avec succès ! Ouvrir l\'interface de contrôle ?')) {
+                window.location.href = 'control.html';
+            }
+        }
+        
+        // Initialisation
+        window.addEventListener('DOMContentLoaded', async () => {
+            await loadTeamsData();
+            
+            // Définir la date/heure par défaut
+            const now = new Date();
+            document.getElementById('match-date').valueAsDate = now;
+            document.getElementById('match-time').value = now.toTimeString().substring(0, 5);
+            
+            // Charger le brouillon si existant
+            const draft = localStorage.getItem('lcvb_match_draft');
+            if (draft) {
+                try {
+                    const draftData = JSON.parse(draft);
+                    const draftDate = new Date(draftData.timestamp);
+                    const message = `Un brouillon existe (${draftDate.toLocaleDateString()} ${draftDate.toLocaleTimeString()})\n\nVoulez-vous le charger ?`;
+                    
+                    if (confirm(message)) {
+                        loadDraft(draftData);
+                    }
+                } catch (e) {
+                    console.error('Erreur chargement brouillon:', e);
+                }
+            }
+        });
+        
+        // Charger un brouillon complet
+        async function loadDraft(draftData) {
+            console.log('📥 Chargement du brouillon...', draftData);
+            
+            // 1. Charger l'équipe correspondante
+            if (draftData.homeTeam && draftData.homeTeam.id) {
+                // S'assurer que les équipes sont chargées
+                if (!allTeamsData) {
+                    await loadTeamsData();
+                }
+                
+                // Trouver l'équipe dans allTeamsData.teams
+                const teamToLoad = allTeamsData.teams.find(t => t.id === draftData.homeTeam.id);
+                if (teamToLoad) {
+                    selectedTeamData = teamToLoad;
+                    document.getElementById('team-selector').value = teamToLoad.id;
+                    console.log('  ✅ Équipe chargée:', teamToLoad.name);
+                } else {
+                    console.error('  ❌ Équipe non trouvée:', draftData.homeTeam.id);
+                }
+            }
+            
+            // 2. Restaurer les informations générales (Étape 1)
+            if (draftData.general) {
+                document.getElementById('match-type').value = draftData.general.type || '';
+                document.getElementById('division').value = draftData.general.division || '';
+                document.getElementById('match-date').value = draftData.general.date || '';
+                document.getElementById('match-time').value = draftData.general.time || '';
+                document.getElementById('match-location-type').value = draftData.general.locationType || 'home';
+                document.getElementById('venue-name').value = draftData.general.venue || '';
+                document.getElementById('referee-1').value = draftData.general.referee1 || '';
+                document.getElementById('referee-2').value = draftData.general.referee2 || '';
+                document.getElementById('observer').value = draftData.general.observer || '';
+                console.log('  ✅ Infos générales restaurées');
+            }
+            
+            // 3. Restaurer la sélection des joueurs (Étape 2)
+            if (draftData.selections && draftData.selections.selectedPlayers) {
+                // IMPORTANT : Restaurer selectedPlayers AVANT loadTeamPlayers()
+                selectedPlayers = [...draftData.selections.selectedPlayers];
+                console.log('  📌 selectedPlayers restauré:', selectedPlayers.length);
+                
+                // Recharger l'affichage des joueurs (ne va PAS écraser selectedPlayers)
+                loadTeamPlayers();
+                console.log('  ✅ Joueurs sélectionnés affichés');
+            }
+            
+            // 4. Restaurer l'équipe adverse (Étape 3)
+            if (draftData.awayTeam) {
+                document.getElementById('away-team-name').value = draftData.awayTeam.name || '';
+                document.getElementById('away-coach').value = draftData.awayTeam.coach || '';
+                
+                if (draftData.selections && draftData.selections.awayNumbers) {
+                    awayNumbers = [...draftData.selections.awayNumbers];
+                    // Afficher les numéros dans le textarea
+                    document.getElementById('away-players-numbers').value = awayNumbers.join(', ');
+                    parseAwayNumbers();
+                    console.log('  ✅ Équipe adverse:', awayNumbers.length, 'joueurs');
+                }
+            }
+            
+            // 5. Restaurer les options (Étape 4)
+            if (draftData.options) {
+                document.getElementById('enable-streaming').checked = draftData.options.streaming || false;
+                document.getElementById('stream-url').value = draftData.options.streamUrl || '';
+                const statsModeRadio = document.querySelector(`input[name="stats-mode"][value="${draftData.options.statsMode}"]`);
+                if (statsModeRadio) {
+                    statsModeRadio.checked = true;
+                }
+                console.log('  ✅ Options restaurées');
+            }
+            
+            // 6. Rester à l'étape 1 pour que l'utilisateur puisse naviguer
+            goToStep(1);
+            
+            alert('✅ Brouillon chargé avec succès !\n\nVous pouvez maintenant naviguer entre les étapes.');
+            console.log('✅ Brouillon entièrement chargé !');
+        }
+    </script>
+</body>
+</html>
+

@@ -548,15 +548,44 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* ========== CONTROL.HTML - INTERFACE DE CONTRÔLE ========== */
+/* ========== CONTROL.HTML - INTERFACE DE CONTRÔLE - REFONTE PROFESSIONNELLE ========== */
+
+/* Variables de couleurs pour l'interface de contrôle */
+:root {
+    --control-bg-primary: #f8f9fa;
+    --control-bg-secondary: #ffffff;
+    --control-bg-tertiary: #f1f3f5;
+    --control-text-primary: #212529;
+    --control-text-secondary: #6c757d;
+    --control-text-muted: #adb5bd;
+    --control-border: #dee2e6;
+    --control-border-hover: #ced4da;
+    --control-accent: #2563eb;
+    --control-accent-hover: #1d4ed8;
+    --control-success: #10b981;
+    --control-danger: #ef4444;
+    --control-warning: #f59e0b;
+    --control-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --control-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --control-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --control-radius: 8px;
+    --control-radius-lg: 12px;
+    --control-spacing-xs: 0.5rem;
+    --control-spacing-sm: 0.75rem;
+    --control-spacing-md: 1rem;
+    --control-spacing-lg: 1.5rem;
+    --control-spacing-xl: 2rem;
+}
+
 .control-container {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
-    padding: 30px;
-    padding-bottom: 50px;
-    background: var(--lcvb-gris-fond);
+    padding: var(--control-spacing-xl);
+    background: var(--control-bg-primary);
     min-height: 100vh;
-    overflow-y: visible;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--control-text-primary);
+    line-height: 1.6;
 }
 
 .control-header {

@@ -1,0 +1,169 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - heading "Le Crès Volley-Ball - Panneau de Contrôle" [level=1] [ref=e4]
+    - generic [ref=e5]:
+      - strong [ref=e6]: "✅ Téléchargement automatique activé :"
+      - text: Le fichier
+      - code [ref=e7]: data/score-data.json
+      - text: se télécharge automatiquement à chaque modification. Copiez-le dans
+      - code [ref=e8]: LCVB_Scoreboard/data/
+      - text: pour synchroniser avec OBS.
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - heading "Équipe 1" [level=2] [ref=e11]
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - generic [ref=e14]: "Nom de l'équipe :"
+          - textbox "Nom de l'équipe :" [ref=e15]:
+            - /placeholder: Nom équipe 1
+            - text: Le Crès Volley-Ball
+        - generic [ref=e16]:
+          - generic [ref=e17]: "Niveau de l'équipe :"
+          - combobox "Niveau de l'équipe :" [ref=e18] [cursor=pointer]:
+            - option "-- Aucun niveau --" [selected]
+            - option "Loisirs"
+            - option "Départemental 1"
+            - option "Départemental 2"
+            - option "Départemental 3"
+            - option "Régional 1"
+            - option "Régional 2"
+            - option "Régional 3"
+            - option "Prénational"
+            - option "National 1"
+            - option "National 2"
+            - option "National 3"
+        - generic [ref=e19]:
+          - generic [ref=e20]: "Chemin du logo :"
+          - generic [ref=e21]:
+            - textbox "Chemin du logo :" [ref=e22]:
+              - /placeholder: logos/logo-lcvb.png
+              - text: logos/logo-lcvb.png
+            - button "📁 Parcourir" [ref=e23] [cursor=pointer]
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - generic [ref=e26]: "Score :"
+          - spinbutton [ref=e27]: "0"
+          - button "+" [ref=e28] [cursor=pointer]
+          - button "−" [ref=e29] [cursor=pointer]
+        - button "Réinitialiser Score" [ref=e30] [cursor=pointer]
+      - generic [ref=e31]:
+        - heading "Sets :" [level=3] [ref=e32]
+        - generic [ref=e33]:
+          - generic [ref=e34]:
+            - generic [ref=e35]: "Set 1 :"
+            - spinbutton [ref=e36]: "0"
+            - button "+" [ref=e37] [cursor=pointer]
+            - button "−" [ref=e38] [cursor=pointer]
+          - generic [ref=e39]:
+            - generic [ref=e40]: "Set 2 :"
+            - spinbutton [ref=e41]: "0"
+            - button "+" [ref=e42] [cursor=pointer]
+            - button "−" [ref=e43] [cursor=pointer]
+          - generic [ref=e44]:
+            - generic [ref=e45]: "Set 3 :"
+            - spinbutton [ref=e46]: "0"
+            - button "+" [ref=e47] [cursor=pointer]
+            - button "−" [ref=e48] [cursor=pointer]
+          - generic [ref=e49]:
+            - generic [ref=e50]: "Set 4 :"
+            - spinbutton [ref=e51]: "0"
+            - button "+" [ref=e52] [cursor=pointer]
+            - button "−" [ref=e53] [cursor=pointer]
+          - generic [ref=e54]:
+            - generic [ref=e55]: "Set 5 :"
+            - spinbutton [ref=e56]: "0"
+            - button "+" [ref=e57] [cursor=pointer]
+            - button "−" [ref=e58] [cursor=pointer]
+    - generic [ref=e59]:
+      - heading "Équipe 2" [level=2] [ref=e60]
+      - generic [ref=e61]:
+        - generic [ref=e62]:
+          - generic [ref=e63]: "Nom de l'équipe :"
+          - textbox "Nom de l'équipe :" [ref=e64]:
+            - /placeholder: Nom équipe 2
+            - text: Équipe 2
+        - generic [ref=e65]:
+          - generic [ref=e66]: "Niveau de l'équipe :"
+          - combobox "Niveau de l'équipe :" [ref=e67] [cursor=pointer]:
+            - option "-- Aucun niveau --" [selected]
+            - option "Loisirs"
+            - option "Départemental 1"
+            - option "Départemental 2"
+            - option "Départemental 3"
+            - option "Régional 1"
+            - option "Régional 2"
+            - option "Régional 3"
+            - option "Prénational"
+            - option "National 1"
+            - option "National 2"
+            - option "National 3"
+        - generic [ref=e68]:
+          - generic [ref=e69]: "Chemin du logo :"
+          - generic [ref=e70]:
+            - textbox "Chemin du logo :" [ref=e71]:
+              - /placeholder: logos/logo-equipe2.png
+              - text: logos/logo-equipe2.png
+            - button "📁 Parcourir" [ref=e72] [cursor=pointer]
+      - generic [ref=e73]:
+        - generic [ref=e74]:
+          - generic [ref=e75]: "Score :"
+          - spinbutton [ref=e76]: "0"
+          - button "+" [ref=e77] [cursor=pointer]
+          - button "−" [ref=e78] [cursor=pointer]
+        - button "Réinitialiser Score" [ref=e79] [cursor=pointer]
+      - generic [ref=e80]:
+        - heading "Sets :" [level=3] [ref=e81]
+        - generic [ref=e82]:
+          - generic [ref=e83]:
+            - generic [ref=e84]: "Set 1 :"
+            - spinbutton [ref=e85]: "0"
+            - button "+" [ref=e86] [cursor=pointer]
+            - button "−" [ref=e87] [cursor=pointer]
+          - generic [ref=e88]:
+            - generic [ref=e89]: "Set 2 :"
+            - spinbutton [ref=e90]: "0"
+            - button "+" [ref=e91] [cursor=pointer]
+            - button "−" [ref=e92] [cursor=pointer]
+          - generic [ref=e93]:
+            - generic [ref=e94]: "Set 3 :"
+            - spinbutton [ref=e95]: "0"
+            - button "+" [ref=e96] [cursor=pointer]
+            - button "−" [ref=e97] [cursor=pointer]
+          - generic [ref=e98]:
+            - generic [ref=e99]: "Set 4 :"
+            - spinbutton [ref=e100]: "0"
+            - button "+" [ref=e101] [cursor=pointer]
+            - button "−" [ref=e102] [cursor=pointer]
+          - generic [ref=e103]:
+            - generic [ref=e104]: "Set 5 :"
+            - spinbutton [ref=e105]: "0"
+            - button "+" [ref=e106] [cursor=pointer]
+            - button "−" [ref=e107] [cursor=pointer]
+    - generic [ref=e108]:
+      - generic [ref=e110] [cursor=pointer]:
+        - checkbox "Match amical" [ref=e111]
+        - strong [ref=e112]: Match amical
+      - generic [ref=e113]:
+        - generic [ref=e114]: "Set actuel :"
+        - combobox "Set actuel :" [ref=e115] [cursor=pointer]:
+          - option "Set 1" [selected]
+          - option "Set 2"
+          - option "Set 3"
+          - option "Set 4"
+          - option "Set 5"
+      - generic [ref=e116]:
+        - generic [ref=e117]: "Style :"
+        - combobox "Style :" [ref=e118] [cursor=pointer]:
+          - option "Actuel (Club - Rose/Noir)" [selected]
+          - option "Neutre (Minimaliste)"
+          - option "Sobre (Couleurs adoucies)"
+          - option "Pro (Style professionnel)"
+          - option "Couleurs personnalisées"
+      - button "Set Suivant" [ref=e119] [cursor=pointer]
+      - button "🖼️ Masquer Logos" [ref=e120] [cursor=pointer]
+      - button "📱 Publier" [ref=e121] [cursor=pointer]
+      - button "Réinitialiser Tout" [ref=e122] [cursor=pointer]
+```

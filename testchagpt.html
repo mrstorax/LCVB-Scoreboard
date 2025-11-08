@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volley Stats Live - Le Crès VB</title>
+<style>
+body {
+  font-family: "Inter", sans-serif;
+  background: #1c1c1e;
+  color: #f2f2f2;
+  margin: 0;
+  padding: 20px;
+}
+h1, h2 {
+  text-align: center;
+  color: #ff4d6d;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+button {
+  background: #ff4d6d;
+  border: none;
+  color: white;
+  padding: 8px 14px;
+  margin: 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+button:hover {
+  background: #ff758f;
+}
+table {
+  border-collapse: collapse;
+  width: 90%;
+  margin-top: 10px;
+}
+th, td {
+  border: 1px solid #333;
+  padding: 8px;
+  text-align: center;
+}
+#scoreboard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin-top: 20px;
+  font-size: 1.8em;
+}
+input, select {
+  background: #2c2c2e;
+  color: #f2f2f2;
+  border: 1px solid #444;
+  padding: 6px;
+  border-radius: 6px;
+}
+fieldset {
+  border: 1px solid #444;
+  margin-top: 15px;
+  width: 90%;
+}
+legend {
+  color: #ff4d6d;
+}
+#actions button {
+  background: #444;
+}
+#actions button.active {
+  background: #ff4d6d;
+}
+</style>
+</head>
+<body>
+
+<h1>Volley Stats Live</h1>
+<div class="container">
+
+  <fieldset>
+    <legend>Configuration du match</legend>
+    <label>Équipe locale :</label>
+    <input type="text" id="teamLocal" value="Le Crès VB R2M">
+    <label>Équipe adverse :</label>
+    <input type="text" id="teamVisitor" value="Adversaire">
+    <button onclick="startMatch()">Démarrer le match</button>
+  </fieldset>
+
+  <div id="matchArea" style="display:none;">
+    <div id="scoreboard">
+      <span id="localTeamName">Local</span> :
+      <span id="localScore">0</span> —
+      <span id="visitorScore">0</span> :
+      <span id="visitorTeamName">Visiteur</span>
+    </div>
+
+    <fieldset>
+      <legend>Joueur et action</legend>
+      <label>Numéro joueur :</label>
+      <input type="text" id="playerNum" placeholder="#9">
+      <div id="actions">
+        <button onclick="setAction('Service')">Service</button>
+        <button onclick="setAction('Réception')">Réception</button>
+        <button onclick="setAction('Passe')">Passe</button>
+        <button onclick="setAction('Attaque')">Attaque</button>
+        <button onclick="setAction('Bloc')">Bloc</button>
+        <button onclick="setAction('Défense')">Défense</button>
+      </div>
+      <div id="eval">
+        <button onclick="recordEval('#')">#</button>
+        <button onclick="recordEval('-')">-</button>
+        <button onclick="recordEval('/')">/</button>
+        <button onclick="recordEval('+')">+</button>
+        <button onclick="recordEval('!')">!</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Historique</legend>
+      <table id="historyTable">
+        <thead>
+          <tr>
+            <th>Rally</th>
+            <th>Équipe</th>
+            <th>Joueur</th>
+            <th>Action</th>
+            <th>Évaluation</th>
+            <th>Point</th>
+            <th>Score Local</th>
+            <th>Score Visiteur</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button onclick="exportCSV()">Exporter CSV</button>
+    </fieldset>
+  </div>
+</div>
+
+<script>
+let rallyCount = 0;
+let currentAction = null;
+let scoreLocal = 0;
+let scoreVisitor = 0;
+let server = "local";
+let matchData = [];
+let teamLocal = "";
+let teamVisitor = "";
+
+function startMatch(){
+  teamLocal = document.getElementById("teamLocal").value;
+  teamVisitor = document.getElementById("teamVisitor").value;
+  document.getElementById("localTeamName").textContent = teamLocal;
+  document.getElementById("visitorTeamName").textContent = teamVisitor;
+  document.getElementById("matchArea").style.display = "block";
+}
+
+function setAction(action){
+  currentAction = action;
+  document.querySelectorAll("#actions button").forEach(btn => btn.classList.remove("active"));
+  event.target.classList.add("active");
+}
+
+function recordEval(evalSymbol){
+  if(!currentAction) { alert("Sélectionne une action d'abord !"); return; }
+  const player = document.getElementById("playerNum").value || "N/A";
+  rallyCount++;
+  let pointForLocal = false;
+  
+  // règles simples : # = faute → point à l'autre, ! ou + = point marqué
+  if(["!", "+"].includes(evalSymbol)){
+    if(server === "local"){ scoreLocal++; pointForLocal = true; }
+    else { scoreVisitor++; }
+  } else if(evalSymbol === "#"){
+    if(server === "local"){ scoreVisitor++; }
+    else { scoreLocal++; pointForLocal = true; }
+  }
+
+  // alternance de service
+  if(evalSymbol === "#" || evalSymbol === "!" || evalSymbol === "+"){
+    server = (server === "local") ? "visitor" : "local";
+  }
+
+  const entry = {
+    rally: rallyCount,
+    team: server === "local" ? teamLocal : teamVisitor,
+    player: player,
+    action: currentAction,
+    evaluation: evalSymbol,
+    point: pointForLocal,
+    score_local: scoreLocal,
+    score_visiteur: scoreVisitor,
+    server: server
+  };
+  matchData.push(entry);
+  updateTable(entry);
+  saveLiveJSON(entry);
+}
+
+function updateTable(entry){
+  const tbody = document.querySelector("#historyTable tbody");
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${entry.rally}</td>
+    <td>${entry.team}</td>
+    <td>${entry.player}</td>
+    <td>${entry.action}</td>
+    <td>${entry.evaluation}</td>
+    <td>${entry.point ? "✅" : ""}</td>
+    <td>${entry.score_local}</td>
+    <td>${entry.score_visiteur}</td>
+  `;
+  tbody.appendChild(row);
+  document.getElementById("localScore").textContent = scoreLocal;
+  document.getElementById("visitorScore").textContent = scoreVisitor;
+}
+
+function saveLiveJSON(entry){
+  const data = {
+    set: 1,
+    score_local: scoreLocal,
+    score_visiteur: scoreVisitor,
+    serveur: server === "local" ? teamLocal : teamVisitor,
+    derniere_action: `${entry.action} ${entry.player} (${entry.evaluation})`
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "live.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportCSV(){
+  let csv = "rally,team,player,action,evaluation,point,score_local,score_visiteur\n";
+  matchData.forEach(r => {
+    csv += `${r.rally},${r.team},${r.player},${r.action},${r.evaluation},${r.point},${r.score_local},${r.score_visiteur}\n`;
+  });
+  const blob = new Blob([csv], {type: "text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "match_data.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LCVB Scoreboard Pro - Accueil</title>
+    <link rel="stylesheet" href="shared-style.css">
+    <style>
+        /* Styles spécifiques page d'accueil */
+        .hero {
+            text-align: center;
+            padding: var(--app-spacing-2xl) var(--app-spacing-lg);
+            background: linear-gradient(135deg, var(--app-accent) 0%, #1d4ed8 100%);
+            border-radius: var(--app-radius-xl);
+            color: white;
+            margin-bottom: var(--app-spacing-xl);
+            box-shadow: var(--app-shadow-lg);
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: var(--app-spacing-md);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+        }
+        
+        .module-card {
+            background: var(--app-bg-secondary);
+            border-radius: var(--app-radius-lg);
+            padding: var(--app-spacing-xl);
+            border: 2px solid var(--app-border);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            height: 100%;
+        }
+        
+        .module-card:hover {
+            border-color: var(--app-accent);
+            transform: translateY(-4px);
+            box-shadow: var(--app-shadow-xl);
+        }
+        
+        .module-icon {
+            font-size: 3rem;
+            margin-bottom: var(--app-spacing-md);
+            display: block;
+        }
+        
+        .module-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--app-text-primary);
+            margin-bottom: var(--app-spacing-sm);
+        }
+        
+        .module-description {
+            color: var(--app-text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+        
+        .module-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: var(--app-spacing-sm);
+        }
+        
+        .badge-ready {
+            background: var(--app-success-light);
+            color: var(--app-success);
+        }
+        
+        .badge-coming {
+            background: var(--app-warning-light);
+            color: var(--app-warning);
+        }
+        
+        .recent-matches {
+            background: var(--app-bg-secondary);
+            border-radius: var(--app-radius-lg);
+            padding: var(--app-spacing-lg);
+            border: 1px solid var(--app-border);
+            box-shadow: var(--app-shadow-sm);
+        }
+        
+        .match-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--app-spacing-md);
+            border-bottom: 1px solid var(--app-border);
+            transition: background 0.2s ease;
+        }
+        
+        .match-item:last-child {
+            border-bottom: none;
+        }
+        
+        .match-item:hover {
+            background: var(--app-bg-tertiary);
+            cursor: pointer;
+        }
+        
+        .match-date {
+            color: var(--app-text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .match-info {
+            flex: 1;
+            margin: 0 var(--app-spacing-md);
+        }
+        
+        .match-teams {
+            font-weight: 500;
+            color: var(--app-text-primary);
+        }
+        
+        .match-score {
+            font-weight: 600;
+            color: var(--app-accent);
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: var(--app-spacing-md);
+            margin-bottom: var(--app-spacing-xl);
+        }
+        
+        .quick-action-btn {
+            flex: 1;
+            padding: var(--app-spacing-lg);
+            background: var(--app-bg-secondary);
+            border: 2px solid var(--app-border);
+            border-radius: var(--app-radius-lg);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: var(--app-text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--app-spacing-sm);
+        }
+        
+        .quick-action-btn:hover {
+            border-color: var(--app-accent);
+            background: var(--app-accent-light);
+            transform: translateY(-2px);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--app-spacing-md);
+            margin-top: var(--app-spacing-xl);
+        }
+        
+        .stat-card {
+            background: var(--app-bg-secondary);
+            border-radius: var(--app-radius-lg);
+            padding: var(--app-spacing-lg);
+            border: 1px solid var(--app-border);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--app-accent);
+        }
+        
+        .stat-label {
+            color: var(--app-text-secondary);
+            font-size: 0.875rem;
+            margin-top: var(--app-spacing-xs);
+        }
+        
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-title">🏐 LCVB Scoreboard Pro</div>
+            <div class="hero-subtitle">Gestion complète de match - Le Crès Volley-Ball</div>
+        </div>
+        
+        <!-- Actions rapides -->
+        <div class="quick-actions">
+            <a href="setup.html" class="quick-action-btn">
+                <span>➕</span> Nouveau match
+            </a>
+            <button class="quick-action-btn" onclick="resumeLastMatch()">
+                <span>▶️</span> Reprendre le dernier
+            </button>
+            <a href="#recent-matches" class="quick-action-btn">
+                <span>📚</span> Historique
+            </a>
+        </div>
+        
+        <!-- Modules principaux -->
+        <div class="grid grid-cols-3">
+            <a href="setup.html" class="module-card">
+                <span class="module-icon">🔧</span>
+                <div class="module-title">1. Initialisation</div>
+                <div class="module-description">
+                    Configuration du match : équipes, joueurs, arbitres, lieu et paramètres techniques
+                </div>
+                <span class="module-badge badge-ready">✓ Disponible</span>
+            </a>
+            
+            <a href="control.html" class="module-card">
+                <span class="module-icon">📊</span>
+                <div class="module-title">2. Suivi Live</div>
+                <div class="module-description">
+                    Interface de contrôle en temps réel avec scoreboard, chronomètres et diffusion OBS
+                </div>
+                <span class="module-badge badge-ready">✓ Disponible</span>
+            </a>
+            
+            <a href="stats.html" class="module-card">
+                <span class="module-icon">📈</span>
+                <div class="module-title">3. Statistiques</div>
+                <div class="module-description">
+                    Saisie détaillée des actions : attaques, services, blocs, réceptions et erreurs
+                </div>
+                <span class="module-badge badge-coming">🚧 Bientôt</span>
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-3 mt-lg">
+            <a href="dashboard.html" class="module-card">
+                <span class="module-icon">📉</span>
+                <div class="module-title">4. Dashboard</div>
+                <div class="module-description">
+                    Analyse visuelle post-match avec graphiques, statistiques et exports PDF/CSV
+                </div>
+                <span class="module-badge badge-coming">🚧 Bientôt</span>
+            </a>
+            
+            <a href="display.html" target="_blank" class="module-card">
+                <span class="module-icon">🖥️</span>
+                <div class="module-title">Affichage OBS</div>
+                <div class="module-description">
+                    Interface d'affichage pour OBS avec différents templates visuels professionnels
+                </div>
+                <span class="module-badge badge-ready">✓ Disponible</span>
+            </a>
+            
+            <a href="settings.html" class="module-card">
+                <span class="module-icon">⚙️</span>
+                <div class="module-title">Paramètres</div>
+                <div class="module-description">
+                    Configuration générale, gestion des joueurs, sponsors et préférences d'affichage
+                </div>
+                <span class="module-badge badge-coming">🚧 Bientôt</span>
+            </a>
+        </div>
+        
+        <!-- Statistiques rapides -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="total-matches">0</div>
+                <div class="stat-label">Matchs enregistrés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-wins">0</div>
+                <div class="stat-label">Victoires cette saison</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="win-rate">0%</div>
+                <div class="stat-label">Taux de victoire</div>
+            </div>
+        </div>
+        
+        <!-- Matchs récents -->
+        <div class="recent-matches mt-xl" id="recent-matches">
+            <h2 class="card-title">📅 Matchs récents</h2>
+            <div id="matches-list">
+                <div class="match-item">
+                    <div class="match-date">08/11/2025</div>
+                    <div class="match-info">
+                        <div class="match-teams">LCVB vs Montpellier VUC</div>
+                    </div>
+                    <div class="match-score">3-2</div>
+                </div>
+                <div class="match-item">
+                    <div class="match-date">01/11/2025</div>
+                    <div class="match-info">
+                        <div class="match-teams">LCVB vs Nîmes Volley</div>
+                    </div>
+                    <div class="match-score">3-0</div>
+                </div>
+                <div class="match-item">
+                    <div class="match-date">25/10/2025</div>
+                    <div class="match-info">
+                        <div class="match-teams">Avignon VB vs LCVB</div>
+                    </div>
+                    <div class="match-score">1-3</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Fonction pour reprendre le dernier match
+        function resumeLastMatch() {
+            // Vérifier s'il y a un match en cours
+            const currentMatch = localStorage.getItem('lcvb_current_match');
+            if (currentMatch) {
+                if (confirm('Un match est en cours. Voulez-vous le reprendre ?')) {
+                    window.location.href = 'control.html';
+                }
+            } else {
+                alert('Aucun match en cours. Créez un nouveau match.');
+            }
+        }
+        
+        // Charger les statistiques au chargement de la page
+        window.addEventListener('DOMContentLoaded', () => {
+            // TODO: Charger depuis IndexedDB
+            // Pour l'instant, affichage des données de test
+            document.getElementById('total-matches').textContent = '12';
+            document.getElementById('total-wins').textContent = '8';
+            document.getElementById('win-rate').textContent = '67%';
+        });
+    </script>
+</body>
+</html>
+

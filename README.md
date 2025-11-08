@@ -1,53 +1,118 @@
-# LCVB Scoreboard - Scoreboard Volley Local pour OBS
+# 🏐 LCVB Scoreboard Pro - Gestion Complète de Match de Volley-Ball
 
-Scoreboard autonome et local pour Le Crès Volley-Ball, utilisable dans OBS sans connexion Internet.
+**Outil professionnel tout-en-un** pour la gestion de matchs de volley-ball : scoreboard, statistiques avancées, analyse et diffusion OBS.  
+Développé pour **Le Crès Volley-Ball** et adaptable à tous les clubs.
+
+---
+
+## ✨ Fonctionnalités principales
+
+### 🔧 Module 1 : Initialisation du Match
+- Configuration complète pré-match
+- Gestion des équipes et joueurs
+- Informations officiels (arbitres, lieu, date)
+- Options techniques (streaming, sponsors)
+
+### 📊 Module 2 : Suivi Live
+- Scoreboard interactif temps réel
+- Chronomètres automatiques (match + sets)
+- Gestion scores et sets
+- Intégration OBS professionnelle
+- 5 templates d'affichage
+
+### 📈 Module 3 : Statistiques Avancées *(en développement)*
+- Saisie rapide des actions
+- Attaques, services, blocs, réceptions
+- Analyse en temps réel
+- Historique des actions
+
+### 📉 Module 4 : Dashboard & Analyse *(en développement)*
+- Tableaux statistiques complets
+- Graphiques visuels (Chart.js)
+- Analyse par joueur
+- Export PDF/CSV
+- Partage réseaux sociaux
+
+---
 
 ## 📁 Structure du projet
 
 ```
 LCVB-Scoreboard/
-├── index.html          → Affichage du scoreboard (Browser Source OBS)
-├── control.html        → Interface de contrôle (boutons, réglages)
-├── style.css           → Styles avec charte graphique LCVB
-├── script.js           → Logique de gestion (localStorage + serveur)
-├── server.py           → Serveur HTTP local optionnel (Python 3)
-├── README.md           → Ce fichier
+├── index.html          → Redirection vers home.html
+├── home.html           → Page d'accueil / navigation
+├── setup.html          → Module 1 - Initialisation
+├── control.html        → Module 2 - Suivi live
+├── stats.html          → Module 3 - Statistiques (à venir)
+├── dashboard.html      → Module 4 - Analyse (à venir)
+├── display.html        → Affichage OBS (Browser Source)
 │
-├── logos/              → Logos d'équipes (utilisé par défaut)
-│   ├── logo-lcvb.png
-│   └── logo-equipe2.png
+├── shared-style.css    → Styles communs à tous les modules
+├── control-style.css   → Styles spécifiques contrôle
+├── style.css           → Styles affichage OBS
+├── script.js           → Logique principale
+├── server.py           → Serveur HTTP local (optionnel)
 │
-├── logo-club/          → Logo du club (pour template PRO)
-│   └── logo-club.png
+├── data/
+│   ├── players.json    → Base de joueurs du club
+│   ├── matches/        → Historique des matchs
+│   └── score-data.json → Données scoreboard (auto-généré)
 │
-└── data/               → Données JSON (généré automatiquement)
-    └── score-data.json
+├── logos/              → Logos d'équipes
+├── logo-club/          → Logo du club
+├── sponsors/           → Images sponsors
+│
+└── docs/
+    ├── ARCHITECTURE_VISION.md  → Vision complète du projet
+    └── USER_GUIDE.md           → Guide utilisateur
 ```
 
-## 🚀 Utilisation dans OBS
+---
+
+## 🚀 Démarrage rapide
+
+### 1. Ouvrir l'application
+Ouvrez `index.html` dans votre navigateur (redirecte vers `home.html`)
+
+### 2. Créer un nouveau match
+1. Cliquez sur "Nouveau match" ou allez dans **Module 1 - Initialisation**
+2. Remplissez les informations du match
+3. Sélectionnez les joueurs de l'équipe locale
+4. Ajoutez l'équipe adverse
+5. Configurez les options techniques
+6. Cliquez sur "Lancer le match"
+
+### 3. Contrôler le match
+L'interface de contrôle s'ouvre automatiquement (ou allez dans **Module 2 - Suivi Live**)
+- Gérez les scores avec les boutons +/-
+- Les chronomètres démarrent automatiquement au premier point
+- Passez au set suivant avec le bouton dédié
+
+### 4. Afficher dans OBS
+Voir section "Intégration OBS" ci-dessous
+
+---
+
+## 🎥 Intégration OBS
 
 ### Mode 1 : Sans serveur (Fichiers locaux)
 
-#### 1. Préparation
-- Placez les logos dans le dossier `logos/`
-- Placez le logo du club dans `logo-club/` (pour le template PRO)
-
-#### 2. Configuration OBS
+#### 1. Configuration OBS
 1. Dans OBS, ajoutez une **Source Navigateur** (Browser Source)
 2. Sélectionnez "Fichier local"
-3. Naviguez vers : `LCVB-Scoreboard/index.html`
+3. Naviguez vers : `LCVB-Scoreboard/display.html`
 4. Définissez la taille :
    - **Template standard** : 1920x120 pixels
    - **Template PRO** : 400x110 pixels
 5. Cochez "Shutdown source when not visible" (optionnel)
 
-#### 3. Utilisation
-- Ouvrez `control.html` dans votre navigateur (fichier local)
-- Modifiez les noms d'équipes, logos, scores et sets
-- Le scoreboard (`index.html`) se met à jour automatiquement via localStorage
+#### 2. Utilisation
+- Ouvrez `home.html` dans votre navigateur
+- Initialisez et contrôlez votre match
+- Le scoreboard (`display.html`) se met à jour automatiquement via localStorage
 - Le fichier `data/score-data.json` se télécharge automatiquement à chaque modification
 
-### Mode 2 : Avec serveur local (Recommandé pour OBS)
+### Mode 2 : Avec serveur local (Recommandé)
 
 #### 1. Démarrer le serveur
 ```bash

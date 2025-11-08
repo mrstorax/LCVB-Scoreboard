@@ -1,0 +1,139 @@
+{
+  "clubName": "Le Crès Volley-Ball",
+  "clubLogo": "logos/logo-lcvb.png",
+  "season": "2024-2025",
+  "players": [
+    {
+      "id": 1,
+      "number": 1,
+      "firstName": "Jean",
+      "lastName": "Dupont",
+      "position": "Passeur",
+      "photo": null,
+      "active": true,
+      "captain": false
+    },
+    {
+      "id": 2,
+      "number": 2,
+      "firstName": "Pierre",
+      "lastName": "Martin",
+      "position": "Pointu",
+      "photo": null,
+      "active": true,
+      "captain": false
+    },
+    {
+      "id": 3,
+      "number": 3,
+      "firstName": "Paul",
+      "lastName": "Bernard",
+      "position": "Central",
+      "photo": null,
+      "active": true,
+      "captain": true
+    },
+    {
+      "id": 4,
+      "number": 4,
+      "firstName": "Luc",
+      "lastName": "Dubois",
+      "position": "Réceptionneur",
+      "photo": null,
+      "active": true,
+      "captain": false
+    },
+    {
+      "id": 5,
+      "number": 5,
+      "firstName": "Marc",
+      "lastName": "Laurent",
+      "position": "Central",
+      "photo": null,
+      "active": true,
+      "captain": false
+    },
+    {
+      "id": 6,
+      "number": 6,
+      "firstName": "Thomas",
+      "lastName": "Simon",
+      "position": "Pointu",
+      "photo": null,
+      "active": true,
+      "captain": false
+    },
+    {
+      "id": 7,
+      "number": 7,
+      "firstName": "Nicolas",
+      "lastName": "Michel",
+      "position": "Réceptionneur",
+      "photo": null,
+      "active": true,
+      "captain": false
+    },
+    {
+      "id": 8,
+      "number": 8,
+      "firstName": "Antoine",
+      "lastName": "Lefebvre",
+      "position": "Libéro",
+      "photo": null,
+      "active": true,
+      "captain": false,
+      "libero": true
+    },
+    {
+      "id": 9,
+      "number": 9,
+      "firstName": "Maxime",
+      "lastName": "Moreau",
+      "position": "Passeur",
+      "photo": null,
+      "active": true,
+      "captain": false
+    },
+    {
+      "id": 10,
+      "number": 10,
+      "firstName": "Alexandre",
+      "lastName": "Girard",
+      "position": "Réceptionneur",
+      "photo": null,
+      "active": true,
+      "captain": false
+    },
+    {
+      "id": 11,
+      "number": 11,
+      "firstName": "Julien",
+      "lastName": "Petit",
+      "position": "Central",
+      "photo": null,
+      "active": true,
+      "captain": false
+    },
+    {
+      "id": 12,
+      "number": 12,
+      "firstName": "Sébastien",
+      "lastName": "Rousseau",
+      "position": "Pointu",
+      "photo": null,
+      "active": true,
+      "captain": false
+    }
+  ],
+  "staff": [
+    {
+      "name": "Michel Durand",
+      "role": "Entraîneur principal"
+    },
+    {
+      "name": "Sophie Leclerc",
+      "role": "Entraîneur adjoint"
+    }
+  ]
+}
+
