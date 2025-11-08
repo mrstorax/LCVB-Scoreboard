@@ -28,3 +28,4 @@ ENV/
 *.sublime-workspace
 
 
+.git-credential-helper.sh
