@@ -39,28 +39,8 @@ class ScoreboardHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(str(e).encode())
-        # Route spéciale pour sponsors/sponsors.json (si existe)
-        elif self.path == '/sponsors/sponsors.json':
-            try:
-                sponsors_file = "sponsors/sponsors.json"
-                if os.path.exists(sponsors_file):
-                    with open(sponsors_file, 'r', encoding='utf-8') as f:
-                        data = json.load(f)
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'application/json')
-                    self.send_header('Access-Control-Allow-Origin', '*')
-                    self.send_header('Cache-Control', 'no-cache')
-                    self.end_headers()
-                    self.wfile.write(json.dumps(data, ensure_ascii=False).encode('utf-8'))
-                else:
-                    self.send_response(404)
-                    self.end_headers()
-            except Exception as e:
-                self.send_response(500)
-                self.end_headers()
-                self.wfile.write(str(e).encode())
         else:
-            # Servir les fichiers statiques normalement (index.html, sponsors.html, logos, etc.)
+            # Servir les fichiers statiques normalement (index.html, logos, etc.)
             super().do_GET()
     
     def do_POST(self):
@@ -109,7 +89,6 @@ def main():
         print(f"📁 Dossier : {script_dir}")
         print(f"📝 Ouvrez http://localhost:{PORT}/control.html dans votre navigateur")
         print(f"📺 Dans OBS, utilisez http://localhost:{PORT}/index.html comme Browser Source")
-        print(f"💰 Sponsors : http://localhost:{PORT}/sponsors.html")
         print(f"\n⚠️  Appuyez sur Ctrl+C pour arrêter le serveur\n")
         
         try:

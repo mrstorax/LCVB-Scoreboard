@@ -243,7 +243,6 @@
                 </div>
                 <button class="btn btn-next-set" onclick="nextSet()">Set Suivant</button>
                 <button class="btn btn-toggle-logos" id="toggle-logos-btn" onclick="toggleLogos()" title="Afficher/Masquer les logos">🖼️ Logos</button>
-                <button class="btn btn-sponsors" onclick="toggleSponsors()" title="Afficher/Masquer les sponsors">💰 Sponsors</button>
                 <button class="btn btn-social" onclick="showSocialShare()" title="Publier sur les réseaux sociaux">📱 Publier</button>
                 <button class="btn btn-full-reset" onclick="resetEverything()">Réinitialiser Tout</button>
             </div>
@@ -537,26 +536,6 @@
         function updateMatchAmicalCommon(isAmical) {
             LCVBScoreboard.updateMatchAmicalCommon(isAmical);
             updateDisplay();
-        }
-
-        // Fonction pour basculer l'affichage des sponsors
-        function toggleSponsors() {
-            // Stocker l'état dans localStorage pour que OBS puisse le lire
-            const data = LCVBScoreboard.getScoreData();
-            data.showSponsors = !data.showSponsors;
-            LCVBScoreboard.saveScoreData(data);
-            
-            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            const url = isLocalhost 
-                ? `http://localhost:8000/sponsors.html` 
-                : `file://${window.location.pathname.replace('control.html', 'sponsors.html')}`;
-            
-            alert('Pour afficher les sponsors dans OBS :\n\n' +
-                  '1. Ajoutez une nouvelle Browser Source\n' +
-                  `2. URL: ${url}\n` +
-                  '3. Dimensions: 1920x120 pixels\n' +
-                  '4. Placez vos logos dans le dossier "sponsors/" ou créez "sponsors/sponsors.json"\n' +
-                  '5. Vous pouvez utiliser des scènes OBS pour basculer entre scoreboard et sponsors');
         }
 
         // Fonction pour afficher la modal de partage réseaux sociaux

@@ -8,16 +8,10 @@ Scoreboard autonome et local pour Le Crès Volley-Ball, utilisable dans OBS sans
 LCVB-Scoreboard/
 ├── index.html          → Affichage du scoreboard (Browser Source OBS)
 ├── control.html        → Interface de contrôle (boutons, réglages)
-├── sponsors.html       → Affichage des sponsors (Browser Source OBS optionnel)
 ├── style.css           → Styles avec charte graphique LCVB
 ├── script.js           → Logique de gestion (localStorage + serveur)
 ├── server.py           → Serveur HTTP local optionnel (Python 3)
-├── config.json         → Configuration par défaut
 ├── README.md           → Ce fichier
-│
-├── assets/             → Logos d'équipes (format alternatif)
-│   ├── logo-lcvb.png
-│   └── logo-equipe2.png
 │
 ├── logos/              → Logos d'équipes (utilisé par défaut)
 │   ├── logo-lcvb.png
@@ -25,9 +19,6 @@ LCVB-Scoreboard/
 │
 ├── logo-club/          → Logo du club (pour template PRO)
 │   └── logo-club.png
-│
-├── sponsors/           → Logos des sponsors
-│   └── (logos des sponsors)
 │
 └── data/               → Données JSON (généré automatiquement)
     └── score-data.json
@@ -38,7 +29,7 @@ LCVB-Scoreboard/
 ### Mode 1 : Sans serveur (Fichiers locaux)
 
 #### 1. Préparation
-- Placez les logos dans le dossier `logos/` ou `assets/`
+- Placez les logos dans le dossier `logos/`
 - Placez le logo du club dans `logo-club/` (pour le template PRO)
 
 #### 2. Configuration OBS
@@ -135,7 +126,6 @@ Le scoreboard propose 5 styles d'affichage :
 - ✅ Sauvegarder/Charger des configurations de couleurs
 
 #### Fonctionnalités avancées
-- ✅ Affichage des sponsors (`sponsors.html`)
 - ✅ Guide pour le partage sur les réseaux sociaux
 - ✅ Réinitialisation complète du match
 
@@ -164,11 +154,10 @@ Le scoreboard propose 5 styles d'affichage :
 
 ## 🎯 Prochaines étapes
 
-1. ✅ Ajouter vos logos dans `logos/` ou `assets/`
+1. ✅ Ajouter vos logos dans `logos/`
 2. ✅ Ajouter le logo du club dans `logo-club/` (pour template PRO)
 3. ✅ Tester dans OBS avec Browser Source
 4. ✅ Personnaliser les couleurs si nécessaire (template Custom)
-5. ✅ Configurer les sponsors dans `sponsors/` (optionnel)
 
 ## 📚 Documentation supplémentaire
 
