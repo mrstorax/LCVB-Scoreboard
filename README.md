@@ -74,6 +74,29 @@ LCVB-Scoreboard/
 ### 1. Ouvrir l'application
 Ouvrez `index.html` dans votre navigateur (redirecte vers `home.html`)
 
+### 1bis. Mode Docker tout-en-un
+```bash
+cp .env.docker.example .env.docker          # (une seule fois)
+docker compose --env-file .env.docker up --build app
+```
+Le conteneur expose le frontend sur `http://localhost:5700` et l’API sur `http://localhost:3000`.  
+Toutes les variables (BDD locale, secret JWT, ports) sont surchargeables via `.env.docker`.
+
+### 1ter. Modes préprod / prod (versionnées)
+
+| Contexte | Commande | Particularité |
+|----------|----------|---------------|
+| **Préprod** (stack dédiée) | `cp .env.preprod.example .env.preprod`<br>`docker compose -f docker-compose.preprod.yml --env-file .env.preprod up -d --build` | Lance `app + postgres` sur des ports isolés (`5701/3001`) avec un `APP_VERSION=preprod` |
+| **Prod** (serveur live / NAS) | `cp .env.prod.example .env.prod`<br>`APP_IMAGE=lcvb-scoreboard-app:latest docker compose -f docker-compose.prod.yml --env-file .env.prod up -d` | Utilise une image pré-buildée, se connecte à la BDD existante, expose `5700/3000` |
+
+- Le fichier `/health` expose désormais la version en ligne :  
+  ```bash
+  curl http://<host>:3000/health
+  # => { "status":"OK", "version":"1.0.0", ... }
+  ```
+- Change `APP_VERSION` dans chaque `.env` avant déploiement (ex : `APP_VERSION=$(git rev-parse --short HEAD)`).
+- Pour promouvoir préprod → prod : rebuild l’image (`docker compose -f docker-compose.preprod.yml build app`), push vers ton registry (`docker tag ...` + `docker push`), puis relance `docker-compose.prod.yml` en pointant sur l’image.
+
 ### 2. Créer un nouveau match
 1. Cliquez sur "Nouveau match" ou allez dans **Module 1 - Initialisation**
 2. Remplissez les informations du match
@@ -90,6 +113,18 @@ L'interface de contrôle s'ouvre automatiquement (ou allez dans **Module 2 - Sui
 
 ### 4. Afficher dans OBS
 Voir section "Intégration OBS" ci-dessous
+
+---
+
+## 🔄 Synchronisation FFVB (équipes & calendriers)
+
+1. Ouvre `settings.html` et clique sur l’onglet **FFVB & Calendriers**.
+2. Dans le champ **Lien ou code FFVB du club**, colle l’URL officielle (ex. `https://www.ffvbbeach.org/...cnclub=0348589`) ou saisis simplement le code numérique.
+3. Choisis la saison si besoin (sinon l’appli détecte celle en cours) puis clique sur **Importer depuis la FFVB**.
+4. Le backend `server/services/ffvbService.js` scrape `planning_club_class.php`, détecte automatiquement les équipes du club, génère les liens `vbspo_calendrier.php` pour chacune et importe le calendrier CSV associé.
+5. Le panneau affiche alors chaque équipe avec : entité/poule/code équipe, un lien direct vers le calendrier officiel FFVB et les 5 prochains matchs importés. La dernière synchro est historisée pour rejouer un import en un clic.
+
+> ℹ️ Les données sont conservées dans `ffvb_imports` (PostgreSQL) et exposées via `/api/ffvb/imports/latest`. Cela permet d’alimenter ensuite l’onboarding des matchs et la sélection rapide des rencontres à initier dans `setup.html`.
 
 ---
 
@@ -234,5 +269,3 @@ Le scoreboard propose 5 styles d'affichage :
 ---
 
 **Le Crès Volley-Ball** - Scoreboard Local v2.0
-
-

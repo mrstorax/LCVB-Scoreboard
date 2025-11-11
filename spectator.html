@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>🎥 Mode Spectateur - LCVB Scoreboard</title>
+    <link rel="stylesheet" href="themes.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .spectator-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header .match-info {
+            opacity: 0.8;
+            font-size: 1rem;
+        }
+
+        /* Live Stream Section */
+        .stream-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stream-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stream-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .stream-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .stream-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #888;
+        }
+
+        .stream-placeholder-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Score Section */
+        .score-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .team-score {
+            flex: 1;
+            max-width: 400px;
+            text-align: center;
+            padding: 2rem;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 3px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .team-score.serving {
+            border-color: var(--color-warning);
+            box-shadow: 0 0 20px var(--color-warning-light);
+        }
+
+        .team-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .score-value {
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1;
+            margin: 1rem 0;
+        }
+
+        .sets-won {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .vs-separator {
+            font-size: 3rem;
+            font-weight: 900;
+            opacity: 0.5;
+        }
+
+        .sets-detail {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .set-score {
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            font-weight: 700;
+            border: 2px solid var(--border-color);
+        }
+
+        .set-score.won {
+            background: var(--gradient-success);
+            border-color: var(--color-success);
+            color: white;
+        }
+
+        .set-score.lost {
+            background: var(--gradient-danger);
+            border-color: var(--color-danger);
+            color: white;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stats-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid var(--border-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        /* Recent Actions */
+        .actions-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .action-item {
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-item.point-us {
+            border-left-color: var(--color-success);
+            background: var(--color-success-light);
+        }
+
+        .action-item.point-them {
+            border-left-color: var(--color-danger);
+            background: var(--color-danger-light);
+        }
+
+        .action-time {
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .settings-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-group input,
+        .settings-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .toggle-section {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            opacity: 0.6;
+        }
+
+        /* Live Indicator */
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--color-danger);
+            color: white;
+            border-radius: 20px;
+            font-weight: 700;
+            animation: pulse 2s infinite;
+        }
+
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .score-display {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .vs-separator {
+                font-size: 2rem;
+            }
+
+            .score-value {
+                font-size: 3rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme">🌙</button>
+
+    <div class="spectator-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎥 Mode Spectateur</h1>
+            <div class="match-info" id="match-info">Configuration du spectateur...</div>
+        </div>
+
+        <!-- Settings Panel (can be hidden) -->
+        <div class="settings-panel" id="settings-panel">
+            <h2>⚙️ Configuration</h2>
+
+            <div class="settings-group">
+                <label for="stream-url">🔗 URL du Live Stream (YouTube, Twitch, iframe...)</label>
+                <input type="text" id="stream-url" placeholder="https://www.youtube.com/embed/VIDEO_ID" />
+            </div>
+
+            <div class="settings-group">
+                <label for="stats-level">📊 Niveau de statistiques</label>
+                <select id="stats-level">
+                    <option value="minimal">Minimal (Score uniquement)</option>
+                    <option value="standard" selected>Standard (Score + Stats principales)</option>
+                    <option value="complete">Complet (Toutes les stats + Actions)</option>
+                </select>
+            </div>
+
+            <div class="settings-group">
+                <label for="refresh-rate">🔄 Fréquence de rafraîchissement</label>
+                <select id="refresh-rate">
+                    <option value="1000">1 seconde (Rapide)</option>
+                    <option value="2000" selected>2 secondes (Normal)</option>
+                    <option value="5000">5 secondes (Économique)</option>
+                </select>
+            </div>
+
+            <div class="toggle-section">
+                <button class="btn btn-primary" onclick="applySettings()">✅ Appliquer</button>
+                <button class="btn btn-secondary" onclick="toggleSettingsPanel()">👁️ Masquer paramètres</button>
+                <button class="btn btn-secondary" onclick="window.location.href='home.html'">🏠 Retour</button>
+            </div>
+        </div>
+
+        <!-- Live Stream Section -->
+        <div class="stream-section" id="stream-section" style="display: none;">
+            <h2>
+                <span class="live-indicator">
+                    <span class="live-dot"></span>
+                    LIVE
+                </span>
+                Diffusion en Direct
+            </h2>
+            <div class="stream-container" id="stream-container">
+                <div class="stream-placeholder">
+                    <div class="stream-placeholder-icon">📺</div>
+                    <div>Aucun stream configuré</div>
+                    <div style="font-size: 0.9rem; margin-top: 0.5rem;">Configurez l'URL ci-dessus</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Section -->
+        <div class="score-section" id="score-section">
+            <div class="score-display">
+                <div class="team-score" id="team1-display">
+                    <div class="team-name" id="team1-name">Équipe 1</div>
+                    <div class="score-value" id="team1-score">0</div>
+                    <div class="sets-won">Sets: <span id="team1-sets">0</span></div>
+                </div>
+
+                <div class="vs-separator">VS</div>
+
+                <div class="team-score" id="team2-display">
+                    <div class="team-name" id="team2-name">Équipe 2</div>
+                    <div class="score-value" id="team2-score">0</div>
+                    <div class="sets-won">Sets: <span id="team2-sets">0</span></div>
+                </div>
+            </div>
+
+            <div class="sets-detail" id="sets-detail">
+                <!-- Sets seront affichés dynamiquement -->
+            </div>
+        </div>
+
+        <!-- Stats Section (Standard/Complete) -->
+        <div class="stats-section" id="stats-section" style="display: none;">
+            <h2>📊 Statistiques du Match</h2>
+            <div class="stats-grid" id="stats-grid">
+                <!-- Stats seront affichées dynamiquement -->
+            </div>
+        </div>
+
+        <!-- Recent Actions (Complete only) -->
+        <div class="stats-section" id="actions-section" style="display: none;">
+            <h2>📋 Dernières Actions</h2>
+            <div class="actions-list" id="actions-list">
+                <!-- Actions seront affichées dynamiquement -->
+            </div>
+        </div>
+
+        <!-- No Data Message -->
+        <div class="no-data" id="no-data" style="display: none;">
+            <h2>❌ Aucun match en cours</h2>
+            <p style="margin-top: 1rem;">Lancez un match depuis la page de contrôle pour voir les données ici.</p>
+            <button class="btn btn-primary" onclick="window.location.href='home.html'" style="margin-top: 1rem;">
+                🏠 Retour à l'accueil
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="theme.js"></script>
+    <script>
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
+        let spectatorConfig = {
+            streamUrl: '',
+            statsLevel: 'standard', // minimal, standard, complete
+            refreshRate: 2000 // ms
+        };
+
+        let refreshInterval = null;
+
+        // ==========================================
+        // INITIALISATION
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            loadConfig();
+            applySettings();
+        });
+
+        function loadConfig() {
+            const saved = localStorage.getItem('spectator_config');
+            if (saved) {
+                spectatorConfig = JSON.parse(saved);
+                document.getElementById('stream-url').value = spectatorConfig.streamUrl || '';
+                document.getElementById('stats-level').value = spectatorConfig.statsLevel || 'standard';
+                document.getElementById('refresh-rate').value = spectatorConfig.refreshRate || 2000;
+            }
+        }
+
+        function saveConfig() {
+            localStorage.setItem('spectator_config', JSON.stringify(spectatorConfig));
+        }
+
+        function applySettings() {
+            // Récupérer les valeurs
+            spectatorConfig.streamUrl = document.getElementById('stream-url').value.trim();
+            spectatorConfig.statsLevel = document.getElementById('stats-level').value;
+            spectatorConfig.refreshRate = parseInt(document.getElementById('refresh-rate').value);
+
+            saveConfig();
+
+            // Appliquer le stream
+            setupStream();
+
+            // Appliquer le niveau de stats
+            updateStatsVisibility();
+
+            // Relancer le refresh avec le nouveau taux
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            refreshInterval = setInterval(refreshData, spectatorConfig.refreshRate);
+
+            // Premier refresh immédiat
+            refreshData();
+
+            console.log('✅ Configuration appliquée:', spectatorConfig);
+        }
+
+        function setupStream() {
+            const streamSection = document.getElementById('stream-section');
+            const streamContainer = document.getElementById('stream-container');
+
+            if (spectatorConfig.streamUrl) {
+                streamSection.style.display = 'block';
+
+                // Créer l'iframe
+                streamContainer.innerHTML = `
+                    <iframe
+                        src="${spectatorConfig.streamUrl}"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                `;
+            } else {
+                streamSection.style.display = 'none';
+            }
+        }
+
+        function updateStatsVisibility() {
+            const statsSection = document.getElementById('stats-section');
+            const actionsSection = document.getElementById('actions-section');
+
+            if (spectatorConfig.statsLevel === 'minimal') {
+                statsSection.style.display = 'none';
+                actionsSection.style.display = 'none';
+            } else if (spectatorConfig.statsLevel === 'standard') {
+                statsSection.style.display = 'block';
+                actionsSection.style.display = 'none';
+            } else if (spectatorConfig.statsLevel === 'complete') {
+                statsSection.style.display = 'block';
+                actionsSection.style.display = 'block';
+            }
+        }
+
+        function toggleSettingsPanel() {
+            const panel = document.getElementById('settings-panel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        // ==========================================
+        // REFRESH DATA
+        // ==========================================
+        function refreshData() {
+            const scoreData = LCVBScoreboard.getScoreData();
+            const matchStats = loadMatchStats();
+
+            if (!scoreData || scoreData.currentSet === 1 && scoreData.team1.score === 0 && scoreData.team2.score === 0) {
+                // Pas de match en cours
+                showNoData();
+                return;
+            }
+
+            hideNoData();
+            updateScore(scoreData);
+
+            if (spectatorConfig.statsLevel !== 'minimal') {
+                updateStats(matchStats);
+            }
+
+            if (spectatorConfig.statsLevel === 'complete') {
+                updateActions(matchStats);
+            }
+        }
+
+        function loadMatchStats() {
+            // Essayer de charger depuis control_mobile ou control
+            const saved = localStorage.getItem('lcvb_match_stats');
+            if (saved) {
+                return JSON.parse(saved);
+            }
+            return { rallies: [], playerStats: {}, summary: {} };
+        }
+
+        function showNoData() {
+            document.getElementById('score-section').style.display = 'none';
+            document.getElementById('stats-section').style.display = 'none';
+            document.getElementById('actions-section').style.display = 'none';
+            document.getElementById('no-data').style.display = 'block';
+        }
+
+        function hideNoData() {
+            document.getElementById('score-section').style.display = 'block';
+            document.getElementById('no-data').style.display = 'none';
+            updateStatsVisibility();
+        }
+
+        // ==========================================
+        // UPDATE SCORE
+        // ==========================================
+        function updateScore(data) {
+            // Team names
+            document.getElementById('team1-name').textContent = data.team1.name || 'Équipe 1';
+            document.getElementById('team2-name').textContent = data.team2.name || 'Équipe 2';
+
+            // Current scores
+            document.getElementById('team1-score').textContent = data.team1.score;
+            document.getElementById('team2-score').textContent = data.team2.score;
+
+            // Sets won
+            const team1Sets = data.team1.sets.filter(s => s > 0).length;
+            const team2Sets = data.team2.sets.filter(s => s > 0).length;
+            document.getElementById('team1-sets').textContent = team1Sets;
+            document.getElementById('team2-sets').textContent = team2Sets;
+
+            // Serving indicator
+            const team1Display = document.getElementById('team1-display');
+            const team2Display = document.getElementById('team2-display');
+            team1Display.classList.remove('serving');
+            team2Display.classList.remove('serving');
+            // TODO: ajouter logique du service quand disponible
+
+            // Sets detail
+            displaySetsDetail(data);
+
+            // Update match info
+            document.getElementById('match-info').textContent =
+                `${data.team1.name} vs ${data.team2.name} - Set ${data.currentSet}`;
+        }
+
+        function displaySetsDetail(data) {
+            const container = document.getElementById('sets-detail');
+            let html = '';
+
+            for (let i = 0; i < data.currentSet; i++) {
+                const team1Score = data.team1.sets[i] || 0;
+                const team2Score = data.team2.sets[i] || 0;
+
+                let className = '';
+                if (team1Score > team2Score) {
+                    className = 'won';
+                } else if (team2Score > team1Score) {
+                    className = 'lost';
+                }
+
+                html += `
+                    <div class="set-score ${className}">
+                        Set ${i + 1}: ${team1Score} - ${team2Score}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // ==========================================
+        // UPDATE STATS
+        // ==========================================
+        function updateStats(stats) {
+            const container = document.getElementById('stats-grid');
+
+            // Calculate stats
+            const totalRallies = stats.rallies?.length || 0;
+            const totalPointsWon = stats.rallies?.filter(r => r.rallyResult?.winner === 'us').length || 0;
+            const totalPointsLost = stats.rallies?.filter(r => r.rallyResult?.winner === 'them').length || 0;
+
+            let aces = 0, blocks = 0, digs = 0;
+            stats.rallies?.forEach(rally => {
+                rally.actions?.forEach(action => {
+                    if (action.type === 'service' && action.result === 'ace') aces++;
+                    if (action.type === 'block' && action.result === 'point') blocks++;
+                    if (action.type === 'dig' && action.result === 'recovered') digs++;
+                });
+            });
+
+            const html = `
+                <div class="stat-card">
+                    <div class="stat-label">Points Totaux</div>
+                    <div class="stat-value">${totalRallies}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Points Gagnés</div>
+                    <div class="stat-value" style="color: var(--color-success);">${totalPointsWon}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Points Perdus</div>
+                    <div class="stat-value" style="color: var(--color-danger);">${totalPointsLost}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Aces</div>
+                    <div class="stat-value">${aces}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Blocks</div>
+                    <div class="stat-value">${blocks}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Défenses</div>
+                    <div class="stat-value">${digs}</div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // ==========================================
+        // UPDATE ACTIONS
+        // ==========================================
+        function updateActions(stats) {
+            const container = document.getElementById('actions-list');
+            const rallies = stats.rallies || [];
+
+            if (rallies.length === 0) {
+                container.innerHTML = '<div class="no-data">Aucune action enregistrée</div>';
+                return;
+            }
+
+            // Prendre les 20 dernières actions
+            const recentRallies = rallies.slice(-20).reverse();
+
+            let html = '';
+            recentRallies.forEach((rally, index) => {
+                const winner = rally.rallyResult?.winner;
+                const reason = rally.rallyResult?.reason || 'Point';
+                const className = winner === 'us' ? 'point-us' : 'point-them';
+                const icon = winner === 'us' ? '✅' : '❌';
+
+                html += `
+                    <div class="action-item ${className}">
+                        <div>
+                            <strong>${icon} ${reason}</strong>
+                        </div>
+                        <div class="action-time">Il y a ${index} points</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // ==========================================
+        // CLEANUP
+        // ==========================================
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        });
+    </script>
+</body>
+</html>

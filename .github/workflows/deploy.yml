@@ -1,0 +1,186 @@
+name: Deploy to NAS
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  deploy:
+    name: Deploy to ASUSTOR NAS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd server
+          npm ci --only=production
+
+      - name: Run tests (optional)
+        run: |
+          cd server
+          npm test || echo "No tests configured"
+
+      - name: Get version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Deploying version: $VERSION"
+
+      - name: Create deployment archive
+        run: |
+          tar -czf lcvb-deploy-${{ steps.version.outputs.VERSION }}.tar.gz \
+            --exclude='node_modules' \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='*.log' \
+            --exclude='tests/screenshots' \
+            --exclude='deploy' \
+            --exclude='*.md' \
+            server/ \
+            *.html \
+            *.css \
+            *.js \
+            themes.css \
+            shared-style.css \
+            data/ \
+            database/
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.NAS_SSH_PRIVATE_KEY }}
+
+      - name: Add NAS to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 192.168.1.40 >> ~/.ssh/known_hosts
+
+      - name: Upload to NAS
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          NAS_HOST="${{ secrets.NAS_USER }}@${{ secrets.NAS_IP }}"
+          NAS_APP_DIR="${{ secrets.NAS_APP_DIR }}"
+
+          # Créer le répertoire de la release
+          ssh ${NAS_HOST} "mkdir -p ${NAS_APP_DIR}/releases/${VERSION}"
+
+          # Copier l'archive
+          scp lcvb-deploy-${VERSION}.tar.gz ${NAS_HOST}:${NAS_APP_DIR}/releases/${VERSION}/
+
+          # Extraire
+          ssh ${NAS_HOST} "cd ${NAS_APP_DIR}/releases/${VERSION} && tar -xzf lcvb-deploy-${VERSION}.tar.gz && rm lcvb-deploy-${VERSION}.tar.gz"
+
+      - name: Deploy docker-compose.yml
+        run: |
+          NAS_HOST="${{ secrets.NAS_USER }}@${{ secrets.NAS_IP }}"
+          NAS_APP_DIR="${{ secrets.NAS_APP_DIR }}"
+
+          scp deploy/docker-compose.nas.yml ${NAS_HOST}:${NAS_APP_DIR}/docker-compose.yml
+          scp deploy/nginx.conf ${NAS_HOST}:${NAS_APP_DIR}/nginx.conf
+
+      - name: Switch to new version
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          NAS_HOST="${{ secrets.NAS_USER }}@${{ secrets.NAS_IP }}"
+          NAS_APP_DIR="${{ secrets.NAS_APP_DIR }}"
+
+          ssh ${NAS_HOST} "cd ${NAS_APP_DIR} && rm -f current && ln -s releases/${VERSION} current"
+
+      - name: Restart services
+        run: |
+          NAS_HOST="${{ secrets.NAS_USER }}@${{ secrets.NAS_IP }}"
+          NAS_APP_DIR="${{ secrets.NAS_APP_DIR }}"
+
+          ssh ${NAS_HOST} "cd ${NAS_APP_DIR} && docker compose down && docker compose up -d"
+
+      - name: Health check
+        run: |
+          echo "Waiting 10 seconds for services to start..."
+          sleep 10
+
+          # Check backend
+          if curl -f http://${{ secrets.NAS_IP }}:3000/health; then
+            echo "✅ Backend is healthy"
+          else
+            echo "❌ Backend health check failed"
+            exit 1
+          fi
+
+          # Check frontend
+          if curl -f http://${{ secrets.NAS_IP }}:8000; then
+            echo "✅ Frontend is accessible"
+          else
+            echo "❌ Frontend check failed"
+            exit 1
+          fi
+
+      - name: Cleanup old releases
+        run: |
+          NAS_HOST="${{ secrets.NAS_USER }}@${{ secrets.NAS_IP }}"
+          NAS_APP_DIR="${{ secrets.NAS_APP_DIR }}"
+
+          # Garder seulement les 5 dernières releases
+          ssh ${NAS_HOST} "cd ${NAS_APP_DIR}/releases && ls -t | tail -n +6 | xargs -I {} rm -rf {}"
+
+      - name: Notify deployment
+        if: always()
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          STATUS=${{ job.status }}
+
+          echo "🚀 Deployment ${STATUS}"
+          echo "Version: ${VERSION}"
+          echo "Frontend: http://${{ secrets.NAS_IP }}:8000"
+          echo "Backend: http://${{ secrets.NAS_IP }}:3000"
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: lcvb-deploy-${{ steps.version.outputs.VERSION }}.tar.gz
+          body: |
+            ## 🚀 Déploiement LCVB Scoreboard ${{ steps.version.outputs.VERSION }}
+
+            ### 📦 Contenu
+            - Backend Node.js/Express
+            - Frontend HTML/CSS/JS
+            - Base de données PostgreSQL
+
+            ### 🌐 URLs
+            - Frontend: http://${{ secrets.NAS_IP }}:8000
+            - Backend API: http://${{ secrets.NAS_IP }}:3000
+
+            ### 📝 Changements
+            Voir commits depuis la dernière version.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

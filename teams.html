@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>Gestion des Équipes - LCVB Scoreboard Pro</title>
+    <link rel="stylesheet" href="themes.css">
+    <link rel="stylesheet" href="shared-style.css">
+    <style>
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--app-spacing-lg);
+            padding: var(--app-spacing-md);
+            background: var(--app-bg-secondary);
+            border-radius: var(--app-radius-lg);
+            border: 1px solid var(--app-border);
+        }
+
+        .back-btn {
+            padding: 0.5rem 1rem;
+            background: var(--app-bg-tertiary);
+            border: 1px solid var(--app-border);
+            border-radius: var(--app-radius-md);
+            color: var(--app-text-primary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--app-accent-light);
+            border-color: var(--app-accent);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--app-spacing-xl);
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            padding: 0.75rem 1.5rem;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: var(--app-radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--app-spacing-lg);
+            margin-bottom: var(--app-spacing-2xl);
+        }
+
+        .team-card {
+            background: var(--bg-card);
+            border-radius: var(--app-radius-lg);
+            padding: var(--app-spacing-lg);
+            border: 2px solid var(--border-color);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .team-card:hover {
+            border-color: var(--color-primary);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .team-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--app-spacing-md);
+        }
+
+        .team-info {
+            flex: 1;
+        }
+
+        .team-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .team-category {
+            font-size: 0.9rem;
+            color: var(--text-tertiary);
+            font-weight: 500;
+        }
+
+        .team-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--color-primary);
+        }
+
+        .icon-btn.danger:hover {
+            background: var(--color-danger-light);
+            border-color: var(--color-danger);
+            color: var(--color-danger);
+        }
+
+        .team-stats {
+            display: flex;
+            gap: var(--app-spacing-md);
+            padding: var(--app-spacing-md);
+            background: var(--bg-secondary);
+            border-radius: var(--app-radius-md);
+            margin-bottom: var(--app-spacing-md);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .team-colors {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .color-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: var(--app-radius-xl);
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--app-spacing-lg);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .close-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: none;
+            cursor: pointer;
+            font-size: 1.25rem;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: var(--color-danger-light);
+            color: var(--color-danger);
+        }
+
+        .form-group {
+            margin-bottom: var(--app-spacing-lg);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--app-radius-md);
+            font-size: 1rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            background: var(--bg-primary);
+        }
+
+        .form-input[type="color"] {
+            height: 50px;
+            cursor: pointer;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--app-spacing-md);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--app-spacing-md);
+            margin-top: var(--app-spacing-xl);
+        }
+
+        .btn-secondary {
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--app-radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(59, 130, 246, 0.2);
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-text {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .players-section {
+            margin-top: var(--app-spacing-xl);
+            padding-top: var(--app-spacing-xl);
+            border-top: 2px solid var(--border-color);
+        }
+
+        .players-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--app-spacing-md);
+        }
+
+        .players-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .players-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: var(--app-radius-md);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .player-item:hover {
+            background: var(--bg-hover);
+            border-color: var(--color-primary);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .player-number {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-primary);
+            color: white;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .player-number.libero {
+            background: var(--color-warning);
+        }
+
+        .player-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .player-position {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+
+        .player-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .teams-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme">🌙</button>
+
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <a href="home.html" class="back-btn">
+                ← Retour au hub
+            </a>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">👥 Gestion des Équipes</h1>
+            <button class="btn-primary" onclick="openCreateTeamModal()">
+                ➕ Nouvelle équipe
+            </button>
+        </div>
+
+        <!-- Teams Grid -->
+        <div id="teams-container">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div style="margin-top: 1rem;">Chargement des équipes...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Équipe -->
+    <div id="team-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="team-modal-title">Nouvelle équipe</h2>
+                <button class="close-btn" onclick="closeTeamModal()">×</button>
+            </div>
+
+            <form id="team-form" onsubmit="saveTeam(event)">
+                <div class="form-group">
+                    <label class="form-label">Nom de l'équipe *</label>
+                    <input type="text" id="team-name" class="form-input" placeholder="Ex: Seniors Masculins" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Catégorie *</label>
+                    <select id="team-category" class="form-select" required>
+                        <option value="">Sélectionner...</option>
+                        <option value="Senior M">Senior M</option>
+                        <option value="Senior F">Senior F</option>
+                        <option value="U18 M">U18 M</option>
+                        <option value="U18 F">U18 F</option>
+                        <option value="U15 M">U15 M</option>
+                        <option value="U15 F">U15 F</option>
+                        <option value="U13 M">U13 M</option>
+                        <option value="U13 F">U13 F</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Couleur principale</label>
+                        <input type="color" id="team-primary-color" class="form-input" value="#E91E63">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Couleur secondaire</label>
+                        <input type="color" id="team-secondary-color" class="form-input" value="#FF69B4">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeTeamModal()">Annuler</button>
+                    <button type="submit" class="btn-primary">
+                        <span id="save-btn-text">Créer l'équipe</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Joueur -->
+    <div id="player-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="player-modal-title">Nouveau joueur</h2>
+                <button class="close-btn" onclick="closePlayerModal()">×</button>
+            </div>
+
+            <form id="player-form" onsubmit="savePlayer(event)">
+                <input type="hidden" id="player-team-id">
+                <input type="hidden" id="player-id">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Numéro *</label>
+                        <input type="number" id="player-number" class="form-input" min="0" max="99" placeholder="12" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Prénom *</label>
+                        <input type="text" id="player-first-name" class="form-input" placeholder="John" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nom *</label>
+                    <input type="text" id="player-last-name" class="form-input" placeholder="Doe" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Position *</label>
+                    <select id="player-position" class="form-select" required>
+                        <option value="">Sélectionner...</option>
+                        <option value="Passeur">Passeur</option>
+                        <option value="Attaquant">Attaquant</option>
+                        <option value="Central">Central</option>
+                        <option value="Réceptionneur-Attaquant">Réceptionneur-Attaquant</option>
+                        <option value="Libéro">Libéro</option>
+                    </select>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closePlayerModal()">Annuler</button>
+                    <button type="submit" class="btn-primary">
+                        <span id="save-player-btn-text">Ajouter le joueur</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Détails Équipe -->
+    <div id="team-details-modal" class="modal">
+        <div class="modal-content" style="max-width: 820px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="team-details-title">Équipe</h2>
+                <button class="close-btn" onclick="closeTeamDetailsModal()">×</button>
+            </div>
+            <div id="team-details-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://192.168.1.40:5700';
+        let teams = [];
+        let currentTeamId = null;
+        let editingTeamId = null;
+        let editingPlayerId = null;
+
+        // ==========================================
+        // AUTH
+        // ==========================================
+        function checkAuth() {
+            const token = localStorage.getItem('lcvb_auth_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            return true;
+        }
+
+        async function fetchAPI(endpoint, options = {}) {
+            const token = localStorage.getItem('lcvb_auth_token');
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    localStorage.removeItem('lcvb_auth_token');
+                    window.location.href = 'login.html';
+                }
+                const error = await response.json().catch(() => ({ error: 'Erreur serveur' }));
+                throw new Error(error.error || `HTTP ${response.status}`);
+            }
+
+            return await response.json();
+        }
+
+        // ==========================================
+        // CHARGEMENT DES DONNÉES
+        // ==========================================
+        async function loadTeams() {
+            try {
+                const data = await fetchAPI('/api/teams');
+                teams = data.teams || [];
+                displayTeams();
+            } catch (error) {
+                console.error('Erreur chargement équipes:', error);
+                document.getElementById('teams-container').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <div class="empty-text">Erreur lors du chargement</div>
+                        <div>${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function displayTeams() {
+            const container = document.getElementById('teams-container');
+
+            if (teams.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <div class="empty-text">Aucune équipe créée</div>
+                        <div>Commencez par créer votre première équipe</div>
+                        <div style="margin-top: 2rem;">
+                            <button class="btn-primary" onclick="openCreateTeamModal()">
+                                ➕ Créer une équipe
+                            </button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="teams-grid">';
+            teams.forEach(team => {
+                html += `
+                    <div class="team-card" onclick="viewTeamDetails(${team.id})">
+                        <div class="team-card-header">
+                            <div class="team-info">
+                                <div class="team-name">${team.name}</div>
+                                <div class="team-category">${team.category}</div>
+                            </div>
+                            <div class="team-actions" onclick="event.stopPropagation()">
+                                <button class="icon-btn" onclick="openEditTeamModal(${team.id})" title="Modifier">
+                                    ✏️
+                                </button>
+                                <button class="icon-btn danger" onclick="deleteTeam(${team.id})" title="Supprimer">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="team-stats">
+                            <div class="stat-item">
+                                👤 <span class="stat-value">${team.player_count || 0}</span> joueurs
+                            </div>
+                            <div class="team-colors">
+                                🎨
+                                <div class="color-dot" style="background: ${team.primary_color}"></div>
+                                <div class="color-dot" style="background: ${team.secondary_color}"></div>
+                            </div>
+                        </div>
+
+                        ${team.coach_name ? `
+                            <div style="font-size: 0.85rem; color: var(--text-tertiary); margin-top: 0.5rem;">
+                                🏋️ Coach: ${team.coach_name}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
+        }
+
+        async function viewTeamDetails(teamId) {
+            try {
+                const data = await fetchAPI(`/api/teams/${teamId}`);
+                const team = data.team;
+                showTeamDetailsModal(team);
+            } catch (error) {
+                alert('Erreur lors du chargement des détails: ' + error.message);
+            }
+        }
+
+        function showTeamDetailsModal(team) {
+            const modal = document.getElementById('team-details-modal');
+            const body = document.getElementById('team-details-body');
+            const title = document.getElementById('team-details-title');
+            if (!modal || !body || !title) return;
+
+            title.textContent = team.name;
+
+            let html = `
+                <div style="margin-bottom: 2rem;">
+                    <div class="team-stats">
+                        <div class="stat-item">
+                            📂 ${team.category || 'Catégorie non définie'}
+                        </div>
+                        <div class="stat-item">
+                            👤 <span class="stat-value">${team.players?.length || 0}</span> joueurs
+                        </div>
+                        <div class="team-colors">
+                            🎨
+                            <div class="color-dot" style="background: ${team.primary_color || '#E91E63'}"></div>
+                            <div class="color-dot" style="background: ${team.secondary_color || '#FF69B4'}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="players-section">
+                    <div class="players-header">
+                        <h3 class="players-title">Joueurs de l'équipe</h3>
+                        <button class="btn-primary" onclick="openAddPlayerModal(event, ${team.id})">
+                            ➕ Ajouter un joueur
+                        </button>
+                    </div>
+
+                    <div class="players-list">
+            `;
+
+            if (team.players && team.players.length > 0) {
+                team.players.forEach(player => {
+                    html += `
+                        <div class="player-item">
+                            <div class="player-info">
+                                <div class="player-number ${player.is_libero ? 'libero' : ''}">${player.number}</div>
+                                <div class="player-details">
+                                    <div class="player-name">${player.first_name} ${player.last_name}</div>
+                                    <div class="player-position">${player.position || 'Position non définie'}</div>
+                                </div>
+                            </div>
+                            <div class="player-actions">
+                                <button class="icon-btn" onclick="openEditPlayerModal(${team.id}, ${player.id})" title="Modifier">
+                                    ✏️
+                                </button>
+                                <button class="icon-btn danger" onclick="deletePlayer(${player.id}, ${team.id})" title="Supprimer">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += `
+                    <div class="empty-state" style="padding: 2rem;">
+                        <div>Aucun joueur dans cette équipe</div>
+                        <div style="margin-top: 1rem;">
+                            <button class="btn-primary" onclick="openAddPlayerModal(event, ${team.id})">
+                                ➕ Ajouter un joueur
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            body.innerHTML = html;
+            modal.classList.add('show');
+        }
+
+        // ==========================================
+        // GESTION DES ÉQUIPES
+        // ==========================================
+        function openCreateTeamModal() {
+            editingTeamId = null;
+            document.getElementById('team-modal-title').textContent = 'Nouvelle équipe';
+            document.getElementById('save-btn-text').textContent = 'Créer l\'équipe';
+            document.getElementById('team-form').reset();
+            document.getElementById('team-primary-color').value = '#E91E63';
+            document.getElementById('team-secondary-color').value = '#FF69B4';
+            document.getElementById('team-modal').classList.add('show');
+        }
+
+        async function openEditTeamModal(teamId) {
+            try {
+                const data = await fetchAPI(`/api/teams/${teamId}`);
+                const team = data.team;
+
+                editingTeamId = teamId;
+                document.getElementById('team-modal-title').textContent = 'Modifier l\'équipe';
+                document.getElementById('save-btn-text').textContent = 'Enregistrer';
+                document.getElementById('team-name').value = team.name;
+                const categorySelect = document.getElementById('team-category');
+                if (categorySelect) {
+                    if (team.category) {
+                        const options = Array.from(categorySelect.options);
+                        const hasOption = options.some(opt => opt.value === team.category);
+                        if (!hasOption) {
+                            const customOption = document.createElement('option');
+                            customOption.value = team.category;
+                            customOption.textContent = team.category;
+                            categorySelect.appendChild(customOption);
+                        }
+                        categorySelect.value = team.category;
+                    } else {
+                        categorySelect.value = '';
+                    }
+                }
+                document.getElementById('team-primary-color').value = team.primary_color || '#E91E63';
+                document.getElementById('team-secondary-color').value = team.secondary_color || '#FF69B4';
+                document.getElementById('team-modal').classList.add('show');
+            } catch (error) {
+                alert('Erreur: ' + error.message);
+            }
+        }
+
+        function closeTeamModal() {
+            document.getElementById('team-modal').classList.remove('show');
+        }
+
+        async function saveTeam(event) {
+            event.preventDefault();
+
+            const teamData = {
+                name: document.getElementById('team-name').value,
+                category: document.getElementById('team-category').value,
+                primary_color: document.getElementById('team-primary-color').value,
+                secondary_color: document.getElementById('team-secondary-color').value
+            };
+
+            try {
+                if (editingTeamId) {
+                    await fetchAPI(`/api/teams/${editingTeamId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(teamData)
+                    });
+                    alert('✅ Équipe modifiée avec succès !');
+                } else {
+                    await fetchAPI('/api/teams', {
+                        method: 'POST',
+                        body: JSON.stringify(teamData)
+                    });
+                    alert('✅ Équipe créée avec succès !');
+                }
+
+                closeTeamModal();
+                loadTeams();
+            } catch (error) {
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+
+        async function deleteTeam(teamId) {
+            if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette équipe ?\n\nCette action est irréversible et supprimera tous les joueurs associés.')) {
+                return;
+            }
+
+            try {
+                await fetchAPI(`/api/teams/${teamId}`, { method: 'DELETE' });
+                alert('✅ Équipe supprimée');
+                loadTeams();
+            } catch (error) {
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+
+        // ==========================================
+        // GESTION DES JOUEURS
+        // ==========================================
+        let playerModalRefs = null;
+
+        function ensurePlayerModalStructure() {
+            let modal = document.getElementById('player-modal');
+            if (modal) return modal;
+
+            modal = document.createElement('div');
+            modal.id = 'player-modal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title" id="player-modal-title">Nouveau joueur</h2>
+                        <button class="close-btn" onclick="closePlayerModal()">×</button>
+                    </div>
+                    <form id="player-form" onsubmit="savePlayer(event)">
+                        <input type="hidden" id="player-team-id">
+                        <input type="hidden" id="player-id">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Numéro *</label>
+                                <input type="number" id="player-number" class="form-input" min="0" max="99" placeholder="12" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Prénom *</label>
+                                <input type="text" id="player-first-name" class="form-input" placeholder="John" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nom *</label>
+                            <input type="text" id="player-last-name" class="form-input" placeholder="Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Position *</label>
+                            <select id="player-position" class="form-select" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="Passeur">Passeur</option>
+                                <option value="Attaquant">Attaquant</option>
+                                <option value="Central">Central</option>
+                                <option value="Réceptionneur-Attaquant">Réceptionneur-Attaquant</option>
+                                <option value="Libéro">Libéro</option>
+                            </select>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn-secondary" onclick="closePlayerModal()">Annuler</button>
+                            <button type="submit" class="btn-primary">
+                                <span id="save-player-btn-text">Ajouter le joueur</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            return modal;
+        }
+
+        function getPlayerModalRefs() {
+            if (playerModalRefs && playerModalRefs.modal?.isConnected) {
+                return playerModalRefs;
+            }
+
+            const modal = ensurePlayerModalStructure();
+            const refs = {
+                modal,
+                title: modal.querySelector('#player-modal-title'),
+                saveBtnText: modal.querySelector('#save-player-btn-text'),
+                form: modal.querySelector('#player-form'),
+                teamIdInput: modal.querySelector('#player-team-id')
+            };
+
+            if (!refs.title || !refs.saveBtnText || !refs.form || !refs.teamIdInput) {
+                console.error('❌ Impossible de trouver le modal joueur dans le DOM');
+                return null;
+            }
+
+            playerModalRefs = refs;
+            return refs;
+        }
+
+        function openAddPlayerModal(evt, teamIdParam) {
+            if (evt && typeof evt.stopPropagation === 'function') {
+                evt.stopPropagation();
+            }
+
+            const teamId = typeof teamIdParam === 'number' ? teamIdParam : evt;
+            const refs = getPlayerModalRefs();
+            if (!refs) return;
+
+            editingPlayerId = null;
+            currentTeamId = teamId;
+            refs.title.textContent = 'Nouveau joueur';
+            refs.saveBtnText.textContent = 'Ajouter le joueur';
+            refs.form.reset();
+            refs.teamIdInput.value = teamId;
+
+            closeTeamDetailsModal();
+            refs.modal.classList.add('show');
+        }
+
+        async function openEditPlayerModal(teamId, playerId) {
+            const refs = getPlayerModalRefs();
+            if (!refs) return;
+
+            try {
+                const data = await fetchAPI(`/api/players/${playerId}`);
+                const player = data.player;
+
+                editingPlayerId = playerId;
+                currentTeamId = teamId;
+                refs.title.textContent = 'Modifier le joueur';
+                refs.saveBtnText.textContent = 'Enregistrer';
+                refs.teamIdInput.value = teamId;
+                document.getElementById('player-id').value = playerId;
+                document.getElementById('player-number').value = player.number;
+                document.getElementById('player-first-name').value = player.first_name;
+                document.getElementById('player-last-name').value = player.last_name;
+                document.getElementById('player-position').value = player.position || '';
+
+                refs.modal.classList.add('show');
+            } catch (error) {
+                alert('Erreur: ' + error.message);
+            }
+        }
+
+        function closePlayerModal() {
+            const modal = ensurePlayerModalStructure();
+            if (!modal) return;
+            modal.classList.remove('show');
+            const content = modal.querySelector('.modal-content');
+            if (content) {
+                content.style.maxWidth = '600px';
+            }
+        }
+
+        function closeTeamDetailsModal() {
+            const modal = document.getElementById('team-details-modal');
+            if (!modal) return;
+            modal.classList.remove('show');
+        }
+
+        async function savePlayer(event) {
+            event.preventDefault();
+
+            const positionValue = document.getElementById('player-position').value;
+
+            const playerData = {
+                team_id: parseInt(document.getElementById('player-team-id').value),
+                number: parseInt(document.getElementById('player-number').value),
+                first_name: document.getElementById('player-first-name').value,
+                last_name: document.getElementById('player-last-name').value,
+                position: positionValue,
+                is_libero: positionValue === 'Libéro'
+            };
+
+            try {
+                if (editingPlayerId) {
+                    await fetchAPI(`/api/players/${editingPlayerId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(playerData)
+                    });
+                    alert('✅ Joueur modifié avec succès !');
+                } else {
+                    await fetchAPI('/api/players', {
+                        method: 'POST',
+                        body: JSON.stringify(playerData)
+                    });
+                    alert('✅ Joueur ajouté avec succès !');
+                }
+
+                closePlayerModal();
+
+                // Recharger les détails de l'équipe
+                if (currentTeamId) {
+                    viewTeamDetails(currentTeamId);
+                }
+            } catch (error) {
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+
+        async function deletePlayer(playerId, teamId) {
+            if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer ce joueur ?')) {
+                return;
+            }
+
+            try {
+                await fetchAPI(`/api/players/${playerId}`, { method: 'DELETE' });
+                alert('✅ Joueur supprimé');
+
+                // Recharger les détails de l'équipe
+                viewTeamDetails(teamId);
+            } catch (error) {
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+
+        // ==========================================
+        // INITIALISATION
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                loadTeams();
+            }
+        });
+    </script>
+    <script src="theme.js"></script>
+</body>
+</html>

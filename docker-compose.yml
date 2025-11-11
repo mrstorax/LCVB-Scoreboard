@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lcvb_app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-5700}:5700"
+      - "${API_PORT:-3000}:3000"
+    environment:
+      PORT: 3000
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_NAME: ${DB_NAME:-lcvb_scoreboard}
+      DB_USER: ${DB_USER:-lcvb_user}
+      DB_PASSWORD: ${DB_PASSWORD:-lcvb_password_2024}
+      JWT_SECRET: ${JWT_SECRET:-lcvb_super_secret_key_change_in_production_2024}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5700}
+    volumes:
+      - ./data:/app/data
+      - ./logos:/app/logos
+      - ./logo-club:/app/logo-club
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - lcvb_network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: lcvb_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-lcvb_scoreboard}
+      POSTGRES_USER: ${DB_USER:-lcvb_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-lcvb_password_2024}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    networks:
+      - lcvb_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-lcvb_user} -d ${DB_NAME:-lcvb_scoreboard}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin (interface graphique pour gérer la BDD)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: lcvb_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@lcvb.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - lcvb_network
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  lcvb_network:
+    driver: bridge

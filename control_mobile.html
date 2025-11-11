@@ -1,0 +1,2836 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0f172a">
+    <title>LCVB Mobile - Contrôle Match</title>
+    <link rel="stylesheet" href="themes.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            touch-action: pan-y;
+            user-select: none;
+            -webkit-user-select: none;
+            font-size: 16px;
+        }
+
+        @media (max-width: 360px) {
+            body {
+                font-size: 14px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            body {
+                font-size: 18px;
+            }
+        }
+
+        /* Header compact avec score */
+        .mobile-header {
+            position: sticky;
+            top: 0;
+            background: var(--gradient-primary);
+            padding: 0.5rem;
+            z-index: 100;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-score {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .team-score.serving::before {
+            content: '⚡';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 1.5rem;
+        }
+
+        .team-name {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin: 0.25rem 0;
+        }
+
+        @media (max-width: 360px) {
+            .score-value {
+                font-size: 2rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .score-value {
+                font-size: 3rem;
+            }
+        }
+
+        .set-info {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            font-weight: 500;
+        }
+
+        .timeout-display {
+            font-size: 0.65rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+
+        .vs-separator {
+            font-size: 1.5rem;
+            opacity: 0.5;
+            margin: 0 0.5rem;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .quick-btn {
+            flex: 1;
+            padding: 0.6rem;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quick-btn:active {
+            transform: scale(0.95);
+            background: rgba(255,255,255,0.2);
+        }
+
+        @media (max-width: 360px) {
+            .quick-btn {
+                font-size: 0.65rem;
+                padding: 0.5rem;
+            }
+        }
+
+        /* Court tactile simplifié */
+        .court-section {
+            padding: 0.75rem;
+            background: #1e293b;
+        }
+
+        .court-title {
+            text-align: center;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .court-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .court-position {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #334155 0%, #475569 100%);
+            border: 2px solid #64748b;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .court-position:active {
+            transform: scale(0.95);
+        }
+
+        .court-position.selected {
+            border-color: #ec4899;
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
+            animation: pulse-select 1.5s infinite;
+        }
+
+        @keyframes pulse-select {
+            0%, 100% { box-shadow: 0 0 20px rgba(236, 72, 153, 0.6); }
+            50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.9); }
+        }
+
+        .court-position.libero {
+            border-color: #8b5cf6;
+            background: linear-gradient(135deg, #6b21a8 0%, #7c3aed 100%);
+        }
+
+        .position-label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            font-weight: 600;
+        }
+
+        .player-number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0.25rem 0;
+        }
+
+        @media (max-width: 360px) {
+            .player-number {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .player-number {
+                font-size: 2.2rem;
+            }
+        }
+
+        .player-name {
+            font-size: 0.7rem;
+            text-align: center;
+            opacity: 0.9;
+            max-width: 90%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .player-position {
+            font-size: 0.6rem;
+            text-align: center;
+            opacity: 0.7;
+            font-style: italic;
+            margin-top: 0.15rem;
+            color: #94a3b8;
+        }
+
+        /* Workflow rapide */
+        .workflow-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, #0f172a 0%, #1e293b 100%);
+            padding: 1rem;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+            max-height: 70vh;
+            overflow-y: auto;
+            z-index: 200;
+        }
+
+        .workflow-panel.active {
+            transform: translateY(0);
+        }
+
+        .workflow-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .workflow-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        @media (max-width: 360px) {
+            .workflow-title {
+                font-size: 1rem;
+            }
+        }
+
+        .workflow-subtitle {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            font-weight: 500;
+        }
+
+        .action-grid {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .action-btn {
+            padding: 1.25rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            min-height: 56px;
+            line-height: 1.3;
+        }
+
+        .action-btn:active {
+            transform: scale(0.97);
+        }
+
+        @media (max-width: 360px) {
+            .action-btn {
+                font-size: 0.9rem;
+                padding: 1rem;
+                min-height: 48px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .action-btn {
+                font-size: 1.1rem;
+                padding: 1.5rem;
+            }
+        }
+
+        .action-btn.success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .action-btn.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .action-btn.warning {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+        }
+
+        .action-btn.neutral {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            color: white;
+        }
+
+        /* Service choice buttons */
+        .service-choice {
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .service-choice.active {
+            display: grid;
+        }
+
+        .service-btn {
+            padding: 1.5rem;
+            border: 3px solid;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .service-btn.team1 {
+            border-color: #10b981;
+        }
+
+        .service-btn.team2 {
+            border-color: #f59e0b;
+        }
+
+        .service-btn:active {
+            transform: scale(0.95);
+        }
+
+        .service-btn.selected {
+            background: rgba(255,255,255,0.15);
+        }
+
+        /* Start rally button */
+        .start-rally-btn {
+            width: 100%;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s;
+            margin-top: 1rem;
+            min-height: 64px;
+            line-height: 1.3;
+        }
+
+        .start-rally-btn:active {
+            transform: scale(0.98);
+        }
+
+        .start-rally-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #64748b;
+        }
+
+        @media (max-width: 360px) {
+            .start-rally-btn {
+                font-size: 1rem;
+                padding: 1.25rem;
+                min-height: 56px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .start-rally-btn {
+                font-size: 1.4rem;
+                padding: 1.75rem;
+            }
+        }
+
+        /* Player selector dans workflow */
+        .player-selector {
+            display: none;
+            margin-bottom: 1rem;
+        }
+
+        .player-selector.active {
+            display: block;
+        }
+
+        .selected-player-card {
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        /* Notification toast */
+        .notification {
+            position: fixed;
+            top: 4.5rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            z-index: 300;
+            transition: transform 0.3s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+        }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Bottom nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1e293b;
+            padding: 0.5rem;
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            z-index: 90;
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 0.75rem;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .nav-btn.active {
+            color: #3b82f6;
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+        }
+
+        /* Stats mini panel */
+        .stats-mini {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 0.75rem;
+            margin: 0.75rem;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.8rem;
+        }
+
+        .stats-row:last-child {
+            border-bottom: none;
+        }
+
+        .stats-label {
+            opacity: 0.7;
+        }
+
+        .stats-value {
+            font-weight: 700;
+        }
+
+        /* Hide elements */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Blocker selection */
+        .blocker-selection {
+            display: none;
+            margin-bottom: 1rem;
+        }
+
+        .blocker-selection.active {
+            display: block;
+        }
+
+        .selected-blockers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .blocker-chip {
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid #10b981;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .remove-blocker {
+            background: #ef4444;
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            opacity: 0.7;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Positioning Modal */
+        .positioning-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0f172a;
+            z-index: 500;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .positioning-modal.active {
+            display: block;
+        }
+
+        .positioning-header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 1rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .positioning-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+
+        .positioning-subtitle {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .positioning-content {
+            padding: 1rem;
+        }
+
+        .positioning-step {
+            margin-bottom: 1.5rem;
+        }
+
+        .step-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .step-number {
+            background: #3b82f6;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .position-slot {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid #334155;
+            border-radius: 12px;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .position-slot.filled {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .position-slot:active {
+            transform: scale(0.97);
+        }
+
+        .position-slot-label {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+        }
+
+        .position-slot-player {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+
+        .position-slot-name {
+            font-size: 0.7rem;
+            opacity: 0.9;
+        }
+
+        .player-list {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .player-item {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid #334155;
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .player-item:active {
+            transform: scale(0.98);
+        }
+
+        .player-item.selected {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .player-item.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .player-number-badge {
+            background: #3b82f6;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .player-details {
+            text-align: left;
+        }
+
+        .player-fullname {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .player-position {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .validate-btn {
+            width: 100%;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+            transition: all 0.2s;
+            margin-top: 1.5rem;
+        }
+
+        .validate-btn:active {
+            transform: scale(0.98);
+        }
+
+        .validate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #64748b;
+        }
+
+        .libero-section {
+            background: rgba(139, 92, 246, 0.1);
+            border: 2px solid #8b5cf6;
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .libero-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        .libero-option:active {
+            transform: scale(0.98);
+        }
+
+        .libero-option.selected {
+            background: rgba(139, 92, 246, 0.2);
+            border: 2px solid #8b5cf6;
+        }
+
+        .instruction-banner {
+            background: rgba(59, 130, 246, 0.15);
+            border-left: 4px solid #3b82f6;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <!-- Positioning Modal -->
+    <div class="positioning-modal" id="positioning-modal">
+        <div class="positioning-header">
+            <div class="positioning-title">🏐 Configuration - Set <span id="modal-set-number">1</span></div>
+            <div class="positioning-subtitle">Placez vos 6 joueurs sur le terrain</div>
+        </div>
+
+        <div class="positioning-content">
+            <!-- Instructions -->
+            <div class="instruction-banner">
+                👆 Tapez sur une position puis sélectionnez un joueur dans la liste
+            </div>
+
+            <!-- Step 1: Positions -->
+            <div class="positioning-step">
+                <div class="step-title">
+                    <div class="step-number">1</div>
+                    <span>Positionnement des joueurs</span>
+                </div>
+
+                <div class="position-grid">
+                    <!-- Front row -->
+                    <div class="position-slot" data-position="4" onclick="selectPositionSlot(4)">
+                        <div class="position-slot-label">P4 (Avant gauche)</div>
+                        <div class="position-slot-player" id="slot-4-number">-</div>
+                        <div class="position-slot-name" id="slot-4-name">Vide</div>
+                    </div>
+                    <div class="position-slot" data-position="3" onclick="selectPositionSlot(3)">
+                        <div class="position-slot-label">P3 (Centre avant)</div>
+                        <div class="position-slot-player" id="slot-3-number">-</div>
+                        <div class="position-slot-name" id="slot-3-name">Vide</div>
+                    </div>
+                    <div class="position-slot" data-position="2" onclick="selectPositionSlot(2)">
+                        <div class="position-slot-label">P2 (Avant droit)</div>
+                        <div class="position-slot-player" id="slot-2-number">-</div>
+                        <div class="position-slot-name" id="slot-2-name">Vide</div>
+                    </div>
+
+                    <!-- Back row -->
+                    <div class="position-slot" data-position="5" onclick="selectPositionSlot(5)">
+                        <div class="position-slot-label">P5 (Arrière gauche)</div>
+                        <div class="position-slot-player" id="slot-5-number">-</div>
+                        <div class="position-slot-name" id="slot-5-name">Vide</div>
+                    </div>
+                    <div class="position-slot" data-position="6" onclick="selectPositionSlot(6)">
+                        <div class="position-slot-label">P6 (Centre arrière)</div>
+                        <div class="position-slot-player" id="slot-6-number">-</div>
+                        <div class="position-slot-name" id="slot-6-name">Vide</div>
+                    </div>
+                    <div class="position-slot" data-position="1" onclick="selectPositionSlot(1)">
+                        <div class="position-slot-label">P1 (Service) ⚡</div>
+                        <div class="position-slot-player" id="slot-1-number">-</div>
+                        <div class="position-slot-name" id="slot-1-name">Vide</div>
+                    </div>
+                </div>
+
+                <!-- Player list -->
+                <div id="player-selection-panel" style="display: none;">
+                    <div style="font-weight: 700; margin-bottom: 0.75rem; font-size: 0.9rem;">
+                        Sélectionnez un joueur pour <span id="selected-position-label">P1</span>
+                    </div>
+                    <div class="player-list" id="player-list"></div>
+                </div>
+            </div>
+
+            <!-- Step 2: Libero (optional) -->
+            <div class="positioning-step">
+                <div class="step-title">
+                    <div class="step-number">2</div>
+                    <span>Libéro (optionnel)</span>
+                </div>
+
+                <div class="libero-section">
+                    <div class="libero-option" onclick="selectLibero(null)">
+                        <div>
+                            <div style="font-weight: 700;">Pas de libéro</div>
+                            <div style="font-size: 0.75rem; opacity: 0.7;">Jouer sans libéro</div>
+                        </div>
+                        <div id="no-libero-check" style="font-size: 1.5rem;">⚪</div>
+                    </div>
+                    <div id="libero-options"></div>
+                </div>
+            </div>
+
+            <!-- Validate button -->
+            <button class="validate-btn" id="validate-positioning-btn" onclick="validatePositioning()" disabled>
+                ✅ Valider et Démarrer
+            </button>
+        </div>
+    </div>
+
+    <!-- Header avec score -->
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme">🌙</button>
+
+    <div class="mobile-header">
+        <div class="score-display">
+            <div class="team-score" id="team1-display">
+                <div class="team-name" id="team1-name">NOTRE ÉQUIPE</div>
+                <div class="score-value" id="team1-score">0</div>
+                <div class="set-info" id="team1-sets">Sets: 0</div>
+                <div class="timeout-display" id="team1-timeouts">⏸️ 0/2</div>
+            </div>
+
+            <div class="vs-separator">VS</div>
+
+            <div class="team-score" id="team2-display">
+                <div class="team-name" id="team2-name">ADVERSAIRES</div>
+                <div class="score-value" id="team2-score">0</div>
+                <div class="set-info" id="team2-sets">Sets: 0</div>
+                <div class="timeout-display" id="team2-timeouts">⏸️ 0/2</div>
+            </div>
+        </div>
+
+        <div class="quick-actions" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+            <button class="quick-btn" onclick="showHistory()">📋 Histo</button>
+            <button class="quick-btn" onclick="undoLast()">↩️ Annuler</button>
+            <button class="quick-btn" onclick="nextSet()">🔄 Set +1</button>
+        </div>
+        <div class="quick-actions" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
+            <button class="quick-btn" onclick="clearCourt()">🧹 Vider</button>
+            <button class="quick-btn" onclick="endMatch()">🏁 Fin</button>
+            <button class="quick-btn" onclick="window.open('spectator.html', '_blank')">🎥 Spectateur</button>
+        </div>
+        <div class="quick-actions" style="display: grid; grid-template-columns: 1fr; gap: 0.5rem; margin-top: 0.5rem;">
+            <button class="quick-btn" onclick="showMenu()">⚙️ Menu</button>
+        </div>
+    </div>
+
+    <!-- Service choice -->
+    <div class="service-choice" id="service-choice">
+        <div class="service-btn team1" onclick="selectServiceTeam('team1')">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚡</div>
+            <div style="font-weight: 700;">ON SERT</div>
+        </div>
+        <div class="service-btn team2" onclick="selectServiceTeam('team2')">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛡️</div>
+            <div style="font-weight: 700;">ILS SERVENT</div>
+        </div>
+    </div>
+
+    <!-- Court display -->
+    <div class="court-section">
+        <div class="court-title">🏐 Notre Terrain</div>
+        <div class="court-grid" id="court-grid">
+            <!-- Ligne avant -->
+            <div class="court-position" data-pos="4" onclick="selectPosition(4)">
+                <div class="position-label">P4</div>
+                <div class="player-number" id="p4-number">-</div>
+                <div class="player-name" id="p4-name"></div>
+                <div class="player-position" id="p4-position"></div>
+            </div>
+            <div class="court-position" data-pos="3" onclick="selectPosition(3)">
+                <div class="position-label">P3</div>
+                <div class="player-number" id="p3-number">-</div>
+                <div class="player-name" id="p3-name"></div>
+                <div class="player-position" id="p3-position"></div>
+            </div>
+            <div class="court-position" data-pos="2" onclick="selectPosition(2)">
+                <div class="position-label">P2</div>
+                <div class="player-number" id="p2-number">-</div>
+                <div class="player-name" id="p2-name"></div>
+                <div class="player-position" id="p2-position"></div>
+            </div>
+
+            <!-- Ligne arrière -->
+            <div class="court-position" data-pos="5" onclick="selectPosition(5)">
+                <div class="position-label">P5</div>
+                <div class="player-number" id="p5-number">-</div>
+                <div class="player-name" id="p5-name"></div>
+                <div class="player-position" id="p5-position"></div>
+            </div>
+            <div class="court-position" data-pos="6" onclick="selectPosition(6)">
+                <div class="position-label">P6</div>
+                <div class="player-number" id="p6-number">-</div>
+                <div class="player-name" id="p6-name"></div>
+                <div class="player-position" id="p6-position"></div>
+            </div>
+            <div class="court-position" data-pos="1" onclick="selectPosition(1)">
+                <div class="position-label">P1</div>
+                <div class="player-number" id="p1-number">-</div>
+                <div class="player-name" id="p1-name"></div>
+                <div class="player-position" id="p1-position"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Grid -->
+    <div style="padding: 0 1rem 1rem 1rem;">
+        <!-- Direct Points -->
+        <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem; opacity: 0.7; text-transform: uppercase;">⚡ Actions directes</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+            <button class="action-btn danger" style="padding: 0.75rem; font-size: 0.85rem;" onclick="directPoint('them')">
+                ❌ Point EUX<br><span style="font-size: 0.7rem; opacity: 0.8;">Faute directe</span>
+            </button>
+            <button class="action-btn success" style="padding: 0.75rem; font-size: 0.85rem;" onclick="directPoint('us')">
+                ✅ Point NOUS<br><span style="font-size: 0.7rem; opacity: 0.8;">Faute adverse</span>
+            </button>
+        </div>
+
+        <!-- Timeouts & Subs -->
+        <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem; opacity: 0.7; text-transform: uppercase;">⏱️ Gestion match</div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 0.5rem;">
+            <button class="action-btn neutral" style="padding: 0.75rem; font-size: 0.85rem;" onclick="directTimeout()">
+                ⏸️ Timeout<br><span style="font-size: 0.7rem; opacity: 0.8;">Les 2 équipes</span>
+            </button>
+            <button class="action-btn warning" style="padding: 0.75rem; font-size: 0.85rem;" onclick="directCard()">
+                🟨🟥 Carton<br><span style="font-size: 0.7rem; opacity: 0.8;">Jaune/Rouge</span>
+            </button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+            <button class="action-btn neutral" style="padding: 0.75rem; font-size: 0.85rem;" onclick="showSubstitutionModal()">
+                🔄 Changement<br><span style="font-size: 0.7rem; opacity: 0.8;">Remplacer un joueur</span>
+            </button>
+        </div>
+
+        <!-- History List -->
+        <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem; opacity: 0.7; text-transform: uppercase;">📋 Dernières actions</div>
+        <div id="recent-actions-list" style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 0.75rem; max-height: 200px; overflow-y: auto;">
+            <div style="text-align: center; opacity: 0.5; padding: 1rem; font-size: 0.85rem;">Aucune action</div>
+        </div>
+    </div>
+
+    <!-- Start Rally Button -->
+    <div style="padding: 0 1rem 1rem 1rem;">
+        <button class="start-rally-btn" id="start-rally-btn" onclick="startRally()" disabled>
+            🏐 DÉMARRER LE POINT
+        </button>
+    </div>
+
+    <!-- Workflow Panel -->
+    <div class="workflow-panel" id="workflow-panel">
+        <div class="workflow-header">
+            <div class="workflow-title" id="workflow-title">Action en cours</div>
+            <div class="workflow-subtitle" id="workflow-subtitle">Sélectionnez une option</div>
+        </div>
+
+        <!-- Player selector -->
+        <div class="player-selector" id="player-selector">
+            <div class="selected-player-card" id="selected-player-card"></div>
+        </div>
+
+        <!-- Blocker selection -->
+        <div class="blocker-selection" id="blocker-selection">
+            <div class="selected-blockers" id="selected-blockers"></div>
+            <button class="action-btn success" onclick="confirmBlockers()">
+                ✅ Valider les bloqueurs
+            </button>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="action-grid" id="action-buttons"></div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Bottom nav -->
+    <div style="height: 70px;"></div>
+
+    <script src="script.js"></script>
+    <script>
+        // ==========================================
+        // VARIABLES GLOBALES
+        // ==========================================
+        let matchSetup = null;
+        let courtComposition = {
+            positions: {},
+            libero: { player: null, onCourt: false, replacing: null }
+        };
+        let serviceTeam = null;
+        let currentWorkflow = null;
+        let rallyData = {
+            actions: [],
+            selectedPlayer: null,
+            selectedBlockers: [],
+            waitingFor: null
+        };
+        let matchStats = {
+            rallies: [],
+            playerStats: {},
+            summary: {},
+            setStats: [] // Stats détaillées par set
+        };
+        let rotationTracker = { currentIndex: 1 };
+        let timeoutsCount = {
+            team1: 0,
+            team2: 0
+        };
+        let cardsCount = {
+            team1: { yellow: 0, red: 0 },
+            team2: { yellow: 0, red: 0 }
+        };
+
+        // ==========================================
+        // INITIALISATION
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMatchSetup();
+            loadCourtComposition();
+            updateDisplay();
+
+            // Auto-refresh every 2 seconds
+            setInterval(updateDisplay, 2000);
+        });
+
+        function loadMatchSetup() {
+            const saved = localStorage.getItem('lcvb_current_match');
+            if (saved) {
+                matchSetup = JSON.parse(saved);
+
+                // Update team names
+                const team1Name = matchSetup.homeTeam?.name || 'NOTRE ÉQUIPE';
+                const team2Name = matchSetup.awayTeam?.name || 'ADVERSAIRES';
+                document.getElementById('team1-name').textContent = team1Name.toUpperCase();
+                document.getElementById('team2-name').textContent = team2Name.toUpperCase();
+            } else {
+                showNotification('⚠️ Aucun match configuré. Retournez à setup.html');
+            }
+        }
+
+        function loadCourtComposition() {
+            const saved = localStorage.getItem('lcvb_court_composition');
+            if (saved) {
+                courtComposition = JSON.parse(saved);
+                updateCourtDisplay();
+            } else {
+                // No composition - show positioning modal
+                showPositioningModal();
+            }
+        }
+
+        // ==========================================
+        // POSITIONING MODAL
+        // ==========================================
+        let selectedPositionForSetup = null;
+        let tempCourtSetup = {};
+        let tempLiberoSetup = null;
+
+        function showPositioningModal() {
+            if (!matchSetup || !matchSetup.homeTeam || !matchSetup.homeTeam.presentPlayers) {
+                showNotification('❌ Aucun match configuré');
+                return;
+            }
+
+            document.getElementById('positioning-modal').classList.add('active');
+            const data = LCVBScoreboard.getScoreData();
+            document.getElementById('modal-set-number').textContent = data.currentSet || 1;
+
+            tempCourtSetup = {};
+            tempLiberoSetup = null;
+            updatePositioningDisplay();
+            updateLiberoOptions();
+        }
+
+        function selectPositionSlot(position) {
+            selectedPositionForSetup = position;
+            document.getElementById('selected-position-label').textContent = `P${position}`;
+            document.getElementById('player-selection-panel').style.display = 'block';
+            renderPlayerList();
+
+            // Scroll to player list
+            setTimeout(() => {
+                document.getElementById('player-selection-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        function renderPlayerList() {
+            const container = document.getElementById('player-list');
+            const players = matchSetup.homeTeam.presentPlayers || [];
+
+            // Get already assigned players
+            const assignedIds = Object.values(tempCourtSetup).map(p => p.id);
+
+            container.innerHTML = players.map(player => {
+                const isAssigned = assignedIds.includes(player.id);
+                const isCurrentPosition = tempCourtSetup[selectedPositionForSetup]?.id === player.id;
+
+                return `
+                    <div class="player-item ${isCurrentPosition ? 'selected' : ''} ${isAssigned && !isCurrentPosition ? 'disabled' : ''}"
+                         onclick="${isAssigned && !isCurrentPosition ? '' : `assignPlayerToPosition(${player.id})`}">
+                        <div class="player-info">
+                            <div class="player-number-badge">${player.number}</div>
+                            <div class="player-details">
+                                <div class="player-fullname">${player.firstName} ${player.lastName}</div>
+                                <div class="player-position">${player.position}</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 1.5rem;">
+                            ${isCurrentPosition ? '✅' : (isAssigned ? '🔒' : '⚪')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function assignPlayerToPosition(playerId) {
+            const player = matchSetup.homeTeam.presentPlayers.find(p => p.id === playerId);
+            if (!player) return;
+
+            tempCourtSetup[selectedPositionForSetup] = player;
+            updatePositioningDisplay();
+
+            // Hide player list after selection
+            setTimeout(() => {
+                document.getElementById('player-selection-panel').style.display = 'none';
+                selectedPositionForSetup = null;
+            }, 300);
+
+            checkPositioningComplete();
+        }
+
+        function updatePositioningDisplay() {
+            for (let pos = 1; pos <= 6; pos++) {
+                const player = tempCourtSetup[pos];
+                const slotEl = document.querySelector(`[data-position="${pos}"]`);
+
+                if (player) {
+                    document.getElementById(`slot-${pos}-number`).textContent = player.number;
+                    document.getElementById(`slot-${pos}-name`).textContent = player.firstName;
+                    slotEl.classList.add('filled');
+                } else {
+                    document.getElementById(`slot-${pos}-number`).textContent = '-';
+                    document.getElementById(`slot-${pos}-name`).textContent = 'Vide';
+                    slotEl.classList.remove('filled');
+                }
+            }
+        }
+
+        function updateLiberoOptions() {
+            const container = document.getElementById('libero-options');
+            const players = matchSetup.homeTeam.presentPlayers || [];
+
+            // Get assigned court players
+            const assignedIds = Object.values(tempCourtSetup).map(p => p.id);
+
+            // Only show players that can be libero (not assigned to court)
+            const availableLiberos = players.filter(p =>
+                !assignedIds.includes(p.id) &&
+                (p.position === 'Libéro' || p.position === 'Centrale' || p.position === 'Central')
+            );
+
+            container.innerHTML = availableLiberos.map(player => `
+                <div class="libero-option ${tempLiberoSetup?.id === player.id ? 'selected' : ''}"
+                     onclick="selectLibero(${player.id})">
+                    <div>
+                        <div style="font-weight: 700;">#${player.number} ${player.firstName} ${player.lastName}</div>
+                        <div style="font-size: 0.75rem; opacity: 0.7;">${player.position}</div>
+                    </div>
+                    <div style="font-size: 1.5rem;">${tempLiberoSetup?.id === player.id ? '🟣' : '⚪'}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectLibero(playerId) {
+            if (playerId === null) {
+                tempLiberoSetup = null;
+                document.getElementById('no-libero-check').textContent = '🟢';
+                document.querySelectorAll('.libero-option').forEach(el => {
+                    if (!el.querySelector('#no-libero-check')) {
+                        el.classList.remove('selected');
+                        el.querySelector('div:last-child').textContent = '⚪';
+                    }
+                });
+            } else {
+                const player = matchSetup.homeTeam.presentPlayers.find(p => p.id === playerId);
+                if (player) {
+                    tempLiberoSetup = player;
+                    document.getElementById('no-libero-check').textContent = '⚪';
+                    updateLiberoOptions();
+                }
+            }
+
+            checkPositioningComplete();
+        }
+
+        function checkPositioningComplete() {
+            // Check if all 6 positions are filled
+            const allFilled = Object.keys(tempCourtSetup).length === 6;
+            document.getElementById('validate-positioning-btn').disabled = !allFilled;
+
+            // Update libero options if positions changed
+            if (Object.keys(tempCourtSetup).length > 0) {
+                updateLiberoOptions();
+            }
+        }
+
+        function validatePositioning() {
+            // Verify all positions filled
+            if (Object.keys(tempCourtSetup).length !== 6) {
+                showNotification('❌ Placez les 6 joueurs sur le terrain');
+                return;
+            }
+
+            // Create court composition
+            courtComposition = {
+                positions: {},
+                libero: {
+                    player: tempLiberoSetup,
+                    onCourt: false,
+                    replacing: null
+                }
+            };
+
+            // Assign players to positions
+            for (let pos = 1; pos <= 6; pos++) {
+                const player = tempCourtSetup[pos];
+                if (player) {
+                    courtComposition.positions[pos] = { ...player, isLibero: false };
+                }
+            }
+
+            // Save to localStorage
+            localStorage.setItem('lcvb_court_composition', JSON.stringify(courtComposition));
+
+            // Hide modal
+            document.getElementById('positioning-modal').classList.remove('active');
+
+            // Update display
+            updateCourtDisplay();
+
+            // Show service choice if needed
+            const data = LCVBScoreboard.getScoreData();
+            if (data.team1.score === 0 && data.team2.score === 0) {
+                showNotification('🏐 Choisissez qui sert pour commencer');
+            }
+        }
+
+        function updateCourtDisplay() {
+            for (let pos = 1; pos <= 6; pos++) {
+                const player = courtComposition.positions[pos];
+                const numberEl = document.getElementById(`p${pos}-number`);
+                const nameEl = document.getElementById(`p${pos}-name`);
+                const positionEl = document.getElementById(`p${pos}-position`);
+                const posEl = document.querySelector(`[data-pos="${pos}"]`);
+
+                if (player) {
+                    numberEl.textContent = player.number;
+                    nameEl.textContent = player.firstName;
+                    positionEl.textContent = player.position || '';
+
+                    if (player.isLibero) {
+                        posEl.classList.add('libero');
+                    } else {
+                        posEl.classList.remove('libero');
+                    }
+                } else {
+                    numberEl.textContent = '-';
+                    nameEl.textContent = '';
+                    positionEl.textContent = '';
+                    posEl.classList.remove('libero');
+                }
+            }
+        }
+
+        function updateDisplay() {
+            const data = LCVBScoreboard.getScoreData();
+
+            // Update scores
+            document.getElementById('team1-score').textContent = data.team1.score;
+            document.getElementById('team2-score').textContent = data.team2.score;
+
+            // Update sets
+            const team1Sets = data.team1.sets.filter(s => s > 0).length;
+            const team2Sets = data.team2.sets.filter(s => s > 0).length;
+            document.getElementById('team1-sets').textContent = `Sets: ${team1Sets}`;
+            document.getElementById('team2-sets').textContent = `Sets: ${team2Sets}`;
+
+            // Update timeouts
+            document.getElementById('team1-timeouts').textContent = `⏸️ ${timeoutsCount.team1}/2`;
+            document.getElementById('team2-timeouts').textContent = `⏸️ ${timeoutsCount.team2}/2`;
+
+            // Update serving indicator
+            const team1Display = document.getElementById('team1-display');
+            const team2Display = document.getElementById('team2-display');
+            team1Display.classList.toggle('serving', serviceTeam === 'team1');
+            team2Display.classList.toggle('serving', serviceTeam === 'team2');
+
+            // Show service choice if needed
+            if (data.team1.score === 0 && data.team2.score === 0 && serviceTeam === null) {
+                document.getElementById('service-choice').classList.add('active');
+                document.getElementById('start-rally-btn').disabled = true;
+            } else {
+                document.getElementById('service-choice').classList.remove('active');
+                document.getElementById('start-rally-btn').disabled = false;
+            }
+
+            // Update recent actions list
+            updateRecentActions();
+
+            // Sauvegarder les stats pour le mode spectateur
+            localStorage.setItem('lcvb_match_stats', JSON.stringify(matchStats));
+        }
+
+        function updateRecentActions() {
+            const container = document.getElementById('recent-actions-list');
+            if (!container) return;
+
+            const recent = matchStats.rallies.slice(-5).reverse();
+
+            if (recent.length === 0) {
+                container.innerHTML = '<div style="text-align: center; opacity: 0.5; padding: 1rem; font-size: 0.85rem;">Aucune action</div>';
+                return;
+            }
+
+            container.innerHTML = recent.map(rally => {
+                const isPoint = rally.rallyResult.winner !== null;
+                const winner = rally.rallyResult.winner === 'us' ? '✅' : (rally.rallyResult.winner === 'them' ? '❌' : '⚪');
+                const reason = rally.rallyResult.reason || '';
+
+                // Get main action
+                let actionText = '';
+                if (rally.actions.length > 0) {
+                    const mainAction = rally.actions[rally.actions.length - 1];
+                    if (mainAction.type === 'service') actionText = `Service ${mainAction.result}`;
+                    else if (mainAction.type === 'reception') actionText = `Réception ${mainAction.quality}`;
+                    else if (mainAction.type === 'our_attack') actionText = `Attaque ${mainAction.result}`;
+                    else if (mainAction.type === 'our_block') actionText = `Bloc ${mainAction.result}`;
+                    else if (mainAction.type === 'their_attack') actionText = `Leur attaque ${mainAction.result}`;
+                    else if (mainAction.type === 'direct_point') actionText = 'Faute directe';
+                    else if (mainAction.type === 'timeout') actionText = `⏸️ Timeout ${mainAction.teamName}`;
+                    else if (mainAction.type === 'card') {
+                        const cardEmoji = mainAction.color === 'yellow' ? '🟨' : '🟥';
+                        actionText = `${cardEmoji} Carton ${mainAction.color === 'yellow' ? 'jaune' : 'rouge'} - ${mainAction.teamName}`;
+                    }
+                    else if (mainAction.type === 'substitution') actionText = `🔄 #${mainAction.playerOut.number}→#${mainAction.playerIn.number}`;
+                }
+
+                return `
+                    <div style="padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-size: 1.2rem;">${winner}</span>
+                            <span style="font-size: 0.8rem;">${actionText || reason}</span>
+                        </div>
+                        <span style="font-size: 0.7rem; opacity: 0.5;">Set ${rally.setNumber}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==========================================
+        // SERVICE CHOICE
+        // ==========================================
+        function selectServiceTeam(team) {
+            serviceTeam = team;
+            updateDisplay();
+            showNotification(team === 'team1' ? '⚡ Nous servons !' : '🛡️ Ils servent !');
+        }
+
+        // ==========================================
+        // TIMEOUT & SUBSTITUTION & CARDS
+        // ==========================================
+        function directTimeout() {
+            // Supprimer modal existant si présent
+            const existingModal = document.getElementById('timeout-selection-modal');
+            if (existingModal) existingModal.remove();
+
+            const data = LCVBScoreboard.getScoreData();
+            const team1Name = matchSetup?.homeTeam?.name || 'Notre équipe';
+            const team2Name = matchSetup?.awayTeam?.name || 'Adversaires';
+
+            const modal = document.createElement('div');
+            modal.id = 'timeout-selection-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.9);
+                z-index: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+            `;
+
+            const ourTimeouts = timeoutsCount.team1 || 0;
+            const theirTimeouts = timeoutsCount.team2 || 0;
+
+            modal.innerHTML = `
+                <div style="background: #1e293b; border-radius: 16px; padding: 1.5rem; max-width: 400px; width: 100%;">
+                    <h2 style="margin: 0 0 1rem 0; color: #f59e0b; text-align: center; font-size: 1.5rem;">⏸️ Timeout</h2>
+                    <div style="margin-bottom: 1.5rem; text-align: center; font-size: 0.9rem; opacity: 0.8;">
+                        Quelle équipe prend le timeout ?
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+                        <button onclick="selectTimeoutTeam('team1')" class="timeout-team-btn" style="padding: 1.25rem; background: ${ourTimeouts >= 2 ? '#374151' : '#f3f4f6'}; border: 2px solid #e5e7eb; border-radius: 12px; font-weight: 600; cursor: ${ourTimeouts >= 2 ? 'not-allowed' : 'pointer'}; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; color: ${ourTimeouts >= 2 ? '#6b7280' : '#111827'};" ${ourTimeouts >= 2 ? 'disabled' : ''}>
+                            <span>${team1Name}</span>
+                            <span style="font-size: 0.85rem; color: ${ourTimeouts >= 2 ? '#6b7280' : '#6b7280'};">${ourTimeouts}/2 utilisés</span>
+                        </button>
+                        <button onclick="selectTimeoutTeam('team2')" class="timeout-team-btn" style="padding: 1.25rem; background: ${theirTimeouts >= 2 ? '#374151' : '#f3f4f6'}; border: 2px solid #e5e7eb; border-radius: 12px; font-weight: 600; cursor: ${theirTimeouts >= 2 ? 'not-allowed' : 'pointer'}; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; color: ${theirTimeouts >= 2 ? '#6b7280' : '#111827'};" ${theirTimeouts >= 2 ? 'disabled' : ''}>
+                            <span>${team2Name}</span>
+                            <span style="font-size: 0.85rem; color: ${theirTimeouts >= 2 ? '#6b7280' : '#6b7280'};">${theirTimeouts}/2 utilisés</span>
+                        </button>
+                    </div>
+                    <button onclick="closeTimeoutSelectionModal()" style="width: 100%; padding: 0.75rem; background: #64748b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem;">
+                        ❌ Annuler
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+        }
+
+        function selectTimeoutTeam(team) {
+            const data = LCVBScoreboard.getScoreData();
+            const teamName = team === 'team1' ? (matchSetup?.homeTeam?.name || 'Notre équipe') : (matchSetup?.awayTeam?.name || 'Adversaires');
+
+            // Vérifier limite
+            if (timeoutsCount[team] >= 2) {
+                showNotification(`❌ ${teamName} a déjà utilisé ses 2 timeouts`);
+                return;
+            }
+
+            // Incrémenter compteur
+            timeoutsCount[team]++;
+
+            // Enregistrer dans l'historique
+            const rally = {
+                actions: [{
+                    type: 'timeout',
+                    team: team,
+                    teamName: teamName
+                }],
+                rallyResult: { winner: null, reason: 'timeout' },
+                setNumber: data.currentSet,
+                metadata: {
+                    serviceBefore: serviceTeam,
+                    serviceAfter: serviceTeam,
+                    rotationBefore: rotationTracker.currentIndex,
+                    rotationAfter: rotationTracker.currentIndex,
+                    timeoutsCountBefore: { ...timeoutsCount }
+                }
+            };
+
+            matchStats.rallies.push(rally);
+            localStorage.setItem('lcvb_match_stats', JSON.stringify(matchStats));
+
+            updateDisplay();
+            updateRecentActions();
+            closeTimeoutSelectionModal();
+
+            showNotification(`⏸️ Timeout pour ${teamName} (${timeoutsCount[team]}/2)`);
+        }
+
+        function closeTimeoutSelectionModal() {
+            const modal = document.getElementById('timeout-selection-modal');
+            if (modal) modal.remove();
+        }
+
+        function directCard() {
+            // Supprimer modal existant si présent
+            const existingModal = document.getElementById('card-selection-modal');
+            if (existingModal) existingModal.remove();
+
+            const data = LCVBScoreboard.getScoreData();
+            const team1Name = matchSetup?.homeTeam?.name || 'Notre équipe';
+            const team2Name = matchSetup?.awayTeam?.name || 'Adversaires';
+
+            const modal = document.createElement('div');
+            modal.id = 'card-selection-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.9);
+                z-index: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 1rem;
+            `;
+
+            modal.innerHTML = `
+                <div style="background: #1e293b; border-radius: 16px; padding: 1.5rem; max-width: 400px; width: 100%;">
+                    <h2 style="margin: 0 0 1rem 0; color: #f59e0b; text-align: center; font-size: 1.5rem;">🟨🟥 Carton</h2>
+                    <div style="margin-bottom: 1.5rem; text-align: center; font-size: 0.9rem; opacity: 0.8;">
+                        Sélectionnez l'équipe et la couleur
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem; color: #94a3b8;">${team1Name}</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                <button onclick="selectCard('team1', 'yellow')" style="padding: 1rem; background: linear-gradient(135deg, #fbbf24, #f59e0b); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: #1e293b; font-size: 0.95rem;">
+                                    🟨 Jaune
+                                </button>
+                                <button onclick="selectCard('team1', 'red')" style="padding: 1rem; background: linear-gradient(135deg, #ef4444, #dc2626); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: white; font-size: 0.95rem;">
+                                    🟥 Rouge
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem; color: #94a3b8;">${team2Name}</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                <button onclick="selectCard('team2', 'yellow')" style="padding: 1rem; background: linear-gradient(135deg, #fbbf24, #f59e0b); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: #1e293b; font-size: 0.95rem;">
+                                    🟨 Jaune
+                                </button>
+                                <button onclick="selectCard('team2', 'red')" style="padding: 1rem; background: linear-gradient(135deg, #ef4444, #dc2626); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: white; font-size: 0.95rem;">
+                                    🟥 Rouge
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="closeCardSelectionModal()" style="width: 100%; padding: 0.75rem; background: #64748b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem;">
+                        ❌ Annuler
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+        }
+
+        function selectCard(team, color) {
+            const data = LCVBScoreboard.getScoreData();
+            const teamName = team === 'team1' ? (matchSetup?.homeTeam?.name || 'Notre équipe') : (matchSetup?.awayTeam?.name || 'Adversaires');
+            const colorEmoji = color === 'yellow' ? '🟨' : '🟥';
+            const colorText = color === 'yellow' ? 'Jaune' : 'Rouge';
+
+            // Incrémenter compteur de cartons
+            cardsCount[team][color]++;
+
+            // Si carton rouge, donner un point à l'adversaire
+            let pointGiven = false;
+            if (color === 'red') {
+                const opponentTeam = team === 'team1' ? 'team2' : 'team1';
+                addPoint(opponentTeam);
+                pointGiven = true;
+            }
+
+            // Enregistrer dans l'historique
+            const rally = {
+                actions: [{
+                    type: 'card',
+                    team: team,
+                    teamName: teamName,
+                    color: color,
+                    pointGiven: pointGiven
+                }],
+                rallyResult: { winner: pointGiven ? (team === 'team1' ? 'them' : 'us') : null, reason: `card_${color}` },
+                setNumber: data.currentSet,
+                metadata: {
+                    serviceBefore: serviceTeam,
+                    serviceAfter: serviceTeam,
+                    rotationBefore: rotationTracker.currentIndex,
+                    rotationAfter: rotationTracker.currentIndex,
+                    cardsCountBefore: JSON.parse(JSON.stringify(cardsCount))
+                }
+            };
+
+            matchStats.rallies.push(rally);
+            localStorage.setItem('lcvb_match_stats', JSON.stringify(matchStats));
+
+            updateDisplay();
+            updateRecentActions();
+            closeCardSelectionModal();
+
+            const message = pointGiven ?
+                `${colorEmoji} Carton ${colorText} pour ${teamName} + Point adversaire` :
+                `${colorEmoji} Carton ${colorText} pour ${teamName}`;
+            showNotification(message);
+        }
+
+        function closeCardSelectionModal() {
+            const modal = document.getElementById('card-selection-modal');
+            if (modal) modal.remove();
+        }
+
+        function clearCourt() {
+            if (!confirm('🧹 Vider le terrain ?\n\nCela va retirer tous les joueurs du terrain pour repositionner le 7 de base au prochain set.')) {
+                return;
+            }
+
+            // Vider la composition
+            courtComposition = {
+                positions: {},
+                libero: { player: null, onCourt: false, replacing: null }
+            };
+
+            localStorage.removeItem('lcvb_court_composition');
+            updateCourtDisplay();
+
+            showNotification('🧹 Terrain vidé. Utilisez Menu > Repositionner pour le prochain set.');
+        }
+
+        function showSubstitutionModal() {
+            if (!matchSetup || !matchSetup.homeTeam || !matchSetup.homeTeam.presentPlayers) {
+                showNotification('❌ Aucun match configuré');
+                return;
+            }
+
+            const players = matchSetup.homeTeam.presentPlayers;
+            const onCourtIds = Object.values(courtComposition.positions).map(p => p.id);
+
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: #0f172a;
+                z-index: 600;
+                overflow-y: auto;
+                padding: 1rem;
+            `;
+
+            modal.innerHTML = `
+                <div style="position: sticky; top: 0; background: #0f172a; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 2px solid rgba(255,255,255,0.1); z-index: 10;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="font-size: 1.5rem; font-weight: 800;">🔄 Changement</h2>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #ef4444; border: none; color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                            ✕ Fermer
+                        </button>
+                    </div>
+                    <div style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem;">
+                        Sélectionnez un joueur à remplacer
+                    </div>
+                </div>
+
+                <div style="font-weight: 700; margin-bottom: 0.75rem;">Sur le terrain :</div>
+                ${Object.entries(courtComposition.positions).map(([pos, player]) => `
+                    <button onclick="selectPlayerOut(${pos})" style="width: 100%; margin-bottom: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 2px solid #334155; border-radius: 10px; color: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div style="background: #3b82f6; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800;">${player.number}</div>
+                            <div style="text-align: left;">
+                                <div style="font-weight: 700;">${player.firstName} ${player.lastName}</div>
+                                <div style="font-size: 0.75rem; opacity: 0.7;">${player.position} - P${pos}</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 1.2rem;">→</div>
+                    </button>
+                `).join('')}
+            `;
+
+            document.body.appendChild(modal);
+
+            // Define selectPlayerOut globally for the onclick handlers
+            window.selectPlayerOut = function(posOut) {
+                modal.innerHTML = `
+                    <div style="position: sticky; top: 0; background: #0f172a; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 2px solid rgba(255,255,255,0.1); z-index: 10;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h2 style="font-size: 1.5rem; font-weight: 800;">🔄 Changement</h2>
+                            <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #ef4444; border: none; color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                                ✕ Fermer
+                            </button>
+                        </div>
+                        <div style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem;">
+                            Remplaçant pour #${courtComposition.positions[posOut].number} ${courtComposition.positions[posOut].firstName}
+                        </div>
+                    </div>
+
+                    <div style="font-weight: 700; margin-bottom: 0.75rem;">Joueurs disponibles :</div>
+                    ${players.filter(p => !onCourtIds.includes(p.id)).map(player => `
+                        <button onclick="confirmSubstitution(${posOut}, ${player.id})" style="width: 100%; margin-bottom: 0.5rem; padding: 0.75rem; background: rgba(255,255,255,0.05); border: 2px solid #334155; border-radius: 10px; color: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="background: #10b981; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800;">${player.number}</div>
+                                <div style="text-align: left;">
+                                    <div style="font-weight: 700;">${player.firstName} ${player.lastName}</div>
+                                    <div style="font-size: 0.75rem; opacity: 0.7;">${player.position}</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 1.2rem;">✓</div>
+                        </button>
+                    `).join('')}
+                `;
+            };
+
+            window.confirmSubstitution = function(posOut, playerInId) {
+                const playerOut = courtComposition.positions[posOut];
+                const playerIn = players.find(p => p.id === playerInId);
+
+                // Update composition
+                courtComposition.positions[posOut] = { ...playerIn, isLibero: false };
+                localStorage.setItem('lcvb_court_composition', JSON.stringify(courtComposition));
+
+                // Record substitution
+                const data = LCVBScoreboard.getScoreData();
+                const rally = {
+                    actions: [{
+                        type: 'substitution',
+                        playerOut: playerOut,
+                        playerIn: playerIn,
+                        position: posOut
+                    }],
+                    rallyResult: { winner: null, reason: 'substitution' },
+                    setNumber: data.currentSet,
+                    metadata: {
+                        serviceBefore: serviceTeam,
+                        serviceAfter: serviceTeam,
+                        rotationBefore: rotationTracker.currentIndex,
+                        rotationAfter: rotationTracker.currentIndex
+                    }
+                };
+
+                matchStats.rallies.push(rally);
+                localStorage.setItem('lcvb_match_stats', JSON.stringify(matchStats));
+
+                // Update display
+                updateCourtDisplay();
+                updateRecentActions();
+
+                // Close modal
+                modal.remove();
+
+                showNotification(`🔄 #${playerOut.number} → #${playerIn.number}`);
+            };
+        }
+
+        // ==========================================
+        // DIRECT ACTIONS
+        // ==========================================
+        function directPoint(winner) {
+            const data = LCVBScoreboard.getScoreData();
+            const weWon = (winner === 'us');
+            const weHadService = (serviceTeam === 'team1');
+
+            // Add point
+            if (weWon) {
+                addPoint('team1');
+            } else {
+                addPoint('team2');
+            }
+
+            // Handle service change and rotation
+            if (weWon && !weHadService) {
+                // We gain service - rotate
+                serviceTeam = 'team1';
+                rotateOurTeam();
+            } else if (!weWon && weHadService) {
+                // They gain service
+                serviceTeam = 'team2';
+            }
+
+            // Save rally to matchStats
+            const rally = {
+                actions: [{
+                    type: 'direct_point',
+                    result: weWon ? 'us' : 'them'
+                }],
+                rallyResult: { winner, reason: 'direct_fault' },
+                setNumber: data.currentSet,
+                metadata: {
+                    serviceBefore: weHadService ? 'team1' : 'team2',
+                    serviceAfter: serviceTeam,
+                    rotationBefore: rotationTracker.currentIndex,
+                    rotationAfter: rotationTracker.currentIndex
+                }
+            };
+
+            matchStats.rallies.push(rally);
+            updatePlayerStats();
+            localStorage.setItem('lcvb_match_stats', JSON.stringify(matchStats));
+
+            updateDisplay();
+            loadCourtComposition();
+
+            showNotification(weWon ? '✅ Point pour nous !' : '❌ Point pour eux');
+        }
+
+        // ==========================================
+        // START RALLY
+        // ==========================================
+        function startRally() {
+            rallyData = {
+                actions: [],
+                selectedPlayer: null,
+                selectedBlockers: [],
+                waitingFor: null
+            };
+
+            clearCourtSelection();
+
+            if (serviceTeam === 'team1') {
+                // On sert - afficher directement les résultats du service
+                showServiceResult();
+            } else {
+                // Ils servent - demander qui réceptionne
+                askReceiver();
+            }
+        }
+
+        // ==========================================
+        // WORKFLOW: SERVICE
+        // ==========================================
+        function showServiceResult() {
+            const serverP1 = courtComposition.positions[1];
+            if (!serverP1) {
+                showNotification('❌ Aucun serveur en P1');
+                return;
+            }
+
+            showWorkflow(
+                `⚡ Service de #${serverP1.number} ${serverP1.firstName}`,
+                'Résultat du service ?',
+                [
+                    { text: '⭐ ACE', class: 'success', action: () => serviceResult('ace') },
+                    { text: '❌ Faute', class: 'danger', action: () => serviceResult('fault') },
+                    { text: '✓ En jeu', class: 'warning', action: () => serviceResult('in') }
+                ]
+            );
+        }
+
+        function serviceResult(result) {
+            const serverP1 = courtComposition.positions[1];
+            rallyData.actions.push({
+                type: 'service',
+                player: { position: 1, player: serverP1 },
+                result: result
+            });
+
+            if (result === 'ace') {
+                endRally('us', 'ace');
+            } else if (result === 'fault') {
+                endRally('them', 'service_fault');
+            } else {
+                // Service en jeu - leur attaque
+                showTheirAttackOptions();
+            }
+        }
+
+        // ==========================================
+        // WORKFLOW: RECEPTION
+        // ==========================================
+        function askReceiver() {
+            rallyData.waitingFor = 'receiver';
+            showWorkflow(
+                '📥 Qui réceptionne ?',
+                'Cliquez sur le joueur qui réceptionne',
+                []
+            );
+        }
+
+        function showReceptionResult(player, position) {
+            showWorkflow(
+                `📥 Réception de #${player.number} ${player.firstName}`,
+                'Qualité de la réception ?',
+                [
+                    { text: '⭐ Parfaite', class: 'warning', action: () => receptionResult('perfect', player, position) },
+                    { text: '🟡 Moyenne', class: 'warning', action: () => receptionResult('average', player, position) },
+                    { text: '❌ Ratée (fin)', class: 'danger', action: () => receptionResult('failed_end', player, position) },
+                    { text: '⚠️ Ratée (continue)', class: 'warning', action: () => receptionResult('failed_continue', player, position) }
+                ]
+            );
+        }
+
+        function receptionResult(quality, player, position) {
+            const recordedQuality = quality === 'failed_end' || quality === 'failed_continue' ? 'failed' : quality;
+            rallyData.actions.push({
+                type: 'reception',
+                player: { position, player },
+                quality: recordedQuality
+            });
+
+            if (quality === 'failed_end') {
+                endRally('them', 'reception_failed');
+            } else {
+                // Continue - demander qui attaque
+                askOurAttacker();
+            }
+        }
+
+        // ==========================================
+        // WORKFLOW: ATTACK
+        // ==========================================
+        function askOurAttacker() {
+            rallyData.waitingFor = 'attacker';
+            showWorkflow(
+                '🔥 Qui attaque ?',
+                'Cliquez sur le joueur qui attaque',
+                []
+            );
+        }
+
+        function showAttackResult(player, position) {
+            rallyData.selectedAttacker = { position, player };
+
+            showWorkflow(
+                `🔥 Attaque de #${player.number} ${player.firstName}`,
+                'Résultat de l\'attaque ?',
+                [
+                    { text: '✅ Point direct', class: 'success', action: () => attackResult('point') },
+                    { text: '✅ Block out', class: 'success', action: () => attackResult('block_out') },
+                    { text: '❌ Bloquée', class: 'danger', action: () => attackResult('blocked_in') },
+                    { text: '❌ Out', class: 'danger', action: () => attackResult('out') },
+                    { text: '❌ Filet', class: 'danger', action: () => attackResult('net') },
+                    { text: '↩️ Défendue', class: 'warning', action: () => attackResult('defended') }
+                ]
+            );
+        }
+
+        function attackResult(result) {
+            const attacker = rallyData.selectedAttacker;
+            rallyData.actions.push({
+                type: 'our_attack',
+                player: attacker,
+                result: result,
+                attackType: 'power'
+            });
+
+            if (result === 'point' || result === 'block_out') {
+                // Auto-credit assist
+                const setter = findSetterOnCourt();
+                if (setter) {
+                    const attackZone = determineAttackZone(attacker);
+                    rallyData.actions.push({
+                        type: 'assist',
+                        player: setter,
+                        targetZone: attackZone,
+                        targetPlayer: attacker
+                    });
+                }
+                endRally('us', result === 'point' ? 'attack_point' : 'block_out');
+            } else if (result === 'blocked_in' || result === 'out' || result === 'net') {
+                endRally('them', `attack_${result}`);
+            } else if (result === 'defended') {
+                showTheirAttackOptions();
+            }
+        }
+
+        // ==========================================
+        // WORKFLOW: THEIR ATTACK
+        // ==========================================
+        function showTheirAttackOptions() {
+            showWorkflow(
+                '🛡️ Leur attaque',
+                'Résultat de leur attaque ?',
+                [
+                    { text: '❌ Point pour eux', class: 'danger', action: () => theirAttackResult('point') },
+                    { text: '✅ Out (nous)', class: 'success', action: () => theirAttackResult('out') },
+                    { text: '⚠️ Relance', class: 'warning', action: () => theirAttackResult('no_attack') },
+                    { text: '🧱 Bloqué', class: 'warning', action: () => theirAttackResult('blocked') },
+                    { text: '🛡️ Défendu', class: 'warning', action: () => theirAttackResult('defended') }
+                ]
+            );
+        }
+
+        function theirAttackResult(result) {
+            rallyData.actions.push({
+                type: 'their_attack',
+                result: result
+            });
+
+            if (result === 'point') {
+                endRally('them', 'their_attack_point');
+            } else if (result === 'out') {
+                endRally('us', 'their_attack_out');
+            } else if (result === 'no_attack') {
+                askOurAttacker();
+            } else if (result === 'blocked') {
+                askBlocker();
+            } else if (result === 'defended') {
+                askDefender();
+            }
+        }
+
+        // ==========================================
+        // WORKFLOW: BLOCK
+        // ==========================================
+        function askBlocker() {
+            rallyData.waitingFor = 'blocker';
+            rallyData.selectedBlockers = [];
+
+            showWorkflow(
+                '🧱 Qui bloque ?',
+                'Cliquez sur les bloqueurs (1-3 joueurs : P2, P3, P4)',
+                []
+            );
+
+            document.getElementById('blocker-selection').classList.add('active');
+        }
+
+        function confirmBlockers() {
+            if (rallyData.selectedBlockers.length === 0) {
+                showNotification('❌ Sélectionnez au moins un bloqueur');
+                return;
+            }
+
+            document.getElementById('blocker-selection').classList.remove('active');
+
+            const blockersText = rallyData.selectedBlockers.map(b => `#${b.player.number}`).join(', ');
+            showWorkflow(
+                `🧱 Bloc de ${blockersText}`,
+                'Résultat du bloc ?',
+                [
+                    { text: '🔥 Point (nous)', class: 'success', action: () => blockResult('point') },
+                    { text: '👍 Touché + Point eux', class: 'danger', action: () => blockResult('touched_point_them') },
+                    { text: '👍 Touché + Défendu', class: 'warning', action: () => blockResult('touched_defended') }
+                ]
+            );
+        }
+
+        function blockResult(result) {
+            rallyData.selectedBlockers.forEach(blocker => {
+                rallyData.actions.push({
+                    type: 'our_block',
+                    player: blocker,
+                    result: result
+                });
+            });
+
+            if (result === 'point') {
+                endRally('us', 'block_point');
+            } else if (result === 'touched_point_them') {
+                endRally('them', 'block_touched_point_them');
+            } else if (result === 'touched_defended') {
+                askDefender();
+            }
+        }
+
+        // ==========================================
+        // WORKFLOW: DEFENSE
+        // ==========================================
+        function askDefender() {
+            rallyData.waitingFor = 'defender';
+            showWorkflow(
+                '🛡️ Qui défend ?',
+                'Cliquez sur le joueur qui défend',
+                []
+            );
+        }
+
+        function showDefenseResult(player, position) {
+            showWorkflow(
+                `🛡️ Défense de #${player.number} ${player.firstName}`,
+                'Résultat de la défense ?',
+                [
+                    { text: '✅ Récupéré', class: 'warning', action: () => defenseResult('recovered', player, position) },
+                    { text: '❌ Raté', class: 'danger', action: () => defenseResult('failed', player, position) }
+                ]
+            );
+        }
+
+        function defenseResult(result, player, position) {
+            if (result === 'recovered') {
+                rallyData.actions.push({
+                    type: 'our_dig',
+                    player: { position, player },
+                    result: 'recovered'
+                });
+                askOurAttacker();
+            } else {
+                endRally('them', 'defense_failed');
+            }
+        }
+
+        // ==========================================
+        // COURT INTERACTION
+        // ==========================================
+        function selectPosition(position) {
+            const player = courtComposition.positions[position];
+            if (!player) {
+                showNotification('❌ Aucun joueur à cette position');
+                return;
+            }
+
+            if (rallyData.waitingFor === 'receiver') {
+                highlightPosition(position);
+                showReceptionResult(player, position);
+            } else if (rallyData.waitingFor === 'attacker') {
+                highlightPosition(position);
+                showAttackResult(player, position);
+            } else if (rallyData.waitingFor === 'blocker') {
+                if (![2, 3, 4].includes(position)) {
+                    showNotification('❌ Seuls P2, P3, P4 peuvent bloquer');
+                    return;
+                }
+
+                // Toggle blocker selection
+                const index = rallyData.selectedBlockers.findIndex(b => b.position === position);
+                if (index >= 0) {
+                    rallyData.selectedBlockers.splice(index, 1);
+                } else {
+                    if (rallyData.selectedBlockers.length >= 3) {
+                        showNotification('❌ Maximum 3 bloqueurs');
+                        return;
+                    }
+                    rallyData.selectedBlockers.push({ position, player });
+                }
+
+                updateBlockerSelection();
+                highlightMultiplePositions(rallyData.selectedBlockers.map(b => b.position));
+            } else if (rallyData.waitingFor === 'defender') {
+                highlightPosition(position);
+                showDefenseResult(player, position);
+            }
+        }
+
+        function highlightPosition(position) {
+            clearCourtSelection();
+            document.querySelector(`[data-pos="${position}"]`)?.classList.add('selected');
+        }
+
+        function highlightMultiplePositions(positions) {
+            clearCourtSelection();
+            positions.forEach(pos => {
+                document.querySelector(`[data-pos="${pos}"]`)?.classList.add('selected');
+            });
+        }
+
+        function clearCourtSelection() {
+            document.querySelectorAll('.court-position').forEach(el => {
+                el.classList.remove('selected');
+            });
+        }
+
+        function updateBlockerSelection() {
+            const container = document.getElementById('selected-blockers');
+            if (rallyData.selectedBlockers.length === 0) {
+                container.innerHTML = '<div style="text-align: center; opacity: 0.7; padding: 1rem;">Aucun bloqueur sélectionné</div>';
+            } else {
+                container.innerHTML = rallyData.selectedBlockers.map(b => `
+                    <div class="blocker-chip">
+                        #${b.player.number} ${b.player.firstName}
+                        <button class="remove-blocker" onclick="removeBlocker(${b.position})">×</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function removeBlocker(position) {
+            rallyData.selectedBlockers = rallyData.selectedBlockers.filter(b => b.position !== position);
+            updateBlockerSelection();
+            highlightMultiplePositions(rallyData.selectedBlockers.map(b => b.position));
+        }
+
+        // ==========================================
+        // WORKFLOW DISPLAY
+        // ==========================================
+        function showWorkflow(title, subtitle, buttons) {
+            document.getElementById('workflow-title').textContent = title;
+            document.getElementById('workflow-subtitle').textContent = subtitle;
+
+            const container = document.getElementById('action-buttons');
+            container.innerHTML = buttons.map(btn => `
+                <button class="action-btn ${btn.class}" onclick="handleActionClick(${buttons.indexOf(btn)})">
+                    ${btn.text}
+                </button>
+            `).join('');
+
+            currentWorkflow = buttons;
+
+            document.getElementById('workflow-panel').classList.add('active');
+        }
+
+        function handleActionClick(index) {
+            if (currentWorkflow && currentWorkflow[index]) {
+                currentWorkflow[index].action();
+            }
+        }
+
+        function hideWorkflow() {
+            document.getElementById('workflow-panel').classList.remove('active');
+            document.getElementById('blocker-selection').classList.remove('active');
+            clearCourtSelection();
+            currentWorkflow = null;
+            rallyData.waitingFor = null;
+        }
+
+        // ==========================================
+        // END RALLY
+        // ==========================================
+        function addPoint(team) {
+            const data = LCVBScoreboard.getScoreData();
+            data[team].score++;
+            // Save only to localStorage, not file (avoid download prompt on mobile)
+            localStorage.setItem('lcvb_score', JSON.stringify(data));
+        }
+
+        function endRally(winner, reason) {
+            const data = LCVBScoreboard.getScoreData();
+            const weWon = (winner === 'us');
+            const weHadService = (serviceTeam === 'team1');
+
+            // Add point
+            if (weWon) {
+                addPoint('team1');
+            } else {
+                addPoint('team2');
+            }
+
+            // Handle service change and rotation
+            if (weWon && !weHadService) {
+                // We gain service - rotate
+                serviceTeam = 'team1';
+                rotateOurTeam();
+            } else if (!weWon && weHadService) {
+                // They gain service
+                serviceTeam = 'team2';
+            }
+
+            // Save rally to matchStats
+            const rally = {
+                actions: rallyData.actions,
+                rallyResult: { winner, reason },
+                setNumber: data.currentSet,
+                metadata: {
+                    serviceBefore: weHadService ? 'team1' : 'team2',
+                    serviceAfter: serviceTeam,
+                    rotationBefore: rotationTracker.currentIndex,
+                    rotationAfter: rotationTracker.currentIndex
+                }
+            };
+
+            matchStats.rallies.push(rally);
+
+            // Update stats
+            updatePlayerStats();
+
+            // Save to localStorage
+            localStorage.setItem('lcvb_match_stats', JSON.stringify(matchStats));
+
+            hideWorkflow();
+            updateDisplay();
+            loadCourtComposition();
+
+            showNotification(weWon ? '✅ Point pour nous !' : '❌ Point pour eux');
+        }
+
+        // ==========================================
+        // ROTATION
+        // ==========================================
+        function rotateOurTeam() {
+            const newComposition = { ...courtComposition };
+            const temp = newComposition.positions[1];
+
+            for (let i = 1; i < 6; i++) {
+                newComposition.positions[i] = newComposition.positions[i + 1];
+            }
+            newComposition.positions[6] = temp;
+
+            courtComposition = newComposition;
+            localStorage.setItem('lcvb_court_composition', JSON.stringify(courtComposition));
+            updateCourtDisplay();
+        }
+
+        // ==========================================
+        // STATS
+        // ==========================================
+        function updatePlayerStats() {
+            // This is simplified - full implementation would mirror control.html
+            const playerStats = {};
+
+            matchStats.rallies.forEach(rally => {
+                rally.actions?.forEach(action => {
+                    const playerId = action.player?.player?.id;
+                    if (!playerId) return;
+
+                    if (!playerStats[playerId]) {
+                        playerStats[playerId] = {
+                            player: action.player.player,
+                            services: { total: 0, aces: 0, faults: 0 },
+                            receptions: { total: 0, perfect: 0, average: 0, failed: 0 },
+                            attacks: { total: 0, points: 0, blocked: 0, out: 0, net: 0 },
+                            blocks: { total: 0, points: 0, touched: 0 },
+                            digs: { total: 0 },
+                            assists: { total: 0 }
+                        };
+                    }
+
+                    const stats = playerStats[playerId];
+
+                    if (action.type === 'service') {
+                        stats.services.total++;
+                        if (action.result === 'ace') stats.services.aces++;
+                        if (action.result === 'fault') stats.services.faults++;
+                    } else if (action.type === 'reception') {
+                        stats.receptions.total++;
+                        if (action.quality === 'perfect') stats.receptions.perfect++;
+                        else if (action.quality === 'average') stats.receptions.average++;
+                        else if (action.quality === 'failed') stats.receptions.failed++;
+                    } else if (action.type === 'our_attack') {
+                        stats.attacks.total++;
+                        if (action.result === 'point' || action.result === 'block_out') stats.attacks.points++;
+                        if (action.result === 'blocked_in') stats.attacks.blocked++;
+                        if (action.result === 'out') stats.attacks.out++;
+                        if (action.result === 'net') stats.attacks.net++;
+                    } else if (action.type === 'our_block') {
+                        stats.blocks.total++;
+                        if (action.result === 'point') stats.blocks.points++;
+                        if (action.result === 'touched_point_them' || action.result === 'touched_defended') stats.blocks.touched++;
+                    } else if (action.type === 'our_dig') {
+                        if (action.result === 'recovered') stats.digs.total++;
+                    } else if (action.type === 'assist') {
+                        stats.assists.total++;
+                    }
+                });
+            });
+
+            matchStats.playerStats = playerStats;
+        }
+
+        // ==========================================
+        // HELPER FUNCTIONS
+        // ==========================================
+        function findSetterOnCourt() {
+            for (let pos = 1; pos <= 6; pos++) {
+                const player = courtComposition.positions[pos];
+                if (player && (player.position === 'Passeur' || player.position === 'Passeuse')) {
+                    return { position: pos, player: player };
+                }
+            }
+            return null;
+        }
+
+        function determineAttackZone(attacker) {
+            const terrainPosition = attacker.position;
+            if ([1, 5, 6].includes(terrainPosition)) return 'Pipe';
+            if (terrainPosition === 2) return 'Zone 2';
+            if (terrainPosition === 3) return 'Zone 3';
+            if (terrainPosition === 4) return 'Zone 4';
+            return 'Zone inconnue';
+        }
+
+        function showNotification(message) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.classList.add('show');
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 2500);
+        }
+
+        function undoLast() {
+            if (matchStats.rallies.length === 0) {
+                showNotification('❌ Rien à annuler');
+                return;
+            }
+
+            // Remove last rally
+            const lastRally = matchStats.rallies.pop();
+
+            // Revert score
+            const data = LCVBScoreboard.getScoreData();
+            if (lastRally.rallyResult.winner === 'us') {
+                data.team1.score = Math.max(0, data.team1.score - 1);
+            } else {
+                data.team2.score = Math.max(0, data.team2.score - 1);
+            }
+            localStorage.setItem('lcvb_score', JSON.stringify(data));
+
+            // Update stats
+            updatePlayerStats();
+            localStorage.setItem('lcvb_match_stats', JSON.stringify(matchStats));
+
+            updateDisplay();
+            loadCourtComposition();
+            showNotification('↩️ Action annulée');
+        }
+
+        function showHistory() {
+            if (matchStats.rallies.length === 0) {
+                showNotification('📋 Aucun historique');
+                return;
+            }
+
+            // Show history modal
+            const historyHtml = matchStats.rallies.slice().reverse().slice(0, 30).map((rally, idx) => {
+                const realIdx = matchStats.rallies.length - idx - 1;
+                const isPoint = rally.rallyResult.winner !== null;
+                const winner = rally.rallyResult.winner === 'us' ? '✅' : (rally.rallyResult.winner === 'them' ? '❌' : '⚪');
+                const reason = rally.rallyResult.reason || '';
+
+                // Build action summary
+                const actionsSummary = rally.actions.map(a => {
+                    if (a.type === 'service') return `⚡ Service ${a.result}`;
+                    if (a.type === 'reception') return `📥 Réception ${a.quality}`;
+                    if (a.type === 'our_attack') return `🔥 Attaque ${a.result}`;
+                    if (a.type === 'our_block') return `🧱 Bloc ${a.result}`;
+                    if (a.type === 'our_dig') return `🛡️ Défense ${a.result}`;
+                    if (a.type === 'their_attack') return `⚔️ Leur attaque ${a.result}`;
+                    if (a.type === 'direct_point') return `⚠️ Faute directe`;
+                    if (a.type === 'timeout') return `⏸️ Timeout ${a.teamName}`;
+                    if (a.type === 'card') {
+                        const cardEmoji = a.color === 'yellow' ? '🟨' : '🟥';
+                        return `${cardEmoji} Carton ${a.color === 'yellow' ? 'jaune' : 'rouge'} - ${a.teamName}`;
+                    }
+                    if (a.type === 'substitution') return `🔄 #${a.playerOut.number} → #${a.playerIn.number}`;
+                    return '';
+                }).filter(s => s).join(' → ');
+
+                const borderColor = isPoint ? (rally.rallyResult.winner === 'us' ? '#10b981' : '#ef4444') : '#64748b';
+                const title = isPoint ? `${winner} Point #${realIdx + 1}` : `${winner} ${reason === 'timeout' ? 'Temps mort' : (reason === 'substitution' ? 'Changement' : reason.includes('card') ? 'Carton' : reason)}`;
+
+                return `
+                    <div style="background: rgba(255,255,255,0.05); padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 3px solid ${borderColor};">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <strong>${title}</strong>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="opacity: 0.7; font-size: 0.8rem;">Set ${rally.setNumber}</span>
+                                <button onclick="deleteRallyFromHistory(${realIdx})" style="background: #ef4444; border: none; color: white; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.7rem; cursor: pointer; font-weight: 600;">
+                                    🗑️ Suppr.
+                                </button>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.8rem; opacity: 0.8;">
+                            ${actionsSummary || reason}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: #0f172a;
+                z-index: 600;
+                overflow-y: auto;
+                padding: 1rem;
+            `;
+
+            modal.id = 'history-modal';
+            modal.innerHTML = `
+                <div style="position: sticky; top: 0; background: #0f172a; padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 2px solid rgba(255,255,255,0.1); z-index: 10;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="font-size: 1.5rem; font-weight: 800;">📋 Historique</h2>
+                        <button onclick="closeHistoryModal()" style="background: #ef4444; border: none; color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer;">
+                            ✕ Fermer
+                        </button>
+                    </div>
+                    <div style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem;">
+                        ${matchStats.rallies.length} point${matchStats.rallies.length > 1 ? 's' : ''} au total
+                    </div>
+                </div>
+                <div>
+                    ${historyHtml || '<div style="text-align: center; opacity: 0.5; padding: 2rem;">Aucun point enregistré</div>'}
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+        }
+
+        function closeHistoryModal() {
+            const modal = document.getElementById('history-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function deleteRallyFromHistory(rallyIndex) {
+            if (!confirm('🗑️ Supprimer cette action ?\n\nCela annulera le point associé si applicable.')) {
+                return;
+            }
+
+            if (rallyIndex < 0 || rallyIndex >= matchStats.rallies.length) {
+                showNotification('❌ Action introuvable');
+                return;
+            }
+
+            const rally = matchStats.rallies[rallyIndex];
+            const data = LCVBScoreboard.getScoreData();
+
+            // Restaurer le score si c'était un point
+            if (rally.rallyResult.winner) {
+                if (rally.rallyResult.winner === 'us') {
+                    data.team1.score = Math.max(0, data.team1.score - 1);
+                } else if (rally.rallyResult.winner === 'them') {
+                    data.team2.score = Math.max(0, data.team2.score - 1);
+                }
+                localStorage.setItem('lcvb_score', JSON.stringify(data));
+            }
+
+            // Restaurer les compteurs de timeouts si applicable
+            const timeoutAction = rally.actions.find(a => a.type === 'timeout');
+            if (timeoutAction && rally.metadata?.timeoutsCountBefore) {
+                timeoutsCount[timeoutAction.team] = Math.max(0, timeoutsCount[timeoutAction.team] - 1);
+            }
+
+            // Restaurer les compteurs de cartons si applicable
+            const cardAction = rally.actions.find(a => a.type === 'card');
+            if (cardAction && rally.metadata?.cardsCountBefore) {
+                cardsCount[cardAction.team][cardAction.color] = Math.max(0, cardsCount[cardAction.team][cardAction.color] - 1);
+            }
+
+            // Supprimer le rally
+            matchStats.rallies.splice(rallyIndex, 1);
+
+            // Mettre à jour les stats des joueurs
+            updatePlayerStats();
+            localStorage.setItem('lcvb_match_stats', JSON.stringify(matchStats));
+
+            updateDisplay();
+            updateRecentActions();
+
+            // Fermer et rouvrir la modal d'historique pour rafraîchir l'affichage
+            closeHistoryModal();
+            setTimeout(() => showHistory(), 100);
+
+            showNotification('🗑️ Action supprimée');
+        }
+
+        // ==========================================
+        // SET MANAGEMENT
+        // ==========================================
+        // Fonction pour finaliser les stats d'un set
+        function finalizeSetStats(setNumber) {
+            const data = LCVBScoreboard.getScoreData();
+
+            // Filtrer les rallies du set en cours
+            const setRallies = matchStats.rallies.filter(r => r.setNumber === setNumber);
+
+            // Calculer les stats des joueurs pour ce set
+            const setPlayerStats = {};
+            setRallies.forEach(rally => {
+                rally.actions.forEach(action => {
+                    if (!action.player) return;
+
+                    const playerId = action.player.number;
+                    if (!setPlayerStats[playerId]) {
+                        setPlayerStats[playerId] = {
+                            number: action.player.number,
+                            firstName: action.player.firstName,
+                            position: action.player.position,
+                            services: { total: 0, aces: 0, faults: 0 },
+                            attacks: { total: 0, points: 0, blocked: 0, out: 0 },
+                            blocks: { total: 0, points: 0 },
+                            digs: { total: 0, recovered: 0 },
+                            assists: 0
+                        };
+                    }
+
+                    const stats = setPlayerStats[playerId];
+
+                    // Compter les actions
+                    if (action.type === 'service') {
+                        stats.services.total++;
+                        if (action.result === 'ace') stats.services.aces++;
+                        if (action.result === 'fault') stats.services.faults++;
+                    } else if (action.type === 'attack') {
+                        stats.attacks.total++;
+                        if (action.result === 'point') stats.attacks.points++;
+                        if (action.result === 'blocked') stats.attacks.blocked++;
+                        if (action.result === 'out') stats.attacks.out++;
+                    } else if (action.type === 'block') {
+                        stats.blocks.total++;
+                        if (action.result === 'point') stats.blocks.points++;
+                    } else if (action.type === 'dig') {
+                        stats.digs.total++;
+                        if (action.result === 'recovered') stats.digs.recovered++;
+                    } else if (action.type === 'pass' && action.result === 'assist') {
+                        stats.assists++;
+                    }
+                });
+            });
+
+            // Créer l'objet setStats
+            const setStatsObj = {
+                setNumber: setNumber,
+                team1Score: data.team1.sets[setNumber - 1] || 0,
+                team2Score: data.team2.sets[setNumber - 1] || 0,
+                playerStats: setPlayerStats,
+                rallies: setRallies,
+                timeoutsUsed: {
+                    team1: timeoutsCount.team1,
+                    team2: timeoutsCount.team2
+                },
+                duration: null, // TODO: ajouter le calcul de durée
+                timestamp: new Date().toISOString()
+            };
+
+            // Ajouter aux setStats
+            matchStats.setStats.push(setStatsObj);
+
+            console.log(`✅ Stats du set ${setNumber} finalisées:`, setStatsObj);
+        }
+
+        function nextSet() {
+            const data = LCVBScoreboard.getScoreData();
+
+            if (!confirm(`🔄 Passer au set ${data.currentSet + 1} ?\n\nLes timeouts seront réinitialisés et vous pourrez repositionner les joueurs.`)) {
+                return;
+            }
+
+            // Finaliser les stats du set actuel
+            finalizeSetStats(data.currentSet);
+
+            // Utiliser la fonction LCVBScoreboard
+            LCVBScoreboard.nextSet();
+
+            // Réinitialiser les timeouts
+            timeoutsCount.team1 = 0;
+            timeoutsCount.team2 = 0;
+
+            // Recharger les données
+            const newData = LCVBScoreboard.getScoreData();
+
+            updateDisplay();
+            showNotification(`🔄 Set ${newData.currentSet} commencé !`);
+
+            // Proposer de repositionner les joueurs
+            setTimeout(() => {
+                if (confirm('Voulez-vous repositionner les joueurs pour ce nouveau set ?')) {
+                    showPositioningModal();
+                }
+            }, 500);
+        }
+
+        function endMatch() {
+            const data = LCVBScoreboard.getScoreData();
+
+            // Calculer les sets gagnés
+            const team1Sets = data.team1.sets.filter(s => s > 0).length;
+            const team2Sets = data.team2.sets.filter(s => s > 0).length;
+
+            const message = `🏁 Terminer le match ?\n\nScore actuel:\n${data.team1.name}: ${team1Sets} sets\n${data.team2.name}: ${team2Sets} sets\n\nUn fichier JSON sera automatiquement téléchargé puis vous serez redirigé vers les statistiques.`;
+
+            if (!confirm(message)) {
+                return;
+            }
+
+            // Finaliser les stats du set actuel (dernier set)
+            finalizeSetStats(data.currentSet);
+
+            // Sauvegarder le match comme terminé
+            const matchData = {
+                setup: matchSetup,
+                score: data,
+                stats: matchStats,
+                courtComposition: courtComposition,
+                timeoutsCount: timeoutsCount,
+                cardsCount: cardsCount,
+                endedAt: new Date().toISOString()
+            };
+
+            localStorage.setItem('lcvb_last_match_complete', JSON.stringify(matchData));
+
+            // AUTO-EXPORT JSON
+            const team1Name = (data.team1.name || 'Team1').replace(/\s+/g, '_');
+            const team2Name = (data.team2.name || 'Team2').replace(/\s+/g, '_');
+            const dateStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+            const timeStr = new Date().toTimeString().split(' ')[0].replace(/:/g, '-'); // HH-MM-SS
+            const filename = `match_${dateStr}_${timeStr}_${team1Name}_vs_${team2Name}.json`;
+
+            const dataStr = JSON.stringify(matchData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            // Rediriger vers les statistiques
+            showNotification('🏁 Match terminé ! Export JSON... Redirection...');
+            setTimeout(() => {
+                window.location.href = 'stats.html';
+            }, 1500);
+        }
+
+        function showMenu() {
+            const options = [
+                '🔄 Repositionner les joueurs',
+                '🏠 Retour à l\'accueil',
+                '❌ Annuler'
+            ];
+
+            const choice = prompt('Menu:\n1. ' + options[0] + '\n2. ' + options[1] + '\n\nEntrez le numéro de votre choix:');
+
+            if (choice === '1') {
+                showPositioningModal();
+            } else if (choice === '2') {
+                if (confirm('Voulez-vous vraiment quitter ?')) {
+                    window.location.href = 'home.html';
+                }
+            }
+        }
+    </script>
+    <script src="theme.js"></script>
+</body>
+</html>

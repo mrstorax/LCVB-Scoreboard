@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>⚙️ Paramètres - LCVB Scoreboard</title>
+    <link rel="stylesheet" href="themes.css">
+    <link rel="stylesheet" href="shared-style.css">
+    <style>
+        .settings-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .settings-header {
+            margin-bottom: 2rem;
+        }
+
+        .settings-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-header p {
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+
+        .settings-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--app-border);
+            overflow-x: auto;
+        }
+
+        .settings-tab {
+            padding: 1rem 1.5rem;
+            border: none;
+            background: none;
+            color: var(--app-text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .settings-tab:hover {
+            color: var(--app-text-primary);
+            background: var(--app-bg-secondary);
+        }
+
+        .settings-tab.active {
+            color: var(--app-accent);
+            border-bottom-color: var(--app-accent);
+        }
+
+        .settings-panel {
+            display: none;
+        }
+
+        .settings-panel.active {
+            display: block;
+        }
+
+        .settings-section {
+            background: var(--app-bg-secondary);
+            border-radius: var(--app-radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--app-border);
+        }
+
+        .settings-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--app-text-primary);
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="url"],
+        .form-group input[type="color"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: var(--app-radius-md);
+            border: 2px solid var(--app-border);
+            background: var(--app-bg-primary);
+            color: var(--app-text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 0.25rem;
+            opacity: 0.7;
+            font-size: 0.85rem;
+        }
+
+        .color-picker-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .color-picker input[type="color"] {
+            width: 60px;
+            height: 40px;
+            border-radius: var(--app-radius-md);
+            cursor: pointer;
+        }
+
+        .preview-box {
+            background: var(--app-bg-secondary);
+            border-radius: var(--app-radius-lg);
+            padding: 2rem;
+            border: 2px dashed var(--app-border);
+            text-align: center;
+        }
+
+        .logo-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 1rem auto;
+            display: block;
+        }
+
+        .sponsors-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .sponsor-item {
+            background: var(--app-bg-primary);
+            border-radius: var(--app-radius-md);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid var(--app-border);
+        }
+
+        .sponsor-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            background: white;
+            border-radius: var(--app-radius-sm);
+            padding: 0.25rem;
+        }
+
+        .sponsor-item-info {
+            flex: 1;
+        }
+
+        .sponsor-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--app-radius-md);
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--app-accent);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--app-bg-secondary);
+            color: var(--app-text-primary);
+            border: 2px solid var(--app-border);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--app-shadow-md);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .news-item {
+            background: var(--app-bg-primary);
+            border-radius: var(--app-radius-md);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--app-border);
+        }
+
+        .news-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.5rem;
+        }
+
+        .news-item-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .news-item-date {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: var(--app-radius-md);
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            color: #3b82f6;
+        }
+
+        .ffvb-result {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .ffvb-team-card {
+            border: 1px solid var(--app-border);
+            border-radius: var(--app-radius-lg);
+            padding: 1.25rem;
+            background: var(--app-bg-primary);
+        }
+
+        .ffvb-team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .ffvb-team-meta {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .ffvb-team-links {
+            margin: 0.5rem 0 1rem;
+            font-size: 0.85rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .ffvb-team-links a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .ffvb-matches {
+            margin-top: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 1rem;
+        }
+
+        .ffvb-match {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .ffvb-match:last-child {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--app-accent);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme">🌙</button>
+
+    <div class="settings-container">
+        <!-- Header -->
+        <div class="settings-header">
+            <h1>⚙️ Paramètres du Club</h1>
+            <p>Personnalisez l'apparence et les informations de votre club</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="settings-tabs">
+            <button class="settings-tab active" onclick="showTab('general')">🏢 Général</button>
+            <button class="settings-tab" onclick="showTab('ffvb')">🏆 FFVB & Calendriers</button>
+            <button class="settings-tab" onclick="showTab('branding')">🎨 Apparence</button>
+            <button class="settings-tab" onclick="showTab('sponsors')">💼 Sponsors</button>
+            <button class="settings-tab" onclick="showTab('news')">📰 Actualités</button>
+            <button class="settings-tab" onclick="showTab('advanced')">🔧 Avancé</button>
+        </div>
+
+        <!-- General Panel -->
+        <div id="panel-general" class="settings-panel active">
+            <div class="settings-section">
+                <h2>🏢 Informations du Club</h2>
+
+                <div class="form-group">
+                    <label for="club-name">Nom du club</label>
+                    <input type="text" id="club-name" placeholder="Le Crès Volley-Ball" />
+                </div>
+
+                <div class="form-group">
+                    <label for="club-acronym">Acronyme</label>
+                    <input type="text" id="club-acronym" placeholder="LCVB" maxlength="10" />
+                    <small>Maximum 10 caractères</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="club-website">Site web</label>
+                    <input type="url" id="club-website" placeholder="https://le-cres-vb.web.app" />
+                </div>
+
+                <div class="form-group">
+                    <label for="club-email">Email de contact</label>
+                    <input type="email" id="club-email" placeholder="contact@lecres-vb.fr" />
+                </div>
+
+                <div class="form-group">
+                    <label for="club-description">Description</label>
+                    <textarea id="club-description" placeholder="Description de votre club..."></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="saveSettings('general')">💾 Enregistrer</button>
+                    <button class="btn btn-secondary" onclick="resetSettings('general')">↩️ Réinitialiser</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FFVB Panel -->
+        <div id="panel-ffvb" class="settings-panel">
+            <div class="settings-section">
+                <h2>🏆 Synchronisation FFVB</h2>
+
+                <div class="form-group">
+                    <label for="ffvb-club-ref">Lien ou code FFVB du club</label>
+                    <input type="text" id="ffvb-club-ref" placeholder="https://www.ffvbbeach.org/...cnclub=0348589" />
+                    <small>Collez l'URL complète du club ou saisissez simplement son code (ex: 0348589)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="ffvb-season">Saison (optionnel)</label>
+                    <input type="text" id="ffvb-season" placeholder="2025/2026" />
+                    <small>Laissez vide pour importer la saison en cours</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Dernière synchronisation</label>
+                    <div id="ffvb-last-sync">—</div>
+                </div>
+
+                <button class="btn btn-primary" id="ffvb-import-btn" onclick="runFfvbImport()">🔁 Importer depuis la FFVB</button>
+            </div>
+
+            <div class="settings-section">
+                <h2>📅 Équipes et calendriers importés</h2>
+                <div id="ffvb-result" class="ffvb-result">
+                    <p style="opacity: 0.6;">Aucune donnée importée pour le moment.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Branding Panel -->
+        <div id="panel-branding" class="settings-panel">
+            <div class="settings-section">
+                <h2>🎨 Couleurs du Club</h2>
+
+                <div class="color-picker-group">
+                    <div class="form-group">
+                        <label>Couleur Principale</label>
+                        <div class="color-picker">
+                            <input type="color" id="color-primary" value="#E91E63" />
+                            <input type="text" id="color-primary-hex" value="#E91E63" style="width: 100px;" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Couleur Secondaire</label>
+                        <div class="color-picker">
+                            <input type="color" id="color-secondary" value="#FF69B4" />
+                            <input type="text" id="color-secondary-hex" value="#FF69B4" style="width: 100px;" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Couleur d'Accent</label>
+                        <div class="color-picker">
+                            <input type="color" id="color-accent" value="#3b82f6" />
+                            <input type="text" id="color-accent-hex" value="#3b82f6" style="width: 100px;" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="saveSettings('branding')">💾 Enregistrer</button>
+                    <button class="btn btn-secondary" onclick="previewColors()">👁️ Prévisualiser</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>🖼️ Logo du Club</h2>
+
+                <div class="form-group">
+                    <label for="logo-url">URL du logo</label>
+                    <input type="url" id="logo-url" placeholder="https://example.com/logo.png" />
+                    <small>URL publique de votre logo (format PNG, SVG ou JPG)</small>
+                </div>
+
+                <div class="preview-box">
+                    <p><strong>Prévisualisation</strong></p>
+                    <img id="logo-preview" class="logo-preview" src="" alt="Logo du club" style="display: none;" />
+                    <p id="logo-placeholder" style="opacity: 0.5;">Aucun logo configuré</p>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="saveSettings('logo')">💾 Enregistrer</button>
+                    <button class="btn btn-secondary" onclick="loadLogoPreview()">🔄 Actualiser prévisualisation</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sponsors Panel -->
+        <div id="panel-sponsors" class="settings-panel">
+            <div class="settings-section">
+                <h2>💼 Gestion des Sponsors</h2>
+
+                <div class="alert alert-info">
+                    <strong>ℹ️ Rotation automatique:</strong> Les logos des sponsors seront affichés en rotation toutes les 15 secondes pendant les lives.
+                </div>
+
+                <div class="form-group">
+                    <label for="sponsor-name">Nom du sponsor</label>
+                    <input type="text" id="sponsor-name" placeholder="Entreprise ABC" />
+                </div>
+
+                <div class="form-group">
+                    <label for="sponsor-logo">URL du logo</label>
+                    <input type="url" id="sponsor-logo" placeholder="https://example.com/sponsor-logo.png" />
+                </div>
+
+                <div class="form-group">
+                    <label for="sponsor-website">Site web (optionnel)</label>
+                    <input type="url" id="sponsor-website" placeholder="https://sponsor.com" />
+                </div>
+
+                <button class="btn btn-primary" onclick="addSponsor()">➕ Ajouter le sponsor</button>
+
+                <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Sponsors actifs (<span id="sponsors-count">0</span>)</h3>
+                <div id="sponsors-list" class="sponsors-list">
+                    <p style="opacity: 0.6;">Aucun sponsor ajouté</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- News Panel -->
+        <div id="panel-news" class="settings-panel">
+            <div class="settings-section">
+                <h2>📰 Actualités du Club</h2>
+
+                <div class="alert alert-info">
+                    <strong>ℹ️ Affichage:</strong> Les actualités peuvent être affichées pendant les lives ou sur la page spectateur.
+                </div>
+
+                <div class="form-group">
+                    <label for="news-title">Titre de l'actualité</label>
+                    <input type="text" id="news-title" placeholder="Match important ce week-end" />
+                </div>
+
+                <div class="form-group">
+                    <label for="news-content">Contenu</label>
+                    <textarea id="news-content" placeholder="Détails de l'actualité..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="addNews()">➕ Ajouter l'actualité</button>
+
+                <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Actualités récentes (<span id="news-count">0</span>)</h3>
+                <div id="news-list">
+                    <p style="opacity: 0.6;">Aucune actualité</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Panel -->
+        <div id="panel-advanced" class="settings-panel">
+            <div class="settings-section">
+                <h2>🔧 Paramètres Avancés</h2>
+
+                <div class="form-group">
+                    <label for="stream-key">Clé de stream (optionnel)</label>
+                    <input type="text" id="stream-key" placeholder="rtmp://..." />
+                    <small>Utilisé pour la diffusion automatique sur YouTube/Twitch</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="volleyai-key">Clé API VolleyAI (optionnel)</label>
+                    <input type="text" id="volleyai-key" placeholder="vkey_..." />
+                    <small>Pour la synchronisation avec volleyai.twittiz.fr/dashboard</small>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="saveSettings('advanced')">💾 Enregistrer</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>💾 Import / Export</h2>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="exportSettings()">📥 Exporter la configuration</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📤 Importer une configuration</button>
+                    <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importSettings(event)" />
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>🗑️ Réinitialisation</h2>
+
+                <p style="margin-bottom: 1rem; opacity: 0.8;">Attention : cette action supprimera toutes vos configurations.</p>
+
+                <button class="btn btn-danger" onclick="resetAllSettings()">⚠️ Tout réinitialiser</button>
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <div style="margin-top: 2rem;">
+            <button class="btn btn-secondary" onclick="window.location.href='home.html'">🏠 Retour à l'accueil</button>
+        </div>
+    </div>
+
+    <script src="theme.js"></script>
+    <script>
+        // ==========================================
+        // STATE
+        // ==========================================
+        let settings = {
+            general: {
+                clubName: 'Le Crès Volley-Ball',
+                clubAcronym: 'LCVB',
+                clubWebsite: 'https://le-cres-vb.web.app',
+                clubEmail: 'contact@lecres-vb.fr',
+                clubDescription: ''
+            },
+            branding: {
+                colorPrimary: '#E91E63',
+                colorSecondary: '#FF69B4',
+                colorAccent: '#3b82f6',
+                logoUrl: ''
+            },
+            sponsors: [],
+            news: [],
+            advanced: {
+                streamKey: '',
+                volleyaiKey: ''
+            },
+            ffvb: {
+                clubCode: '',
+                clubUrl: '',
+                clubName: '',
+                season: '',
+                lastSync: null,
+                lastTeams: []
+            }
+        };
+
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            setupColorPickers();
+            hydrateFfvbFromServer();
+        });
+
+        function loadSettings() {
+            const saved = localStorage.getItem('lcvb_settings');
+            if (saved) {
+                settings = { ...settings, ...JSON.parse(saved) };
+            }
+            updateUI();
+        }
+
+        function updateUI() {
+            // General
+            document.getElementById('club-name').value = settings.general.clubName || '';
+            document.getElementById('club-acronym').value = settings.general.clubAcronym || '';
+            document.getElementById('club-website').value = settings.general.clubWebsite || '';
+            document.getElementById('club-email').value = settings.general.clubEmail || '';
+            document.getElementById('club-description').value = settings.general.clubDescription || '';
+
+            // FFVB
+            document.getElementById('ffvb-club-ref').value = settings.ffvb.clubUrl || settings.ffvb.clubCode || '';
+            document.getElementById('ffvb-season').value = settings.ffvb.season || '';
+            document.getElementById('ffvb-last-sync').textContent = settings.ffvb.lastSync ? formatDateTime(settings.ffvb.lastSync) : '—';
+            renderFfvbResult();
+
+            // Branding
+            document.getElementById('color-primary').value = settings.branding.colorPrimary;
+            document.getElementById('color-primary-hex').value = settings.branding.colorPrimary;
+            document.getElementById('color-secondary').value = settings.branding.colorSecondary;
+            document.getElementById('color-secondary-hex').value = settings.branding.colorSecondary;
+            document.getElementById('color-accent').value = settings.branding.colorAccent;
+            document.getElementById('color-accent-hex').value = settings.branding.colorAccent;
+            document.getElementById('logo-url').value = settings.branding.logoUrl || '';
+            loadLogoPreview();
+
+            // Advanced
+            document.getElementById('stream-key').value = settings.advanced.streamKey || '';
+            document.getElementById('volleyai-key').value = settings.advanced.volleyaiKey || '';
+
+            // Sponsors & News
+            displaySponsors();
+            displayNews();
+        }
+
+        function setupColorPickers() {
+            // Sync color pickers with hex inputs
+            ['primary', 'secondary', 'accent'].forEach(type => {
+                const colorInput = document.getElementById(`color-${type}`);
+                const hexInput = document.getElementById(`color-${type}-hex`);
+
+                colorInput.addEventListener('input', () => {
+                    hexInput.value = colorInput.value;
+                });
+
+                hexInput.addEventListener('input', () => {
+                    if (/^#[0-9A-F]{6}$/i.test(hexInput.value)) {
+                        colorInput.value = hexInput.value;
+                    }
+                });
+            });
+        }
+
+        // ==========================================
+        // TAB MANAGEMENT
+        // ==========================================
+        function showTab(tabName) {
+            // Hide all panels
+            document.querySelectorAll('.settings-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            // Deactivate all tabs
+            document.querySelectorAll('.settings-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected panel
+            document.getElementById(`panel-${tabName}`).classList.add('active');
+
+            // Activate selected tab
+            event.target.classList.add('active');
+        }
+
+        // ==========================================
+        // SAVE SETTINGS
+        // ==========================================
+        function saveSettings(section) {
+            if (section === 'general') {
+                settings.general = {
+                    clubName: document.getElementById('club-name').value,
+                    clubAcronym: document.getElementById('club-acronym').value,
+                    clubWebsite: document.getElementById('club-website').value,
+                    clubEmail: document.getElementById('club-email').value,
+                    clubDescription: document.getElementById('club-description').value
+                };
+            } else if (section === 'branding') {
+                settings.branding = {
+                    colorPrimary: document.getElementById('color-primary').value,
+                    colorSecondary: document.getElementById('color-secondary').value,
+                    colorAccent: document.getElementById('color-accent').value,
+                    logoUrl: settings.branding.logoUrl
+                };
+            } else if (section === 'logo') {
+                settings.branding.logoUrl = document.getElementById('logo-url').value;
+            } else if (section === 'advanced') {
+                settings.advanced = {
+                    streamKey: document.getElementById('stream-key').value,
+                    volleyaiKey: document.getElementById('volleyai-key').value
+                };
+            }
+
+            localStorage.setItem('lcvb_settings', JSON.stringify(settings));
+            showSuccess('✅ Paramètres enregistrés !');
+        }
+
+        function resetSettings(section) {
+            if (confirm('Voulez-vous vraiment réinitialiser ces paramètres ?')) {
+                if (section === 'general') {
+                    settings.general = {
+                        clubName: 'Le Crès Volley-Ball',
+                        clubAcronym: 'LCVB',
+                        clubWebsite: 'https://le-cres-vb.web.app',
+                        clubEmail: '',
+                        clubDescription: ''
+                    };
+                }
+                updateUI();
+                saveSettings(section);
+            }
+        }
+
+        // ==========================================
+        // BRANDING
+        // ==========================================
+        function loadLogoPreview() {
+            const logoUrl = document.getElementById('logo-url').value;
+            const preview = document.getElementById('logo-preview');
+            const placeholder = document.getElementById('logo-placeholder');
+
+            if (logoUrl) {
+                preview.src = logoUrl;
+                preview.style.display = 'block';
+                placeholder.style.display = 'none';
+            } else {
+                preview.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+        }
+
+        function previewColors() {
+            const primary = document.getElementById('color-primary').value;
+            const secondary = document.getElementById('color-secondary').value;
+            const accent = document.getElementById('color-accent').value;
+
+            // Temporarily apply colors
+            document.documentElement.style.setProperty('--app-accent', accent);
+
+            showSuccess('🎨 Couleurs appliquées temporairement. Enregistrez pour conserver les modifications.');
+        }
+
+        // ==========================================
+        // SPONSORS
+        // ==========================================
+        function addSponsor() {
+            const name = document.getElementById('sponsor-name').value.trim();
+            const logo = document.getElementById('sponsor-logo').value.trim();
+            const website = document.getElementById('sponsor-website').value.trim();
+
+            if (!name || !logo) {
+                alert('Veuillez remplir le nom et le logo du sponsor');
+                return;
+            }
+
+            settings.sponsors.push({
+                id: Date.now(),
+                name,
+                logo,
+                website
+            });
+
+            document.getElementById('sponsor-name').value = '';
+            document.getElementById('sponsor-logo').value = '';
+            document.getElementById('sponsor-website').value = '';
+
+            localStorage.setItem('lcvb_settings', JSON.stringify(settings));
+            displaySponsors();
+            showSuccess('✅ Sponsor ajouté !');
+        }
+
+        function deleteSponsor(id) {
+            if (confirm('Supprimer ce sponsor ?')) {
+                settings.sponsors = settings.sponsors.filter(s => s.id !== id);
+                localStorage.setItem('lcvb_settings', JSON.stringify(settings));
+                displaySponsors();
+            }
+        }
+
+        function displaySponsors() {
+            const container = document.getElementById('sponsors-list');
+            const count = document.getElementById('sponsors-count');
+
+            count.textContent = settings.sponsors.length;
+
+            if (settings.sponsors.length === 0) {
+                container.innerHTML = '<p style="opacity: 0.6;">Aucun sponsor ajouté</p>';
+                return;
+            }
+
+            container.innerHTML = settings.sponsors.map(sponsor => `
+                <div class="sponsor-item">
+                    <img src="${sponsor.logo}" alt="${sponsor.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><text x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22 dy=%22.3em%22>❌</text></svg>'" />
+                    <div class="sponsor-item-info">
+                        <strong>${sponsor.name}</strong>
+                        ${sponsor.website ? `<br><a href="${sponsor.website}" target="_blank" style="font-size: 0.85rem; opacity: 0.7;">${sponsor.website}</a>` : ''}
+                    </div>
+                    <div class="sponsor-item-actions">
+                        <button class="btn btn-danger btn-sm" onclick="deleteSponsor(${sponsor.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // NEWS
+        // ==========================================
+        function addNews() {
+            const title = document.getElementById('news-title').value.trim();
+            const content = document.getElementById('news-content').value.trim();
+
+            if (!title || !content) {
+                alert('Veuillez remplir le titre et le contenu');
+                return;
+            }
+
+            settings.news.unshift({
+                id: Date.now(),
+                title,
+                content,
+                date: new Date().toISOString()
+            });
+
+            document.getElementById('news-title').value = '';
+            document.getElementById('news-content').value = '';
+
+            localStorage.setItem('lcvb_settings', JSON.stringify(settings));
+            displayNews();
+            showSuccess('✅ Actualité ajoutée !');
+        }
+
+        function deleteNews(id) {
+            if (confirm('Supprimer cette actualité ?')) {
+                settings.news = settings.news.filter(n => n.id !== id);
+                localStorage.setItem('lcvb_settings', JSON.stringify(settings));
+                displayNews();
+            }
+        }
+
+        function displayNews() {
+            const container = document.getElementById('news-list');
+            const count = document.getElementById('news-count');
+
+            count.textContent = settings.news.length;
+
+            if (settings.news.length === 0) {
+                container.innerHTML = '<p style="opacity: 0.6;">Aucune actualité</p>';
+                return;
+            }
+
+            container.innerHTML = settings.news.map(news => `
+                <div class="news-item">
+                    <div class="news-item-header">
+                        <div class="news-item-title">${news.title}</div>
+                        <button class="btn btn-danger btn-sm" onclick="deleteNews(${news.id})">🗑️</button>
+                    </div>
+                    <div class="news-item-date">${new Date(news.date).toLocaleDateString('fr-FR')}</div>
+                    <p style="margin-top: 0.5rem;">${news.content}</p>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // FFVB IMPORT
+        // ==========================================
+        function setFfvbLoading(isLoading) {
+            const btn = document.getElementById('ffvb-import-btn');
+            if (!btn) return;
+            btn.disabled = isLoading;
+            btn.textContent = isLoading ? '⏳ Import en cours...' : '🔁 Importer depuis la FFVB';
+        }
+
+        function renderFfvbResult() {
+            const container = document.getElementById('ffvb-result');
+            if (!container) return;
+            const teams = settings.ffvb?.lastTeams || [];
+            if (teams.length === 0) {
+                container.innerHTML = '<p style="opacity: 0.6;">Aucune donnée importée pour le moment.</p>';
+                return;
+            }
+
+            container.innerHTML = teams.map(team => {
+                const matches = (team.calendar || []).slice(0, 5).map(match => `
+                    <div class="ffvb-match">
+                        <div>${match.date || ''}${match.time ? ` • ${match.time}` : ''}</div>
+                        <div>${match.home?.name || ''} vs ${match.away?.name || ''}</div>
+                        <div>${match.sets || ''}</div>
+                    </div>
+                `).join('');
+
+                const calendarInfo = matches || '<p style="opacity: 0.6;">Calendrier non disponible</p>';
+                const officialLink = team.calendarUrl ? `<a href="${team.calendarUrl}" target="_blank" rel="noopener">➡️ Calendrier officiel</a>` : '';
+
+                return `
+                    <div class="ffvb-team-card">
+                        <div class="ffvb-team-header">
+                            <div>
+                                <strong>${team.name}</strong>
+                                <div class="ffvb-team-meta">${team.competitionLabel || ''}</div>
+                            </div>
+                            <div class="ffvb-team-meta" style="text-align: right;">
+                                <div>${team.season || ''}</div>
+                                <div>${(team.calendar || []).length} matchs importés</div>
+                            </div>
+                        </div>
+                        <div class="ffvb-team-links">
+                            <span>Entité ${team.codent} • Poule ${team.poule} • Eq ${team.teamCode}</span>
+                            ${officialLink}
+                        </div>
+                        <div class="ffvb-matches">
+                            ${calendarInfo}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function runFfvbImport() {
+            const clubRef = document.getElementById('ffvb-club-ref').value.trim();
+            const season = document.getElementById('ffvb-season').value.trim();
+            if (!clubRef) {
+                alert('Veuillez renseigner le lien ou le code FFVB du club.');
+                return;
+            }
+
+            const token = localStorage.getItem('lcvb_auth_token');
+            if (!token) {
+                alert('Vous devez être connecté pour lancer l\'import.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            setFfvbLoading(true);
+            try {
+                const payload = { season: season || undefined };
+                if (/^https?:\/\//i.test(clubRef)) {
+                    payload.clubUrl = clubRef;
+                } else {
+                    payload.clubCode = clubRef;
+                }
+
+                const response = await fetch('/api/ffvb/import', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Erreur lors de l\'import');
+
+                settings.ffvb = {
+                    clubCode: data.data?.club?.code || payload.clubCode || settings.ffvb.clubCode,
+                    clubUrl: data.data?.club?.url || payload.clubUrl || settings.ffvb.clubUrl,
+                    clubName: data.data?.club?.name || settings.ffvb.clubName,
+                    season: data.data?.club?.season || season || settings.ffvb.season,
+                    lastSync: data.data?.club?.importedAt || new Date().toISOString(),
+                    lastTeams: data.data?.teams || []
+                };
+                localStorage.setItem('lcvb_settings', JSON.stringify(settings));
+                document.getElementById('ffvb-last-sync').textContent = formatDateTime(settings.ffvb.lastSync);
+                renderFfvbResult();
+                showSuccess('✅ Import FFVB terminé !');
+            } catch (error) {
+                alert(`Erreur import FFVB : ${error.message}`);
+            } finally {
+                setFfvbLoading(false);
+            }
+        }
+
+        async function hydrateFfvbFromServer() {
+            if (!settings.ffvb?.clubCode) return;
+            const token = localStorage.getItem('lcvb_auth_token');
+            if (!token) return;
+            try {
+                const response = await fetch(`/api/ffvb/imports/latest?clubCode=${settings.ffvb.clubCode}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) return;
+                const { import: latest } = await response.json();
+                if (!latest) return;
+                settings.ffvb = {
+                    ...settings.ffvb,
+                    clubCode: latest.payload?.club?.code || settings.ffvb.clubCode,
+                    clubUrl: latest.payload?.club?.url || settings.ffvb.clubUrl,
+                    clubName: latest.payload?.club?.name || settings.ffvb.clubName,
+                    season: latest.payload?.club?.season || settings.ffvb.season,
+                    lastSync: latest.payload?.club?.importedAt || latest.created_at,
+                    lastTeams: latest.payload?.teams || []
+                };
+                localStorage.setItem('lcvb_settings', JSON.stringify(settings));
+                document.getElementById('ffvb-last-sync').textContent = formatDateTime(settings.ffvb.lastSync);
+                renderFfvbResult();
+            } catch (error) {
+                console.warn('FFVB sync fetch failed', error);
+            }
+        }
+
+        // ==========================================
+        // IMPORT / EXPORT
+        // ==========================================
+        function exportSettings() {
+            const dataStr = JSON.stringify(settings, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `lcvb_settings_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            showSuccess('📥 Configuration exportée !');
+        }
+
+        function importSettings(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    settings = { ...settings, ...imported };
+                    localStorage.setItem('lcvb_settings', JSON.stringify(settings));
+                    updateUI();
+                    showSuccess('📤 Configuration importée !');
+                } catch (error) {
+                    alert('Erreur lors de l\'import : fichier invalide');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetAllSettings() {
+            if (confirm('⚠️ ATTENTION : Cela supprimera TOUTES vos configurations. Êtes-vous sûr ?')) {
+                if (confirm('Dernière confirmation : tout sera perdu !')) {
+                    localStorage.removeItem('lcvb_settings');
+                    location.reload();
+                }
+            }
+        }
+
+        // ==========================================
+        // UTILS
+        // ==========================================
+        function formatDateTime(value) {
+            if (!value) return '—';
+            try {
+                return new Date(value).toLocaleString('fr-FR');
+            } catch {
+                return value;
+            }
+        }
+
+        function showSuccess(message) {
+            alert(message);
+        }
+    </script>
+</body>
+</html>

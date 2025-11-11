@@ -3,31 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LCVB Scoreboard Pro - Accueil</title>
+    <meta name="theme-color" content="#0f172a">
+    <title>Hub du Club - LCVB Scoreboard Pro</title>
+    <link rel="stylesheet" href="themes.css">
     <link rel="stylesheet" href="shared-style.css">
     <style>
-        /* Styles spécifiques page d'accueil */
+        /* Styles spécifiques hub club */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--app-spacing-lg);
+            padding: var(--app-spacing-md);
+            background: var(--app-bg-secondary);
+            border-radius: var(--app-radius-lg);
+            border: 1px solid var(--app-border);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--app-spacing-md);
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--app-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--app-text-primary);
+        }
+
+        .user-role {
+            font-size: 0.85rem;
+            color: var(--app-text-secondary);
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: var(--app-bg-tertiary);
+            border: 1px solid var(--app-border);
+            border-radius: var(--app-radius-md);
+            color: var(--app-text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: var(--app-danger-light);
+            border-color: var(--app-danger);
+            color: var(--app-danger);
+        }
+
         .hero {
             text-align: center;
             padding: var(--app-spacing-2xl) var(--app-spacing-lg);
-            background: linear-gradient(135deg, var(--app-accent) 0%, #1d4ed8 100%);
+            background: var(--gradient-primary);
             border-radius: var(--app-radius-xl);
             color: white;
             margin-bottom: var(--app-spacing-xl);
             box-shadow: var(--app-shadow-lg);
         }
-        
+
         .hero-title {
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: var(--app-spacing-md);
         }
-        
+
         .hero-subtitle {
             font-size: 1.25rem;
             opacity: 0.9;
         }
-        
+
+        .live-matches-section {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border-radius: var(--app-radius-lg);
+            padding: var(--app-spacing-lg);
+            margin-bottom: var(--app-spacing-xl);
+            color: white;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .live-matches-section.empty {
+            background: var(--app-bg-secondary);
+            color: var(--app-text-secondary);
+            box-shadow: none;
+            border: 1px solid var(--app-border);
+        }
+
+        .upcoming-section {
+            background: var(--app-bg-secondary);
+            border-radius: var(--app-radius-lg);
+            padding: var(--app-spacing-lg);
+            border: 1px solid var(--app-border);
+            margin-bottom: var(--app-spacing-xl);
+            box-shadow: var(--app-shadow-sm);
+        }
+
+        .upcoming-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--app-spacing-md);
+        }
+
+        .upcoming-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--app-spacing-md);
+        }
+
+        .upcoming-card {
+            border: 1px solid var(--app-border);
+            border-radius: var(--app-radius-md);
+            padding: var(--app-spacing-md);
+            background: var(--app-bg-primary);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .upcoming-when {
+            font-weight: 600;
+            color: var(--app-accent);
+        }
+
+        .upcoming-team {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--app-text-primary);
+        }
+
+        .upcoming-vs {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .match-meta {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--app-text-secondary);
+        }
+
+        .match-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            background: var(--app-bg-secondary);
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.2);
+            border-radius: 9999px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .live-pulse {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
         .module-card {
             background: var(--app-bg-secondary);
             border-radius: var(--app-radius-lg);
@@ -39,32 +206,32 @@
             display: block;
             height: 100%;
         }
-        
+
         .module-card:hover {
             border-color: var(--app-accent);
             transform: translateY(-4px);
             box-shadow: var(--app-shadow-xl);
         }
-        
+
         .module-icon {
             font-size: 3rem;
             margin-bottom: var(--app-spacing-md);
             display: block;
         }
-        
+
         .module-title {
             font-size: 1.5rem;
             font-weight: 600;
             color: var(--app-text-primary);
             margin-bottom: var(--app-spacing-sm);
         }
-        
+
         .module-description {
             color: var(--app-text-secondary);
             font-size: 0.9375rem;
             line-height: 1.6;
         }
-        
+
         .module-badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
@@ -73,17 +240,17 @@
             font-weight: 500;
             margin-top: var(--app-spacing-sm);
         }
-        
+
         .badge-ready {
             background: var(--app-success-light);
             color: var(--app-success);
         }
-        
-        .badge-coming {
-            background: var(--app-warning-light);
-            color: var(--app-warning);
+
+        .badge-new {
+            background: var(--app-accent-light);
+            color: var(--app-accent);
         }
-        
+
         .recent-matches {
             background: var(--app-bg-secondary);
             border-radius: var(--app-radius-lg);
@@ -91,7 +258,7 @@
             border: 1px solid var(--app-border);
             box-shadow: var(--app-shadow-sm);
         }
-        
+
         .match-item {
             display: flex;
             align-items: center;
@@ -100,42 +267,74 @@
             border-bottom: 1px solid var(--app-border);
             transition: background 0.2s ease;
         }
-        
+
         .match-item:last-child {
             border-bottom: none;
         }
-        
+
         .match-item:hover {
             background: var(--app-bg-tertiary);
             cursor: pointer;
         }
-        
+
         .match-date {
             color: var(--app-text-muted);
             font-size: 0.875rem;
+            min-width: 80px;
         }
-        
+
         .match-info {
             flex: 1;
             margin: 0 var(--app-spacing-md);
         }
-        
+
         .match-teams {
             font-weight: 500;
             color: var(--app-text-primary);
         }
-        
-        .match-score {
-            font-weight: 600;
-            color: var(--app-accent);
+
+        .match-competition {
+            font-size: 0.8rem;
+            color: var(--app-text-tertiary);
+            margin-top: 0.25rem;
         }
-        
+
+        .match-score {
+            font-weight: 700;
+            color: var(--app-accent);
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .match-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-live {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .status-scheduled {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .status-finished {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
         .quick-actions {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: var(--app-spacing-md);
             margin-bottom: var(--app-spacing-xl);
         }
-        
+
         .quick-action-btn {
             flex: 1;
             padding: var(--app-spacing-lg);
@@ -153,20 +352,20 @@
             justify-content: center;
             gap: var(--app-spacing-sm);
         }
-        
+
         .quick-action-btn:hover {
             border-color: var(--app-accent);
             background: var(--app-accent-light);
             transform: translateY(-2px);
         }
-        
+
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: var(--app-spacing-md);
             margin-top: var(--app-spacing-xl);
         }
-        
+
         .stat-card {
             background: var(--app-bg-secondary);
             border-radius: var(--app-radius-lg);
@@ -174,91 +373,190 @@
             border: 1px solid var(--app-border);
             text-align: center;
         }
-        
+
         .stat-value {
             font-size: 2rem;
             font-weight: 700;
             color: var(--app-accent);
         }
-        
+
         .stat-label {
             color: var(--app-text-secondary);
             font-size: 0.875rem;
             margin-top: var(--app-spacing-xs);
         }
-        
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--app-text-secondary);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(59, 130, 246, 0.2);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--app-text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
         @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .quick-actions {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 640px) {
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-            
-            .quick-actions {
-                flex-direction: column;
+
+            .user-details {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme">🌙</button>
+
     <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="user-info">
+                <div class="user-avatar" id="user-avatar">👤</div>
+                <div class="user-details">
+                    <div class="user-name" id="user-name">Chargement...</div>
+                    <div class="user-role" id="user-role">-</div>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">
+                🚪 Déconnexion
+            </button>
+        </div>
+
         <!-- Hero -->
         <div class="hero">
-            <div class="hero-title">🏐 LCVB Scoreboard Pro</div>
-            <div class="hero-subtitle">Gestion complète de match - Le Crès Volley-Ball</div>
+            <div class="hero-title">🏐 Hub du Club</div>
+            <div class="hero-subtitle">Le Crès Volley-Ball - Gestion Complète</div>
         </div>
-        
+
+        <!-- Live Matches Section -->
+        <div id="live-matches-section" class="live-matches-section empty">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div style="margin-top: 1rem;">Chargement des matchs en direct...</div>
+            </div>
+        </div>
+
+        <!-- Upcoming Matches -->
+        <div class="upcoming-section">
+            <div class="upcoming-header">
+                <h2>📅 Prochains matchs</h2>
+                <a href="setup.html" class="quick-action-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
+                    ⚡ Initier un match
+                </a>
+            </div>
+            <div id="upcoming-list" class="upcoming-list">
+                <div class="loading" style="grid-column: 1 / -1;">
+                    <div class="spinner"></div>
+                    <div style="margin-top: 0.5rem;">Chargement du calendrier FFVB...</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Actions rapides -->
         <div class="quick-actions">
+            <a href="teams.html" class="quick-action-btn">
+                <span>👥</span> Gérer les équipes
+            </a>
+            <a href="lineups.html" class="quick-action-btn">
+                <span>📋</span> Compositions
+            </a>
             <a href="setup.html" class="quick-action-btn">
                 <span>➕</span> Nouveau match
             </a>
-            <button class="quick-action-btn" onclick="resumeLastMatch()">
-                <span>▶️</span> Reprendre le dernier
-            </button>
-            <a href="#recent-matches" class="quick-action-btn">
-                <span>📚</span> Historique
+            <a href="control.html" class="quick-action-btn">
+                <span>▶️</span> Reprendre un match
+            </a>
+            <a href="settings.html" class="quick-action-btn">
+                <span>⚙️</span> Paramètres
             </a>
         </div>
-        
+
         <!-- Modules principaux -->
+        <h2 class="card-title" style="margin-bottom: 1rem;">🎯 Modules Disponibles</h2>
         <div class="grid grid-cols-3">
+            <a href="teams.html" class="module-card">
+                <span class="module-icon">👥</span>
+                <div class="module-title">Gestion Équipes</div>
+                <div class="module-description">
+                    Créer et gérer vos équipes, ajouter des joueurs, définir les compositions et les 7 de base
+                </div>
+                <span class="module-badge badge-new">🆕 Nouveau</span>
+            </a>
+
             <a href="setup.html" class="module-card">
                 <span class="module-icon">🔧</span>
-                <div class="module-title">1. Initialisation</div>
+                <div class="module-title">Initialisation Match</div>
                 <div class="module-description">
-                    Configuration du match : équipes, joueurs, arbitres, lieu et paramètres techniques
+                    Configuration complète du match : équipes, joueurs, arbitres, lieu et paramètres techniques
                 </div>
                 <span class="module-badge badge-ready">✓ Disponible</span>
             </a>
-            
+
             <a href="control.html" class="module-card">
                 <span class="module-icon">📊</span>
-                <div class="module-title">2. Suivi Live</div>
+                <div class="module-title">Suivi Live</div>
                 <div class="module-description">
                     Interface de contrôle en temps réel avec scoreboard, chronomètres et diffusion OBS
                 </div>
                 <span class="module-badge badge-ready">✓ Disponible</span>
             </a>
-            
+        </div>
+
+        <div class="grid grid-cols-3 mt-lg">
             <a href="stats.html" class="module-card">
                 <span class="module-icon">📈</span>
-                <div class="module-title">3. Statistiques</div>
+                <div class="module-title">Statistiques</div>
                 <div class="module-description">
-                    Saisie détaillée des actions : attaques, services, blocs, réceptions et erreurs
+                    Consultation des statistiques détaillées par match, par set et par joueur avec export CSV
                 </div>
-                <span class="module-badge badge-coming">🚧 Bientôt</span>
+                <span class="module-badge badge-ready">✓ Disponible</span>
             </a>
-        </div>
-        
-        <div class="grid grid-cols-3 mt-lg">
-            <a href="dashboard.html" class="module-card">
-                <span class="module-icon">📉</span>
-                <div class="module-title">4. Dashboard</div>
+
+            <a href="spectator.html" target="_blank" class="module-card">
+                <span class="module-icon">🎥</span>
+                <div class="module-title">Mode Spectateur</div>
                 <div class="module-description">
-                    Analyse visuelle post-match avec graphiques, statistiques et exports PDF/CSV
+                    Affichage public avec live stream et statistiques en temps réel (configurable)
                 </div>
-                <span class="module-badge badge-coming">🚧 Bientôt</span>
+                <span class="module-badge badge-ready">✓ Disponible</span>
             </a>
-            
+
             <a href="display.html" target="_blank" class="module-card">
                 <span class="module-icon">🖥️</span>
                 <div class="module-title">Affichage OBS</div>
@@ -267,85 +565,310 @@
                 </div>
                 <span class="module-badge badge-ready">✓ Disponible</span>
             </a>
-            
-            <a href="settings.html" class="module-card">
-                <span class="module-icon">⚙️</span>
-                <div class="module-title">Paramètres</div>
-                <div class="module-description">
-                    Configuration générale, gestion des joueurs, sponsors et préférences d'affichage
-                </div>
-                <span class="module-badge badge-coming">🚧 Bientôt</span>
-            </a>
         </div>
-        
-        <!-- Statistiques rapides -->
+
+        <!-- Statistiques rapides du club -->
+        <h2 class="card-title mt-xl" style="margin-bottom: 1rem;">📊 Statistiques du Club</h2>
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-value" id="total-matches">0</div>
-                <div class="stat-label">Matchs enregistrés</div>
+                <div class="stat-value" id="total-teams">-</div>
+                <div class="stat-label">Équipes</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="total-wins">0</div>
-                <div class="stat-label">Victoires cette saison</div>
+                <div class="stat-value" id="total-players">-</div>
+                <div class="stat-label">Joueurs</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="win-rate">0%</div>
-                <div class="stat-label">Taux de victoire</div>
+                <div class="stat-value" id="total-matches">-</div>
+                <div class="stat-label">Matchs cette saison</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-wins">-</div>
+                <div class="stat-label">Victoires</div>
             </div>
         </div>
-        
+
         <!-- Matchs récents -->
         <div class="recent-matches mt-xl" id="recent-matches">
-            <h2 class="card-title">📅 Matchs récents</h2>
+            <h2 class="card-title">📅 Matchs Récents</h2>
             <div id="matches-list">
-                <div class="match-item">
-                    <div class="match-date">08/11/2025</div>
-                    <div class="match-info">
-                        <div class="match-teams">LCVB vs Montpellier VUC</div>
-                    </div>
-                    <div class="match-score">3-2</div>
-                </div>
-                <div class="match-item">
-                    <div class="match-date">01/11/2025</div>
-                    <div class="match-info">
-                        <div class="match-teams">LCVB vs Nîmes Volley</div>
-                    </div>
-                    <div class="match-score">3-0</div>
-                </div>
-                <div class="match-item">
-                    <div class="match-date">25/10/2025</div>
-                    <div class="match-info">
-                        <div class="match-teams">Avignon VB vs LCVB</div>
-                    </div>
-                    <div class="match-score">1-3</div>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div style="margin-top: 1rem;">Chargement des matchs...</div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <script>
-        // Fonction pour reprendre le dernier match
-        function resumeLastMatch() {
-            // Vérifier s'il y a un match en cours
-            const currentMatch = localStorage.getItem('lcvb_current_match');
-            if (currentMatch) {
-                if (confirm('Un match est en cours. Voulez-vous le reprendre ?')) {
-                    window.location.href = 'control.html';
+        const API_URL = 'http://192.168.1.40:5700';
+        let userData = null;
+
+        // ==========================================
+        // AUTHENTIFICATION
+        // ==========================================
+        function checkAuth() {
+            const token = localStorage.getItem('lcvb_auth_token');
+            const user = localStorage.getItem('lcvb_user');
+
+            if (!token || !user) {
+                window.location.href = 'login.html';
+                return false;
+            }
+
+            userData = JSON.parse(user);
+            displayUserInfo();
+            return true;
+        }
+
+        function displayUserInfo() {
+            const roleLabels = {
+                'admin': 'Administrateur',
+                'coach': 'Entraîneur',
+                'operator': 'Opérateur',
+                'statistician': 'Statisticien'
+            };
+
+            document.getElementById('user-name').textContent =
+                `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.email;
+            document.getElementById('user-role').textContent = roleLabels[userData.role] || userData.role;
+            document.getElementById('user-avatar').textContent =
+                (userData.firstName || userData.email || '?')[0].toUpperCase();
+        }
+
+        function logout() {
+            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                const token = localStorage.getItem('lcvb_auth_token');
+
+                // Appel API logout
+                if (token) {
+                    fetch(`${API_URL}/api/auth/logout`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).catch(() => {});
                 }
-            } else {
-                alert('Aucun match en cours. Créez un nouveau match.');
+
+                localStorage.removeItem('lcvb_auth_token');
+                localStorage.removeItem('lcvb_user');
+                window.location.href = 'login.html';
             }
         }
-        
-        // Charger les statistiques au chargement de la page
+
+        // ==========================================
+        // CHARGEMENT DES DONNÉES
+        // ==========================================
+        async function loadDashboardData() {
+            const token = localStorage.getItem('lcvb_auth_token');
+            if (!token) return;
+
+            try {
+                // Charger en parallèle
+                const [liveMatches, upcomingMatches, recentMatches, teams, players] = await Promise.all([
+                    fetchAPI('/api/matches?status=live&limit=5'),
+                    fetchAPI('/api/ffvb/upcoming?limit=3'),
+                    fetchAPI('/api/matches?limit=10'),
+                    fetchAPI('/api/teams'),
+                    fetchAPI('/api/players')
+                ]);
+
+                // Afficher matchs live
+                displayLiveMatches(liveMatches);
+
+                // Afficher prochains matchs
+                displayUpcomingMatches(upcomingMatches);
+
+                // Afficher matchs récents
+                displayRecentMatches(recentMatches);
+
+                // Calculer et afficher stats
+                displayClubStats(teams, players, recentMatches);
+
+            } catch (error) {
+                console.error('Erreur chargement dashboard:', error);
+            }
+        }
+
+        async function fetchAPI(endpoint) {
+            const token = localStorage.getItem('lcvb_auth_token');
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    // Token expiré
+                    localStorage.removeItem('lcvb_auth_token');
+                    localStorage.removeItem('lcvb_user');
+                    window.location.href = 'login.html';
+                }
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data;
+        }
+
+        function displayLiveMatches(data) {
+            const section = document.getElementById('live-matches-section');
+            const matches = data.matches || [];
+
+            if (matches.length === 0) {
+                section.className = 'live-matches-section empty';
+                section.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🏐</div>
+                        <div>Aucun match en direct actuellement</div>
+                    </div>
+                `;
+                return;
+            }
+
+            section.className = 'live-matches-section';
+            let html = '<div class="live-badge"><div class="live-pulse"></div> LIVE - Matchs en cours</div>';
+
+            matches.forEach(match => {
+                html += `
+                    <div class="match-item" style="border-color: rgba(255,255,255,0.2); color: white;" onclick="openMatch(${match.id})">
+                        <div class="match-info">
+                            <div class="match-teams" style="color: white;">${match.home_team_name} vs ${match.away_team_name}</div>
+                            <div class="match-competition" style="color: rgba(255,255,255,0.8);">${match.competition || 'Match amical'}</div>
+                        </div>
+                        <div class="match-score" style="color: white; font-size: 1.5rem;">${match.home_sets_won || 0} - ${match.away_sets_won || 0}</div>
+                    </div>
+                `;
+            });
+
+            section.innerHTML = html;
+        }
+
+        function displayUpcomingMatches(data) {
+            const container = document.getElementById('upcoming-list');
+            if (!container) return;
+            const matches = data.matches || [];
+
+            if (matches.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-icon">📅</div>
+                        <div>Synchronisez vos équipes via la FFVB pour afficher les prochains matchs.</div>
+                        <div style="margin-top: 1rem;"><a class="quick-action-btn" href="settings.html">⚙️ Ouvrir les paramètres</a></div>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = matches.map(match => {
+                const date = new Date(match.date);
+                const dateStr = date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+                const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const domBadge = match.isHome ? '🏠 Domicile' : '🚌 Extérieur';
+                return `
+                    <div class="upcoming-card">
+                        <div class="upcoming-when">${dateStr} • ${timeStr}</div>
+                        <div class="upcoming-team">${match.teamName || 'Équipe'}</div>
+                        <div class="upcoming-vs">${domBadge} vs ${match.opponent}</div>
+                        <div class="match-meta">
+                            <span>🏆 ${match.competition || 'Compétition FFVB'}</span>
+                            <span>📍 ${match.location || 'Lieu à confirmer'}</span>
+                        </div>
+                        ${match.sourceLink ? `<a href="${match.sourceLink}" target="_blank" rel="noopener" style="font-size:0.85rem;color:var(--app-accent);">Lien FFVB ↗</a>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function displayRecentMatches(data) {
+            const container = document.getElementById('matches-list');
+            const matches = data.matches || [];
+
+            if (matches.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📅</div>
+                        <div>Aucun match enregistré</div>
+                        <div style="margin-top: 1rem;">
+                            <a href="setup.html" class="quick-action-btn" style="display: inline-flex; width: auto;">
+                                ➕ Créer un match
+                            </a>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            matches.forEach(match => {
+                const date = new Date(match.match_date);
+                const dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                const statusLabels = {
+                    'scheduled': 'À venir',
+                    'live': 'En direct',
+                    'finished': 'Terminé',
+                    'cancelled': 'Annulé'
+                };
+
+                const statusClass = `status-${match.status}`;
+
+                html += `
+                    <div class="match-item" onclick="openMatch(${match.id})">
+                        <div class="match-date">${dateStr}</div>
+                        <div class="match-info">
+                            <div class="match-teams">${match.home_team_name} vs ${match.away_team_name}</div>
+                            <div class="match-competition">${match.competition || 'Match amical'} • ${match.location || 'Lieu non défini'}</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <span class="match-status ${statusClass}">${statusLabels[match.status] || match.status}</span>
+                            ${match.status === 'finished' ?
+                                `<div class="match-score">${match.home_sets_won || 0} - ${match.away_sets_won || 0}</div>`
+                                : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function displayClubStats(teamsData, playersData, matchesData) {
+            const teams = teamsData.teams || [];
+            const players = playersData.players || [];
+            const matches = matchesData.matches || [];
+
+            // Nombre d'équipes
+            document.getElementById('total-teams').textContent = teams.length;
+
+            // Nombre de joueurs
+            document.getElementById('total-players').textContent = players.length;
+
+            // Nombre de matchs
+            const finishedMatches = matches.filter(m => m.status === 'finished');
+            document.getElementById('total-matches').textContent = finishedMatches.length;
+
+            // Victoires (approximation: home_sets_won > away_sets_won)
+            const wins = finishedMatches.filter(m => m.home_sets_won > m.away_sets_won).length;
+            document.getElementById('total-wins').textContent = wins;
+        }
+
+        function openMatch(matchId) {
+            // TODO: Rediriger vers la page de détails du match
+            console.log('Open match:', matchId);
+            alert(`Ouverture du match #${matchId}\n\nFonctionnalité en cours de développement.`);
+        }
+
+        // ==========================================
+        // INITIALISATION
+        // ==========================================
         window.addEventListener('DOMContentLoaded', () => {
-            // TODO: Charger depuis IndexedDB
-            // Pour l'instant, affichage des données de test
-            document.getElementById('total-matches').textContent = '12';
-            document.getElementById('total-wins').textContent = '8';
-            document.getElementById('win-rate').textContent = '67%';
+            if (checkAuth()) {
+                loadDashboardData();
+            }
         });
     </script>
+    <script src="theme.js"></script>
 </body>
 </html>
-

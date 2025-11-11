@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>Compositions - LCVB Scoreboard Pro</title>
+    <link rel="stylesheet" href="themes.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .top-bar {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--bg-hover);
+            transform: translateY(-2px);
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .page-title h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .page-icon {
+            font-size: 2rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .content-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Team Selection */
+        .team-selector {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .team-selector-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .team-selector select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .team-selector select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        /* Lineups Grid */
+        .lineups-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .lineup-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .lineup-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .lineup-card.default {
+            border: 3px solid var(--color-success);
+        }
+
+        .lineup-card.default::before {
+            content: "⭐ Par défaut";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-success);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .lineup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .lineup-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .lineup-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .lineup-actions button {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .lineup-actions button:hover {
+            background: var(--bg-hover);
+            transform: scale(1.1);
+        }
+
+        .lineup-actions button.star {
+            font-size: 1.2rem;
+        }
+
+        .lineup-actions button.star.active {
+            background: var(--color-warning);
+            border-color: var(--color-warning);
+        }
+
+        .lineup-positions {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .position-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .position-label {
+            font-weight: 700;
+            color: var(--color-primary);
+            min-width: 35px;
+        }
+
+        .position-player {
+            flex: 1;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .position-player.libero {
+            color: var(--color-warning);
+            font-weight: 600;
+        }
+
+        /* Empty State */
+        .empty-state {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .empty-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-text {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem 1rem;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 24px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: var(--shadow-xl);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 2rem;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.75rem;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: var(--bg-secondary);
+            border: none;
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-hover);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            background: var(--bg-primary);
+        }
+
+        .court-visual {
+            background: var(--bg-secondary);
+            border: 3px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .court-title {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .court-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .court-position {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .court-position select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .court-position select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        .position-number {
+            font-weight: 700;
+            color: var(--color-primary);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .libero-section {
+            background: rgba(251, 191, 36, 0.1);
+            border: 2px solid var(--color-warning);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .libero-section .form-label {
+            color: var(--color-warning);
+        }
+
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            border-top: 2px solid var(--border-color);
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.875rem 1.5rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .top-bar {
+                padding: 1rem;
+            }
+
+            .page-title h1 {
+                font-size: 1.5rem;
+            }
+
+            .lineups-container {
+                grid-template-columns: 1fr;
+            }
+
+            .court-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme">🌙</button>
+
+    <div class="content-wrapper">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <button class="back-btn" onclick="window.location.href='home.html'">
+                    ← Retour au hub
+                </button>
+                <div class="page-title">
+                    <span class="page-icon">📋</span>
+                    <h1>Compositions d'équipe</h1>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="openCreateLineupModal()">
+                ➕ Nouvelle composition
+            </button>
+        </div>
+
+        <!-- Team Selector -->
+        <div class="team-selector">
+            <div class="team-selector-title">Sélectionnez une équipe</div>
+            <select id="team-select" onchange="loadLineups()">
+                <option value="">Chargement des équipes...</option>
+            </select>
+        </div>
+
+        <!-- Lineups Container -->
+        <div id="lineups-container" class="loading">
+            Chargement des compositions...
+        </div>
+    </div>
+
+    <!-- Lineup Modal -->
+    <div id="lineup-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Nouvelle composition</h2>
+                <button class="modal-close" onclick="closeLineupModal()">×</button>
+            </div>
+            <form id="lineup-form" onsubmit="saveLineup(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="lineup-name" class="form-label">Nom de la composition</label>
+                        <input
+                            type="text"
+                            id="lineup-name"
+                            class="form-input"
+                            placeholder="Ex: Composition type, Match important, etc."
+                            required
+                        >
+                    </div>
+
+                    <div class="court-visual">
+                        <div class="court-title">🏐 Positionnement sur le terrain</div>
+                        <div class="court-grid">
+                            <!-- P4 (Avant gauche) -->
+                            <div class="court-position">
+                                <div class="position-number">P4</div>
+                                <select id="position-p4" required>
+                                    <option value="">Sélectionner</option>
+                                </select>
+                            </div>
+                            <!-- P3 (Avant centre) -->
+                            <div class="court-position">
+                                <div class="position-number">P3</div>
+                                <select id="position-p3" required>
+                                    <option value="">Sélectionner</option>
+                                </select>
+                            </div>
+                            <!-- P2 (Avant droite) -->
+                            <div class="court-position">
+                                <div class="position-number">P2</div>
+                                <select id="position-p2" required>
+                                    <option value="">Sélectionner</option>
+                                </select>
+                            </div>
+                            <!-- P5 (Arrière gauche) -->
+                            <div class="court-position">
+                                <div class="position-number">P5</div>
+                                <select id="position-p5" required>
+                                    <option value="">Sélectionner</option>
+                                </select>
+                            </div>
+                            <!-- P6 (Arrière centre) -->
+                            <div class="court-position">
+                                <div class="position-number">P6</div>
+                                <select id="position-p6" required>
+                                    <option value="">Sélectionner</option>
+                                </select>
+                            </div>
+                            <!-- P1 (Arrière droite) -->
+                            <div class="court-position">
+                                <div class="position-number">P1</div>
+                                <select id="position-p1" required>
+                                    <option value="">Sélectionner</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="libero-section">
+                        <div class="form-group">
+                            <label for="lineup-libero" class="form-label">🟡 Libéro (optionnel)</label>
+                            <select id="lineup-libero" class="form-input">
+                                <option value="">Aucun libéro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="lineup-team-id">
+                    <input type="hidden" id="lineup-id">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeLineupModal()">
+                        Annuler
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        💾 Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="theme.js"></script>
+    <script>
+        const API_URL = 'http://192.168.1.40:5700';
+        let teams = [];
+        let lineups = [];
+        let players = [];
+        let currentTeamId = null;
+        let editingLineupId = null;
+
+        // Auth check
+        const token = localStorage.getItem('lcvb_auth_token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // API Helper
+        async function fetchAPI(endpoint, options = {}) {
+            const defaultHeaders = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            };
+
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                ...options,
+                headers: { ...defaultHeaders, ...options.headers }
+            });
+
+            if (response.status === 401) {
+                localStorage.removeItem('lcvb_auth_token');
+                localStorage.removeItem('lcvb_user');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Erreur API');
+            }
+
+            return data;
+        }
+
+        // Load teams
+        async function loadTeams() {
+            try {
+                const data = await fetchAPI('/api/teams');
+                teams = data.teams || [];
+
+                const select = document.getElementById('team-select');
+                select.innerHTML = '<option value="">-- Choisir une équipe --</option>';
+
+                teams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.id;
+                    option.textContent = `${team.name} (${team.category})`;
+                    select.appendChild(option);
+                });
+
+                // Auto-select first team if available
+                if (teams.length > 0) {
+                    select.value = teams[0].id;
+                    await loadLineups();
+                }
+            } catch (error) {
+                console.error('Erreur chargement équipes:', error);
+                alert('❌ Impossible de charger les équipes');
+            }
+        }
+
+        // Load lineups for selected team
+        async function loadLineups() {
+            const teamSelect = document.getElementById('team-select');
+            currentTeamId = parseInt(teamSelect.value);
+
+            if (!currentTeamId) {
+                document.getElementById('lineups-container').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">👆</div>
+                        <div class="empty-text">Sélectionnez une équipe pour voir ses compositions</div>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                // Load lineups and players for this team
+                const [lineupsData, playersData] = await Promise.all([
+                    fetchAPI(`/api/lineups?team_id=${currentTeamId}`),
+                    fetchAPI(`/api/players?team_id=${currentTeamId}`)
+                ]);
+
+                lineups = lineupsData.lineups || [];
+                players = playersData.players || [];
+
+                displayLineups();
+            } catch (error) {
+                console.error('Erreur chargement compositions:', error);
+                document.getElementById('lineups-container').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">❌</div>
+                        <div class="empty-text">Erreur lors du chargement des compositions</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Display lineups
+        function displayLineups() {
+            const container = document.getElementById('lineups-container');
+
+            if (lineups.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <div class="empty-text">Aucune composition créée pour cette équipe</div>
+                        <button class="btn-primary" onclick="openCreateLineupModal()">
+                            ➕ Créer une composition
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="lineups-container">';
+
+            lineups.forEach(lineup => {
+                const positions = lineup.positions || {};
+                const defaultClass = lineup.is_default ? 'default' : '';
+
+                html += `
+                    <div class="lineup-card ${defaultClass}">
+                        <div class="lineup-header">
+                            <div class="lineup-name">${lineup.name}</div>
+                            <div class="lineup-actions">
+                                <button class="star ${lineup.is_default ? 'active' : ''}"
+                                        onclick="event.stopPropagation(); toggleDefault(${lineup.id})"
+                                        title="${lineup.is_default ? 'Composition par défaut' : 'Définir par défaut'}">
+                                    ${lineup.is_default ? '⭐' : '☆'}
+                                </button>
+                                <button onclick="event.stopPropagation(); editLineup(${lineup.id})"
+                                        title="Modifier">
+                                    ✏️
+                                </button>
+                                <button onclick="event.stopPropagation(); deleteLineup(${lineup.id})"
+                                        title="Supprimer">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                        <div class="lineup-positions">
+                `;
+
+                // Display positions P1-P6
+                for (let i = 1; i <= 6; i++) {
+                    const playerId = positions[`p${i}`];
+                    const player = players.find(p => p.id === playerId);
+                    const playerName = player
+                        ? `#${player.number} ${player.first_name} ${player.last_name}`
+                        : 'Non défini';
+
+                    html += `
+                        <div class="position-row">
+                            <div class="position-label">P${i}</div>
+                            <div class="position-player">${playerName}</div>
+                        </div>
+                    `;
+                }
+
+                // Display libero if any
+                if (lineup.libero_id) {
+                    const libero = players.find(p => p.id === lineup.libero_id);
+                    const liberoName = libero
+                        ? `#${libero.number} ${libero.first_name} ${libero.last_name}`
+                        : 'Non défini';
+
+                    html += `
+                        <div class="position-row">
+                            <div class="position-label">🟡 L</div>
+                            <div class="position-player libero">${liberoName}</div>
+                        </div>
+                    `;
+                }
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Open create lineup modal
+        function openCreateLineupModal() {
+            if (!currentTeamId) {
+                alert('⚠️ Veuillez d\'abord sélectionner une équipe');
+                return;
+            }
+
+            if (players.length < 6) {
+                alert('⚠️ Vous devez avoir au moins 6 joueurs dans l\'équipe pour créer une composition');
+                return;
+            }
+
+            editingLineupId = null;
+            document.getElementById('modal-title').textContent = 'Nouvelle composition';
+            document.getElementById('lineup-form').reset();
+            document.getElementById('lineup-team-id').value = currentTeamId;
+            document.getElementById('lineup-id').value = '';
+
+            populatePlayerSelects();
+            document.getElementById('lineup-modal').classList.add('show');
+        }
+
+        // Edit lineup
+        function editLineup(lineupId) {
+            const lineup = lineups.find(l => l.id === lineupId);
+            if (!lineup) return;
+
+            editingLineupId = lineupId;
+            document.getElementById('modal-title').textContent = 'Modifier la composition';
+            document.getElementById('lineup-name').value = lineup.name;
+            document.getElementById('lineup-team-id').value = lineup.team_id;
+            document.getElementById('lineup-id').value = lineup.id;
+
+            populatePlayerSelects();
+
+            // Set positions
+            const positions = lineup.positions || {};
+            for (let i = 1; i <= 6; i++) {
+                const select = document.getElementById(`position-p${i}`);
+                if (select && positions[`p${i}`]) {
+                    select.value = positions[`p${i}`];
+                }
+            }
+
+            // Set libero
+            if (lineup.libero_id) {
+                document.getElementById('lineup-libero').value = lineup.libero_id;
+            }
+
+            document.getElementById('lineup-modal').classList.add('show');
+        }
+
+        // Populate player selects
+        function populatePlayerSelects() {
+            const positions = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'];
+
+            positions.forEach(pos => {
+                const select = document.getElementById(`position-${pos}`);
+                select.innerHTML = '<option value="">Sélectionner un joueur</option>';
+
+                players.forEach(player => {
+                    const option = document.createElement('option');
+                    option.value = player.id;
+                    option.textContent = `#${player.number} - ${player.first_name} ${player.last_name}`;
+                    select.appendChild(option);
+                });
+            });
+
+            // Populate libero select (only libero players + "none" option)
+            const liberoSelect = document.getElementById('lineup-libero');
+            liberoSelect.innerHTML = '<option value="">Aucun libéro</option>';
+
+            players.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player.id;
+                option.textContent = `#${player.number} - ${player.first_name} ${player.last_name}`;
+                if (player.is_libero) {
+                    option.textContent += ' 🟡';
+                }
+                liberoSelect.appendChild(option);
+            });
+        }
+
+        // Save lineup
+        async function saveLineup(event) {
+            event.preventDefault();
+
+            const lineupData = {
+                team_id: parseInt(document.getElementById('lineup-team-id').value),
+                name: document.getElementById('lineup-name').value,
+                positions: {
+                    p1: parseInt(document.getElementById('position-p1').value),
+                    p2: parseInt(document.getElementById('position-p2').value),
+                    p3: parseInt(document.getElementById('position-p3').value),
+                    p4: parseInt(document.getElementById('position-p4').value),
+                    p5: parseInt(document.getElementById('position-p5').value),
+                    p6: parseInt(document.getElementById('position-p6').value)
+                },
+                libero_id: document.getElementById('lineup-libero').value
+                    ? parseInt(document.getElementById('lineup-libero').value)
+                    : null
+            };
+
+            // Check for duplicate players
+            const playerIds = Object.values(lineupData.positions);
+            const uniqueIds = new Set(playerIds);
+            if (uniqueIds.size !== playerIds.length) {
+                alert('⚠️ Un joueur ne peut pas être positionné plusieurs fois');
+                return;
+            }
+
+            try {
+                if (editingLineupId) {
+                    await fetchAPI(`/api/lineups/${editingLineupId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(lineupData)
+                    });
+                    alert('✅ Composition modifiée avec succès !');
+                } else {
+                    await fetchAPI('/api/lineups', {
+                        method: 'POST',
+                        body: JSON.stringify(lineupData)
+                    });
+                    alert('✅ Composition créée avec succès !');
+                }
+
+                closeLineupModal();
+                await loadLineups();
+            } catch (error) {
+                console.error('Erreur sauvegarde composition:', error);
+                alert('❌ Erreur: ' + error.message);
+            }
+        }
+
+        // Toggle default lineup
+        async function toggleDefault(lineupId) {
+            try {
+                await fetchAPI(`/api/lineups/${lineupId}/default`, {
+                    method: 'PUT'
+                });
+                await loadLineups();
+            } catch (error) {
+                console.error('Erreur définition par défaut:', error);
+                alert('❌ Erreur lors de la définition de la composition par défaut');
+            }
+        }
+
+        // Delete lineup
+        async function deleteLineup(lineupId) {
+            if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette composition ?')) {
+                return;
+            }
+
+            try {
+                await fetchAPI(`/api/lineups/${lineupId}`, {
+                    method: 'DELETE'
+                });
+                alert('✅ Composition supprimée');
+                await loadLineups();
+            } catch (error) {
+                console.error('Erreur suppression composition:', error);
+                alert('❌ Erreur lors de la suppression');
+            }
+        }
+
+        // Close modal
+        function closeLineupModal() {
+            document.getElementById('lineup-modal').classList.remove('show');
+            document.getElementById('lineup-form').reset();
+            editingLineupId = null;
+        }
+
+        // Initialize
+        loadTeams();
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# Configuration pour accès NAS
+NAS_HOST=admin@192.168.1.40
+NAS_PASSWORD=Capgemini2025=
+NAS_APP_DIR=/volume1/docker/lcvb-scoreboard
+DB_CONTAINER=postgres-17
+USE_SUDO=true

@@ -1,0 +1,11 @@
+.git
+node_modules
+deploy
+database
+tests
+*.log
+Dockerfile*
+docker-compose.local.yml
+.env*
+backup
+volleyball-analysis

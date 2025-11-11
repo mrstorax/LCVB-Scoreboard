@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
     <title>Initialisation du Match - LCVB Scoreboard</title>
+    <link rel="stylesheet" href="themes.css">
     <link rel="stylesheet" href="shared-style.css">
     <style>
         /* Styles spécifiques setup */
@@ -187,6 +189,9 @@
     </style>
 </head>
 <body>
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme">🌙</button>
+
     <div class="app-container">
         <!-- Navigation -->
         <nav class="app-nav">
@@ -492,20 +497,100 @@
         let selectedPlayers = []; // IDs des joueurs PRÉSENTS (tous par défaut)
         let awayNumbers = []; // Numéros adverses
         
-        // Charger toutes les équipes
+        // Charger toutes les équipes depuis l'API PostgreSQL
         async function loadTeamsData() {
             try {
-                const response = await fetch('data/teams.json');
+                const token = localStorage.getItem('lcvb_auth_token');
+                if (!token) {
+                    alert('⚠️ Vous devez être connecté pour créer un match');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Charger les équipes avec leurs joueurs
+                const response = await fetch('http://192.168.1.40:5700/api/teams', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                allTeamsData = await response.json();
-                console.log('✅ Équipes chargées:', allTeamsData.teams.length, 'équipes');
-            } catch (error) {
-                console.error('❌ Erreur chargement équipes:', error);
-                alert('Erreur lors du chargement des équipes du club: ' + error.message);
-            }
+
+                const data = await response.json();
+
+                // Charger les détails de chaque équipe avec ses joueurs
+                const teamsWithPlayers = await Promise.all(
+                    data.teams.map(async (team) => {
+                        const teamResponse = await fetch(`http://192.168.1.40:5700/api/teams/${team.id}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                    const teamData = await teamResponse.json();
+
+                    // Transformer le format pour correspondre à l'ancien format
+                    return {
+                        id: team.id.toString(),
+                        name: team.name,
+                        division: team.category || 'Non définie',
+                        colors: {
+                            primary: team.primary_color || '#E91E63',
+                            secondary: team.secondary_color || '#FF69B4'
+                        },
+                        players: (teamData.team.players || []).map(p => ({
+                            id: p.id.toString(),
+                            number: p.number,
+                            firstName: p.first_name || '',
+                            lastName: p.last_name || '',
+                            name: `${(p.first_name || '').trim()} ${(p.last_name || '').trim()}`.trim(),
+                            position: p.position || '',
+                            libero: p.is_libero || false,
+                            captain: p.is_captain || false
+                        })),
+                        staff: team.coach_name ? [{ name: team.coach_name, role: 'Coach' }] : []
+                    };
+                })
+            );
+
+            allTeamsData = { teams: teamsWithPlayers };
+            console.log('✅ Équipes chargées depuis l\'API:', allTeamsData.teams.length, 'équipes');
+            populateTeamSelector();
+        } catch (error) {
+            console.error('❌ Erreur chargement équipes:', error);
+            alert('Erreur lors du chargement des équipes: ' + error.message);
         }
+    }
+
+    // Remplit le sélecteur d'équipes avec les données chargées
+    function populateTeamSelector(selectedId = '') {
+        const select = document.getElementById('team-selector');
+        if (!select) return;
+
+        select.innerHTML = '<option value="">-- Sélectionner l\'équipe --</option>';
+
+        if (!allTeamsData || !allTeamsData.teams || allTeamsData.teams.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.disabled = true;
+            option.textContent = 'Aucune équipe disponible';
+            select.appendChild(option);
+            select.disabled = true;
+            return;
+        }
+
+        allTeamsData.teams.forEach(team => {
+            const option = document.createElement('option');
+            option.value = team.id;
+            option.textContent = `${team.name} (${team.division || 'Division inconnue'})`;
+            select.appendChild(option);
+        });
+
+        select.disabled = false;
+
+        if (selectedId) {
+            select.value = selectedId;
+        }
+    }
         
         // Charger les joueurs de l'équipe sélectionnée
         function loadTeamPlayers() {
@@ -537,12 +622,12 @@
             document.getElementById('division').value = selectedTeamData.division;
             
             // Tous les joueurs sont sélectionnés PAR DÉFAUT (sauf si déjà défini = brouillon)
-            if (selectedPlayers.length === 0) {
-                selectedPlayers = selectedTeamData.players.map(p => p.id);
-                console.log('✅ Joueurs chargés:', selectedPlayers.length, 'joueurs (tous présents par défaut)');
-            } else {
-                console.log('✅ Joueurs déjà définis:', selectedPlayers.length, 'joueurs (brouillon ou précédent)');
-            }
+        if (selectedPlayers.length === 0) {
+            selectedPlayers = selectedTeamData.players.map(p => p.id.toString());
+            console.log('✅ Joueurs chargés:', selectedPlayers.length, 'joueurs (tous présents par défaut)');
+        } else {
+            console.log('✅ Joueurs déjà définis:', selectedPlayers.length, 'joueurs (brouillon ou précédent)');
+        }
             
             // Afficher les joueurs
             renderHomePlayers();
@@ -571,33 +656,40 @@
             }
             
             console.log('Rendu de', selectedTeamData.players.length, 'joueurs');
-            grid.innerHTML = selectedTeamData.players.map(player => `
-                <div class="player-card selected ${player.captain ? 'captain' : ''}" onclick="togglePlayer(${player.id})" data-player-id="${player.id}">
-                    <div class="player-number">${player.number}</div>
-                    <div class="player-name">${player.firstName} ${player.lastName}</div>
-                    <div class="player-position">${player.position}${player.captain ? ' (C)' : ''}${player.libero ? ' (L)' : ''}</div>
+        grid.innerHTML = selectedTeamData.players.map(player => {
+            const playerId = player.id.toString();
+            const displayName = `${player.firstName || ''} ${player.lastName || ''}`.trim() || player.name || `Joueur #${player.number}`;
+            const isSelected = selectedPlayers.includes(playerId);
+
+            return `
+                <div class="player-card ${isSelected ? 'selected' : ''} ${player.captain ? 'captain' : ''}" onclick="togglePlayer('${playerId}')" data-player-id="${playerId}">
+                    <div class="player-number">${player.number ?? '-'}</div>
+                    <div class="player-name">${displayName}</div>
+                    <div class="player-position">${player.position || ''}${player.captain ? ' (C)' : ''}${player.libero ? ' (L)' : ''}</div>
                 </div>
-            `).join('');
-            console.log('✅ HTML généré et inséré dans la grille');
-            updateSelectedCount();
+            `;
+        }).join('');
+        console.log('✅ HTML généré et inséré dans la grille');
+        updateSelectedCount();
+    }
+    
+    // LOGIQUE INVERSÉE : Cliquer RETIRE le joueur
+    function togglePlayer(playerId) {
+        const normalizedId = playerId.toString();
+        const card = document.querySelector(`[data-player-id="${normalizedId}"]`);
+        const index = selectedPlayers.indexOf(normalizedId);
+        
+        if (index > -1) {
+            // Le joueur est présent → le retirer (absent)
+            selectedPlayers.splice(index, 1);
+            card?.classList.remove('selected');
+        } else {
+            // Le joueur est absent → le remettre (présent)
+            selectedPlayers.push(normalizedId);
+            card?.classList.add('selected');
         }
         
-        // LOGIQUE INVERSÉE : Cliquer RETIRE le joueur
-        function togglePlayer(playerId) {
-            const card = document.querySelector(`[data-player-id="${playerId}"]`);
-            const index = selectedPlayers.indexOf(playerId);
-            
-            if (index > -1) {
-                // Le joueur est présent → le retirer (absent)
-                selectedPlayers.splice(index, 1);
-                card.classList.remove('selected');
-            } else {
-                // Le joueur est absent → le remettre (présent)
-                selectedPlayers.push(playerId);
-                card.classList.add('selected');
-            }
-            
-            updateSelectedCount();
+        updateSelectedCount();
         }
         
         // Mettre à jour le compteur
@@ -754,7 +846,7 @@
                     shortName: selectedTeamData.shortName,
                     clubName: allTeamsData.clubName || 'Le Crès Volley-Ball', // Nom du club
                     allPlayers: selectedTeamData.players, // TOUS les joueurs de l'équipe
-                    presentPlayers: selectedTeamData.players.filter(p => selectedPlayers.includes(p.id)), // Joueurs présents
+                    presentPlayers: selectedTeamData.players.filter(p => selectedPlayers.includes(p.id.toString())), // Joueurs présents
                     coach: document.getElementById('home-coach').value
                 },
                 // Sauvegarder les sélections pour la restauration
@@ -777,45 +869,127 @@
             };
         }
         
-        // Lancer le match
-        function launchMatch() {
+        // Lancer le match - Sauvegarde dans PostgreSQL
+        async function launchMatch() {
             if (!validateCurrentStep()) return;
-            
+
             const matchData = collectMatchData();
-            
-            // Sauvegarder dans localStorage (temporaire avant IndexedDB)
-            localStorage.setItem('lcvb_current_match', JSON.stringify(matchData));
-            
-            // Mettre à jour les données du scoreboard existant
-            const scoreData = {
-                team1: {
-                    name: matchData.homeTeam.name,
-                    score: 0,
-                    sets: [0, 0, 0, 0, 0],
-                    niveau: matchData.general.division
-                },
-                team2: {
-                    name: matchData.awayTeam.name,
-                    score: 0,
-                    sets: [0, 0, 0, 0, 0],
-                    niveau: matchData.general.division
-                },
-                currentSet: 1,
-                maxSets: 5,
-                matchInfo: {
-                    date: matchData.general.date,
-                    time: matchData.general.time,
+
+            try {
+                const token = localStorage.getItem('lcvb_auth_token');
+                if (!token) {
+                    alert('⚠️ Vous devez être connecté');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Créer le match dans la base de données
+                const matchDateTime = `${matchData.general.date}T${matchData.general.time}:00`;
+
+                // Créer l'équipe adverse si nécessaire (équipe externe)
+                let awayTeamId = null;
+                if (matchData.awayTeam?.teamId) {
+                    awayTeamId = parseInt(matchData.awayTeam.teamId);
+                } else if (matchData.awayTeam?.name) {
+                    const awayPayload = {
+                        name: matchData.awayTeam.name,
+                        category: matchData.general.division || 'Externe',
+                        primary_color: '#111111',
+                        secondary_color: '#eeeeee'
+                    };
+                    const createAway = await fetch('http://192.168.1.40:5700/api/teams', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(awayPayload)
+                    });
+                    if (createAway.ok) {
+                        const created = await createAway.json();
+                        awayTeamId = created.team?.id || null;
+                    }
+                }
+
+                if (!awayTeamId) {
+                    alert('Impossible de créer ou sélectionner une équipe adverse. Vérifiez le nom de l\'adversaire.');
+                    return;
+                }
+
+                const matchPayload = {
+                    home_team_id: parseInt(matchData.homeTeam.id),
+                    away_team_id: awayTeamId,
+                    match_date: matchDateTime,
                     location: matchData.general.venue,
                     competition: matchData.general.type,
-                    referee: matchData.general.referee1
+                    status: 'live',
+                    match_data: {
+                        ...matchData,
+                        awayTeamExternal: {
+                            name: matchData.awayTeam.name,
+                            coach: matchData.awayTeam.coach,
+                            players: matchData.awayTeam.players
+                        }
+                    }
+                };
+
+                const response = await fetch('http://192.168.1.40:5700/api/matches', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(matchPayload)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Erreur lors de la création du match');
                 }
-            };
-            
-            localStorage.setItem('lcvb_score', JSON.stringify(scoreData));
-            
-            // Rediriger vers le contrôle
-            if (confirm('Match initialisé avec succès ! Ouvrir l\'interface de contrôle ?')) {
+
+                const result = await response.json();
+                console.log('✅ Match créé dans PostgreSQL:', result.match.id);
+
+                // Sauvegarder aussi dans localStorage pour la compatibilité avec control.html
+                // (en attendant la migration complète de control.html)
+                matchData.matchId = result.match.id; // Ajouter l'ID du match
+                localStorage.setItem('lcvb_current_match', JSON.stringify(matchData));
+
+                // Mettre à jour les données du scoreboard existant
+                const scoreData = {
+                    matchId: result.match.id, // Référence au match PostgreSQL
+                    team1: {
+                        name: matchData.homeTeam.name,
+                        score: 0,
+                        sets: [0, 0, 0, 0, 0],
+                        niveau: matchData.general.division
+                    },
+                    team2: {
+                        name: matchData.awayTeam.name,
+                        score: 0,
+                        sets: [0, 0, 0, 0, 0],
+                        niveau: matchData.general.division
+                    },
+                    currentSet: 1,
+                    maxSets: 5,
+                    matchInfo: {
+                        date: matchData.general.date,
+                        time: matchData.general.time,
+                        location: matchData.general.venue,
+                        competition: matchData.general.type,
+                        referee: matchData.general.referee1
+                    }
+                };
+
+                localStorage.setItem('lcvb_score', JSON.stringify(scoreData));
+
+                // Rediriger vers le contrôle
+                alert('✅ Match créé avec succès dans la base de données !');
                 window.location.href = 'control.html';
+
+            } catch (error) {
+                console.error('❌ Erreur création match:', error);
+                alert('❌ Erreur lors de la création du match: ' + error.message);
             }
         }
         
@@ -884,7 +1058,7 @@
             // 3. Restaurer la sélection des joueurs (Étape 2)
             if (draftData.selections && draftData.selections.selectedPlayers) {
                 // IMPORTANT : Restaurer selectedPlayers AVANT loadTeamPlayers()
-                selectedPlayers = [...draftData.selections.selectedPlayers];
+                selectedPlayers = draftData.selections.selectedPlayers.map(id => id.toString());
                 console.log('  📌 selectedPlayers restauré:', selectedPlayers.length);
                 
                 // Recharger l'affichage des joueurs (ne va PAS écraser selectedPlayers)
@@ -924,6 +1098,6 @@
             console.log('✅ Brouillon entièrement chargé !');
         }
     </script>
+    <script src="theme.js"></script>
 </body>
 </html>
-

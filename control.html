@@ -245,6 +245,21 @@
             <div class="pro-stats-section">
                 <h3>🏐 Saisie Professionnelle</h3>
                 
+                <!-- Bannière d'instruction pour le positionnement -->
+                <div id="positioning-instruction-banner" style="display: none; background: linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%); color: white; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; text-align: center; font-weight: 700; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);">
+                    🎯 ÉTAPE 1 : Placez d'abord le PASSEUR
+                </div>
+                
+                <!-- Schéma de placement suggéré -->
+                <div id="placement-schema" style="display: none; background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
+                    <h4 style="margin: 0 0 0.75rem 0; color: #1e40af; font-size: 0.95rem; text-align: center;">
+                        📋 Schéma de placement suggéré
+                    </h4>
+                    <div id="placement-schema-content" style="display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+                        <!-- Sera rempli dynamiquement -->
+                    </div>
+                </div>
+                
                 <!-- Affichage du terrain -->
                 <div class="court-display">
                     <div class="court-header">
@@ -317,14 +332,31 @@
                             <span class="libero-info" id="libero-info">-</span>
                         </div>
                         
-                        <!-- Bouton de validation du 6 de départ -->
+                        <!-- Boutons pour validation du 7 de départ -->
                         <div style="text-align: center; margin-top: 1rem;">
+                            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem;">
+                                <button id="clear-lineup-btn" onclick="clearStartingLineup()" 
+                                        style="padding: 1rem 2rem; font-size: 1.1rem; font-weight: bold; background: #f97316; color: white; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+                                    🧹 Vider le terrain
+                                </button>
+                                <button id="choose-libero-btn" onclick="chooseStartingLibero()" 
+                                        style="padding: 1rem 2rem; font-size: 1.1rem; font-weight: bold; background: #a855f7; color: white; border: none; border-radius: 8px; cursor: not-allowed; opacity: 0.5; transition: all 0.3s; display: none;">
+                                    🛡️ Choisir le Libéro titulaire
+                                </button>
                             <button id="validate-lineup-btn" onclick="validateStartingLineup()" 
                                     style="padding: 1rem 2rem; font-size: 1.1rem; font-weight: bold; background: #10b981; color: white; border: none; border-radius: 8px; cursor: not-allowed; opacity: 0.5; transition: all 0.3s;">
-                                ✅ Valider le 6 de départ
+                                    ✅ Valider le 7 de départ
                             </button>
+                            </div>
+                            
+                            <!-- Affichage du libéro titulaire sélectionné -->
+                            <div id="selected-libero-display" style="display: none; padding: 1rem; background: #f3e8ff; border: 2px solid #a855f7; border-radius: 8px; margin-bottom: 1rem;">
+                                <div style="font-weight: 700; color: #6b21a8; margin-bottom: 0.5rem;">🛡️ LIBÉRO TITULAIRE</div>
+                                <div id="selected-libero-info" style="font-size: 1.1rem; color: #1f2937;"></div>
+                            </div>
+                            
                             <div style="margin-top: 0.5rem; font-size: 0.85rem; color: #64748b;">
-                                Cliquez sur les 6 positions pour assigner vos joueurs
+                                Cliquez sur les 6 positions pour assigner vos joueurs, puis choisissez le libéro titulaire
                             </div>
                         </div>
                     </div>
@@ -1120,17 +1152,41 @@
         window.isPositioningMode = true; // Mode positionnement actif au démarrage
         window.startingLineupValidated = false; // Le 6 de départ est-il validé ?
         
+        // Afficher la bannière d'instruction au démarrage
+        setTimeout(() => {
+            updatePositioningInstructions();
+        }, 500);
+        
         let rallyData = {
             actions: [],
             currentStep: 1,
             actionType: null,
             selectedPlayer: null,
-            rallyResult: null
+            rallyResult: null,
+            attackMeta: null
         };
         
         let matchStats = {
             rallies: [],
-            playerStats: {}
+            playerStats: {},
+            summary: {}
+        };
+
+        const ATTACK_TYPES = [
+            { key: 'power', label: 'Puissance', icon: '⚡' },
+            { key: 'placement', label: 'Placement', icon: '🎯' },
+            { key: 'tip', label: 'Feinte', icon: '✨' }
+        ];
+
+        const ATTACK_TEMPOS = [
+            { key: 'tempo1', label: '1er tempo', icon: '🚀' },
+            { key: 'tempo2', label: '2e tempo', icon: '⚡' },
+            { key: 'tempo3', label: '3e tempo', icon: '🌙' }
+        ];
+
+        let rotationTracker = {
+            initialOrder: [],
+            currentIndex: 1
         };
         
         // Initialiser l'interface compacte
@@ -1173,28 +1229,86 @@
             const presentPlayers = data.homeTeam.presentPlayers || [];
             console.log(`  → Joueurs disponibles: ${presentPlayers.length}`, presentPlayers);
             
-            // ÉTAPE 1 : Si le passeur n'est pas encore sélectionné
-            if (!window.setterPosition) {
-                showSetterSelection(position, presentPlayers);
-                return;
-            }
-            
-            // ÉTAPE 2 : Le passeur est déjà sélectionné, proposer les joueurs selon leur poste
-            showPlayerSelectionByRole(position, presentPlayers);
-            
-            // Afficher dans une div overlay
+            // Créer un overlay pour sélectionner un joueur
             const overlay = document.createElement('div');
             overlay.id = 'player-selection-overlay';
-            overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;';
-            overlay.innerHTML = `
-                <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 500px; width: 90%;">
-                    <h3 style="margin-bottom: 1rem;">🏐 Sélectionner un joueur pour P${position}</h3>
-                    ${playersList}
-                    <button onclick="closePlayerSelection()" style="margin-top: 1rem; padding: 0.75rem 1.5rem; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem;">
-                        ❌ Annuler
-                    </button>
-                </div>
-            `;
+            overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = 'background: white; padding: 2rem; border-radius: 16px; max-width: 1000px; width: 90%; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);';
+            
+            // Vérifier si on attend un passeur
+            const needsSetter = !window.setterPosition;
+            
+            let html = '<h3 style="margin: 0 0 1rem 0; color: #1f2937; font-size: 1.5rem; text-align: center;">🏐 Sélectionner un joueur pour P' + position + '</h3>';
+            
+            // Afficher un message d'aide si on attend le passeur
+            if (needsSetter) {
+                html += '<div style="background: linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%); color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center; font-weight: 600;">🎯 Sélectionnez d\'abord un PASSEUR (Passeur/Passeuse)</div>';
+            }
+            
+            // Grouper les joueurs par poste
+            const groupedPlayers = {
+                'Passeur': [],
+                'Pointu': [],
+                'Central': [],
+                'Réceptionneur': [],
+                'Libéro': []
+            };
+            
+            presentPlayers.forEach(p => {
+                if (p.position === 'Passeur' || p.position === 'Passeuse') {
+                    groupedPlayers['Passeur'].push(p);
+                } else if (p.position === 'Pointu') {
+                    groupedPlayers['Pointu'].push(p);
+                } else if (p.position === 'Central' || p.position === 'Centrale') {
+                    groupedPlayers['Central'].push(p);
+                } else if (p.position === 'Réceptionneur' || p.position === 'Réceptionneuse') {
+                    groupedPlayers['Réceptionneur'].push(p);
+                } else if (p.position === 'Libéro') {
+                    groupedPlayers['Libéro'].push(p);
+                }
+            });
+            
+            // Afficher en colonnes par poste
+            html += '<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem;">';
+            
+            const positionConfig = {
+                'Passeur': { icon: '🎯', bg: '#dbeafe', border: '#3b82f6', text: '#1e40af' },
+                'Pointu': { icon: '⚡', bg: '#fecaca', border: '#ef4444', text: '#991b1b' },
+                'Central': { icon: '🧱', bg: '#fed7aa', border: '#f97316', text: '#9a3412' },
+                'Réceptionneur': { icon: '📥', bg: '#d1fae5', border: '#10b981', text: '#065f46' },
+                'Libéro': { icon: '🛡️', bg: '#e9d5ff', border: '#a855f7', text: '#6b21a8' }
+            };
+            
+            Object.keys(groupedPlayers).forEach(poste => {
+                const players = groupedPlayers[poste];
+                const config = positionConfig[poste];
+                
+                html += '<div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+                html += '<div style="background: ' + config.bg + '; color: ' + config.text + '; padding: 0.75rem; border-radius: 8px; text-align: center; font-weight: 700; border: 2px solid ' + config.border + '; font-size: 0.9rem;">' + config.icon + ' ' + poste + '</div>';
+                
+                players.forEach(p => {
+                    const isAlreadyPlaced = Object.values(courtComposition.positions).some(player => player && player.id == p.id);
+                    const placedAt = isAlreadyPlaced ? Object.keys(courtComposition.positions).find(k => courtComposition.positions[k] && courtComposition.positions[k].id == p.id) : null;
+                    
+                    html += '<button onclick="assignPlayerToPosition(' + position + ', ' + p.id + ')" style="padding: 0.75rem; background: white; border: 2px solid ' + config.border + '; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s; font-size: 0.9rem;" onmouseover="this.style.background=\'' + config.bg + '\'; this.style.transform=\'scale(1.05)\'" onmouseout="this.style.background=\'white\'; this.style.transform=\'scale(1)\'">';
+                    html += '<div style="font-weight: 700; color: ' + config.text + '; font-size: 1.1rem; margin-bottom: 0.25rem;">#' + p.number + '</div>';
+                    html += '<div style="font-size: 0.75rem; color: #374151; line-height: 1.2;">' + p.firstName + '<br>' + p.lastName + '</div>';
+                    if (isAlreadyPlaced) {
+                        html += '<div style="margin-top: 0.25rem; font-size: 0.7rem; color: #6b7280; font-weight: 600;">🔄 P' + placedAt + '</div>';
+                    }
+                    html += '</button>';
+                });
+                
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            html += '<button onclick="closePlayerSelection()" style="margin-top: 1.5rem; width: 100%; padding: 0.75rem; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1rem;">❌ Annuler</button>';
+            
+            modal.innerHTML = html;
+            overlay.appendChild(modal);
             document.body.appendChild(overlay);
         }
         
@@ -1227,6 +1341,15 @@
                 // Assigner à la nouvelle position
                 courtComposition.positions[position] = player;
                 console.log(`✅ Joueur assigné:`, {position, player, courtComposition});
+                
+                // Vérifier si c'est un passeur et mettre à jour le schéma
+                if (player.position === 'Passeur' || player.position === 'Passeuse') {
+                    window.setterPosition = position;
+                    window.setterPlayerId = playerId;
+                    updatePositioningInstructions();
+                    showPlacementSchema(position);
+                }
+                
                 updateCourtDisplay();
                 closePlayerSelection();
                 checkIfLineupComplete();
@@ -1246,12 +1369,201 @@
         function checkIfLineupComplete() {
             const positionsCount = Object.keys(courtComposition.positions).length;
             const validateBtn = document.getElementById('validate-lineup-btn');
+            const liberoBtn = document.getElementById('choose-libero-btn');
             
-            if (positionsCount === 6 && validateBtn) {
+            if (positionsCount === 6) {
+                if (liberoBtn) {
+                    liberoBtn.style.display = 'block';
+                    liberoBtn.disabled = false;
+                    liberoBtn.style.opacity = '1';
+                    liberoBtn.style.cursor = 'pointer';
+                }
+                if (validateBtn) {
                 validateBtn.disabled = false;
                 validateBtn.style.opacity = '1';
                 validateBtn.style.cursor = 'pointer';
             }
+            } else {
+                if (liberoBtn) {
+                    liberoBtn.style.display = 'none';
+                    liberoBtn.disabled = true;
+                    liberoBtn.style.opacity = '0.5';
+                    liberoBtn.style.cursor = 'not-allowed';
+                }
+                if (validateBtn) {
+                    validateBtn.disabled = true;
+                    validateBtn.style.opacity = '0.5';
+                    validateBtn.style.cursor = 'not-allowed';
+                }
+            }
+        }
+        
+        // Choisir le libéro titulaire (7ème joueur)
+        window.selectedStartingLibero = null;
+        
+        function chooseStartingLibero() {
+            const matchSetup = localStorage.getItem('lcvb_current_match');
+            if (!matchSetup) return;
+            
+            const data = JSON.parse(matchSetup);
+            const presentPlayers = data.homeTeam.presentPlayers || [];
+            
+            // Filtrer uniquement les libéros NON placés sur le terrain
+            const availableLiberos = presentPlayers.filter(p => {
+                const isLibero = p.libero === true || p.position === 'Libéro';
+                const isOnCourt = Object.values(courtComposition.positions).some(player => player && player.id == p.id);
+                return isLibero && !isOnCourt;
+            });
+            
+            if (availableLiberos.length === 0) {
+                alert('❌ Aucun libéro disponible dans les joueurs présents (ou tous sont déjà sur le terrain)');
+                return;
+            }
+            
+            // Créer un modal pour sélectionner le libéro
+            const overlay = document.createElement('div');
+            overlay.id = 'libero-selection-overlay';
+            overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+            
+            const modal = document.createElement('div');
+            modal.style.cssText = 'background: white; padding: 2rem; border-radius: 16px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);';
+            
+            let html = '<h3 style="margin: 0 0 1rem 0; color: #6b21a8; font-size: 1.5rem; text-align: center;">🛡️ Choisir le Libéro titulaire</h3>';
+            html += '<p style="text-align: center; color: #6b7280; margin-bottom: 1.5rem;">Le libéro est le 7ème joueur de départ. Il remplacera automatiquement les centraux en réception.</p>';
+            html += '<div style="display: flex; flex-direction: column; gap: 0.75rem;">';
+            
+            availableLiberos.forEach(p => {
+                html += '<button onclick="selectStartingLibero(' + p.id + ', \'' + p.firstName + '\', \'' + p.lastName + '\', ' + p.number + ')" style="padding: 1rem; background: #f3e8ff; border: 2px solid #a855f7; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s;" onmouseover="this.style.background=\'#e9d5ff\'; this.style.transform=\'scale(1.05)\'" onmouseout="this.style.background=\'#f3e8ff\'; this.style.transform=\'scale(1)\'">';
+                html += '<div style="font-weight: 700; color: #6b21a8; font-size: 1.2rem;">#' + p.number + ' ' + p.firstName + ' ' + p.lastName + '</div>';
+                html += '<div style="font-size: 0.85rem; color: #6b7280; margin-top: 0.25rem;">' + p.position + '</div>';
+                html += '</button>';
+            });
+            
+            html += '</div>';
+            html += '<button onclick="closeLiberoSelection()" style="margin-top: 1.5rem; width: 100%; padding: 0.75rem; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700;">❌ Annuler</button>';
+            
+            modal.innerHTML = html;
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+        }
+        
+        function selectStartingLibero(id, firstName, lastName, number) {
+            window.selectedStartingLibero = { id, firstName, lastName, number };
+            
+            // Afficher le libéro sélectionné
+            const display = document.getElementById('selected-libero-display');
+            const info = document.getElementById('selected-libero-info');
+            if (display && info) {
+                display.style.display = 'block';
+                info.innerHTML = '#' + number + ' ' + firstName + ' ' + lastName;
+            }
+            
+            closeLiberoSelection();
+            console.log('✅ Libéro titulaire sélectionné:', window.selectedStartingLibero);
+        }
+        
+        function closeLiberoSelection() {
+            const overlay = document.getElementById('libero-selection-overlay');
+            if (overlay) overlay.remove();
+        }
+        
+        // Mettre à jour les instructions de positionnement
+        function updatePositioningInstructions() {
+            const banner = document.getElementById('positioning-instruction-banner');
+            if (!banner) return;
+            
+            if (!window.setterPosition) {
+                // Pas encore de passeur
+                banner.innerHTML = "🎯 ÉTAPE 1 : Placez d'abord le PASSEUR";
+                banner.style.display = "block";
+            } else {
+                // Passeur placé
+                banner.innerHTML = "✅ Passeur en P" + window.setterPosition + " | 🎯 ÉTAPE 2 : Placez les autres joueurs selon le schéma ci-dessous";
+                banner.style.background = "linear-gradient(135deg, #10b981 0%, #3b82f6 100%)";
+            }
+        }
+        
+        // Afficher le schéma de placement selon la position du passeur
+        function showPlacementSchema(setterPos) {
+            const schema = document.getElementById('placement-schema');
+            const content = document.getElementById('placement-schema-content');
+            if (!schema || !content) return;
+            
+            // Schémas de placement selon la position du passeur
+            const placements = {
+                1: { 1: 'Passeur', 2: 'R4', 3: 'Central', 4: 'Pointu', 5: 'R6', 6: 'Central' },
+                2: { 1: 'Central', 2: 'Passeur', 3: 'R4', 4: 'Central', 5: 'Pointu', 6: 'R6' },
+                3: { 1: 'R6', 2: 'Central', 3: 'Passeur', 4: 'R4', 5: 'Central', 6: 'Pointu' },
+                4: { 1: 'Pointu', 2: 'R6', 3: 'Central', 4: 'Passeur', 5: 'R4', 6: 'Central' },
+                5: { 1: 'Central', 2: 'Pointu', 3: 'R6', 4: 'Central', 5: 'Passeur', 6: 'R4' },
+                6: { 1: 'R4', 2: 'Central', 3: 'Pointu', 4: 'R6', 5: 'Central', 6: 'Passeur' }
+            };
+            
+            const placement = placements[setterPos];
+            if (!placement) return;
+            
+            // Générer le HTML du schéma FACE AU FILET (format terrain réel)
+            let html = '';
+            
+            // FILET en haut
+            html += '<div style="text-align: center; font-weight: 700; color: #ef4444; margin-bottom: 0.5rem; font-size: 0.9rem;">━━━━━━━━━━ FILET ━━━━━━━━━━</div>';
+            
+            // Ligne AVANT (P4-P3-P2)
+            html += '<div style="display: flex; gap: 1rem; justify-content: center; width: 100%; max-width: 600px;">';
+            [4, 3, 2].forEach(pos => {
+                const role = placement[pos];
+                let bgColor = '#e5e7eb';
+                let textColor = '#1f2937';
+                
+                if (role === 'Passeur' || role === 'Passeuse') {
+                    bgColor = '#dbeafe'; textColor = '#1e40af';
+                } else if (role === 'Pointu') {
+                    bgColor = '#fecaca'; textColor = '#991b1b';
+                } else if (role === 'Central' || role === 'Centrale') {
+                    bgColor = '#fed7aa'; textColor = '#9a3412';
+                } else if (role.startsWith('R')) {
+                    bgColor = '#d1fae5'; textColor = '#065f46';
+                }
+                
+                html += '<div style="background: ' + bgColor + '; color: ' + textColor + '; padding: 1rem; border-radius: 10px; text-align: center; font-weight: 700; border: 3px solid ' + textColor + '; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">';
+                html += '<div style="font-size: 1.3rem; margin-bottom: 0.25rem;">P' + pos + '</div>';
+                html += '<div style="font-size: 0.85rem;">' + role + '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+            
+            // Label "AVANT"
+            html += '<div style="text-align: center; color: #6b7280; font-size: 0.75rem; font-weight: 600;">▲ LIGNE AVANT ▲</div>';
+            
+            // Ligne ARRIÈRE (P5-P6-P1)
+            html += '<div style="display: flex; gap: 1rem; justify-content: center; width: 100%; max-width: 600px;">';
+            [5, 6, 1].forEach(pos => {
+                const role = placement[pos];
+                let bgColor = '#e5e7eb';
+                let textColor = '#1f2937';
+                
+                if (role === 'Passeur' || role === 'Passeuse') {
+                    bgColor = '#dbeafe'; textColor = '#1e40af';
+                } else if (role === 'Pointu') {
+                    bgColor = '#fecaca'; textColor = '#991b1b';
+                } else if (role === 'Central' || role === 'Centrale') {
+                    bgColor = '#fed7aa'; textColor = '#9a3412';
+                } else if (role.startsWith('R')) {
+                    bgColor = '#d1fae5'; textColor = '#065f46';
+                }
+                
+                html += '<div style="background: ' + bgColor + '; color: ' + textColor + '; padding: 1rem; border-radius: 10px; text-align: center; font-weight: 700; border: 3px solid ' + textColor + '; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">';
+                html += '<div style="font-size: 1.3rem; margin-bottom: 0.25rem;">P' + pos + '</div>';
+                html += '<div style="font-size: 0.85rem;">' + role + '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+            
+            // Label "ARRIÈRE"
+            html += '<div style="text-align: center; color: #6b7280; font-size: 0.75rem; font-weight: 600;">▼ LIGNE ARRIÈRE ▼</div>';
+            
+            content.innerHTML = html;
+            schema.style.display = 'block';
         }
         
         // Valider le 6 de départ
@@ -1298,17 +1610,25 @@
             console.log(`  → Joueurs présents: ${presentPlayers.length}`);
             console.log(`  → Libéros trouvés: ${availableLiberos.length}`, availableLiberos.map(p => `#${p.number} ${p.firstName} (libero: ${p.libero}, position: ${p.position})`));
             
-            let liberosHtml = '<option value="">-- Sélectionnez un libéro --</option>';
-            liberosHtml += '<option value="none">🚫 Match sans libéro</option>';
+            let liberosHtml = '';
+            const selectedLiberoId = window.selectedStartingLibero ? String(window.selectedStartingLibero.id) : null;
+            
+            if (!selectedLiberoId) {
+                liberosHtml += '<option value="" selected>-- Sélectionnez un libéro --</option>';
+            }
             
             if (availableLiberos.length === 0) {
                 liberosHtml += '<option value="" disabled>⚠️ Aucun libéro trouvé dans l\'équipe</option>';
                 console.warn('⚠️ Aucun libéro trouvé ! Vérifiez que vos joueurs ont "libero": true dans teams.json');
             } else {
                 availableLiberos.forEach(p => {
-                    liberosHtml += `<option value="${p.id}">#${p.number} ${p.firstName} ${p.lastName} (${p.position})</option>`;
+                    const isSelected = selectedLiberoId && String(p.id) === selectedLiberoId;
+                    liberosHtml += `<option value="${p.id}" ${isSelected ? 'selected' : ''}>#${p.number} ${p.firstName} ${p.lastName} (${p.position})</option>`;
                 });
             }
+            
+            const shouldSelectNone = !selectedLiberoId && availableLiberos.length === 0;
+            liberosHtml += `<option value="none" ${shouldSelectNone ? 'selected' : ''}>🚫 Match sans libéro</option>`;
             
             const modal = document.createElement('div');
             modal.id = 'final-setup-modal';
@@ -1448,6 +1768,12 @@
             window.isPositioningMode = false;
             window.startingLineupValidated = true;
             
+            // Cacher la bannière et le schéma
+            const banner = document.getElementById('positioning-instruction-banner');
+            const schema = document.getElementById('placement-schema');
+            if (banner) banner.style.display = 'none';
+            if (schema) schema.style.display = 'none';
+            
             console.log('✅ === VALIDATION DU LINEUP ===');
             console.log('  → window.isPositioningMode:', window.isPositioningMode);
             console.log('  → window.startingLineupValidated:', window.startingLineupValidated);
@@ -1563,8 +1889,19 @@
             }
             
             updateCourtDisplay();
+            initializeRotationTracking();
             console.log('✅ Composition finale:', courtComposition);
             console.log('=== FIN loadCourtComposition() ===\n');
+        }
+
+        function initializeRotationTracking() {
+            rotationTracker.initialOrder = [];
+            for (let pos = 1; pos <= 6; pos++) {
+                const player = courtComposition.positions[pos];
+                rotationTracker.initialOrder.push(player ? player.id : null);
+            }
+            rotationTracker.currentIndex = 1;
+            console.log('🔁 Rotation tracker initialisé', rotationTracker);
         }
         
         // Afficher la composition sur le terrain
@@ -1978,12 +2315,56 @@
                 
                 rallyData.selectedAttacker = {position, player};
                 rallyData.waitingForAttacker = false;
-                
-                // Afficher les options de résultat d'attaque
-                document.getElementById('step-4-buttons').innerHTML = `
-                    <div style="padding: 1rem; background: #dcfce7; border-radius: 8px; margin-bottom: 1rem;">
-                        ✅ Attaquant : <strong>#${player.number} ${player.firstName} ${player.lastName}</strong>
-                    </div>
+                rallyData.attackMeta = rallyData.attackMeta || { type: 'power', tempo: 'tempo3' };
+                renderAttackOptions();
+                updateActionSummary();
+                return;
+            }
+            
+            // Sinon, comportement normal
+            console.log(`  → Appel de la fonction originale`);
+            originalSelectPlayerForAction(position);
+        };
+
+        function renderAttackOptions() {
+            const container = document.getElementById('step-4-buttons');
+            if (!container) return;
+            const attacker = rallyData.selectedAttacker;
+            if (!attacker) return;
+
+            const meta = rallyData.attackMeta || { type: 'power', tempo: 'tempo3' };
+
+            const typeButtons = ATTACK_TYPES.map(item => {
+                const isSelected = meta.type === item.key;
+                const style = `
+                    padding:0.45rem 0.85rem;
+                    border-radius:999px;
+                    border:2px solid ${isSelected ? '#10b981' : '#d1d5db'};
+                    background:${isSelected ? '#ecfdf5' : '#f9fafb'};
+                    color:${isSelected ? '#065f46' : '#374151'};
+                    font-weight:600;
+                    cursor:pointer;
+                    transition:all 0.2s;
+                `;
+                return `<button style="${style}" onclick="setAttackType('${item.key}')">${item.icon} ${item.label}</button>`;
+            }).join('');
+
+            const tempoButtons = ATTACK_TEMPOS.map(item => {
+                const isSelected = meta.tempo === item.key;
+                const style = `
+                    padding:0.45rem 0.85rem;
+                    border-radius:999px;
+                    border:2px solid ${isSelected ? '#2563eb' : '#d1d5db'};
+                    background:${isSelected ? '#dbeafe' : '#f9fafb'};
+                    color:${isSelected ? '#1e3a8a' : '#374151'};
+                    font-weight:600;
+                    cursor:pointer;
+                    transition:all 0.2s;
+                `;
+                return `<button style="${style}" onclick="setAttackTempo('${item.key}')">${item.icon} ${item.label}</button>`;
+            }).join('');
+
+            const resultButtons = `
                     <button class="btn-workflow success" onclick="attackResult('point')">✅ Point direct</button>
                     <button class="btn-workflow success" onclick="attackResult('block_out')">✅ Bloc gagnant (block out)</button>
                     <button class="btn-workflow success" onclick="attackResult('second_touch')">✨ Seconde main (point passeur)</button>
@@ -1995,21 +2376,43 @@
                     <button class="btn-workflow danger" onclick="attackResult('unattackable_lost')">❌ Balle non attaquable (point perdu)</button>
                 `;
                 
-                updateActionSummary();
-                return;
-            }
-            
-            // Sinon, comportement normal
-            console.log(`  → Appel de la fonction originale`);
-            originalSelectPlayerForAction(position);
-        };
+            container.innerHTML = `
+                <div style="padding: 1rem; background: #dcfce7; border-radius: 8px; margin-bottom: 1rem;">
+                    ✅ Attaquant : <strong>#${attacker.player.number} ${attacker.player.firstName} ${attacker.player.lastName}</strong>
+                </div>
+                <div style="margin-bottom:0.85rem;">
+                    <div style="font-weight:600; color:#111827; margin-bottom:0.35rem;">🎭 Type d'attaque</div>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">${typeButtons}</div>
+                </div>
+                <div style="margin-bottom:1rem;">
+                    <div style="font-weight:600; color:#111827; margin-bottom:0.35rem;">⚡ Tempo</div>
+                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">${tempoButtons}</div>
+                </div>
+                <div style="display:grid; gap:0.5rem;">${resultButtons}</div>
+            `;
+        }
+
+        function setAttackType(typeKey) {
+            rallyData.attackMeta = rallyData.attackMeta || { type: 'power', tempo: 'tempo3' };
+            rallyData.attackMeta.type = typeKey;
+            renderAttackOptions();
+        }
+
+        function setAttackTempo(tempoKey) {
+            rallyData.attackMeta = rallyData.attackMeta || { type: 'power', tempo: 'tempo3' };
+            rallyData.attackMeta.tempo = tempoKey;
+            renderAttackOptions();
+        }
         
         // Résultat de notre attaque
         function attackResult(result) {
+            const attackMeta = rallyData.attackMeta || { type: 'power', tempo: 'tempo3' };
             rallyData.actions.push({
                 type: 'our_attack',
                 player: rallyData.selectedAttacker,
-                result: result
+                result: result,
+                attackType: attackMeta.type,
+                attackTempo: attackMeta.tempo
             });
             
             // Cas qui terminent le point
@@ -2069,6 +2472,13 @@
         // Terminer le point
         function endRally(winner, reason) {
             rallyData.rallyResult = {winner, reason};
+            const scoreDataBefore = LCVBScoreboard.getScoreData();
+            const scoreBefore = {
+                team1: scoreDataBefore?.team1?.score ?? 0,
+                team2: scoreDataBefore?.team2?.score ?? 0
+            };
+            const serviceBefore = serviceTeam;
+            const rotationBefore = rotationTracker.currentIndex || 1;
             
             const weWon = (winner === 'us');
             const weHadService = (serviceTeam === 'team1');
@@ -2110,6 +2520,21 @@
             }
             
             // 4. Enregistrer les stats
+            const scoreDataAfter = LCVBScoreboard.getScoreData();
+            const scoreAfter = {
+                team1: scoreDataAfter?.team1?.score ?? 0,
+                team2: scoreDataAfter?.team2?.score ?? 0
+            };
+
+            rallyData.metadata = {
+                serviceBefore,
+                serviceAfter: serviceTeam,
+                rotationBefore,
+                rotationAfter: rotationTracker.currentIndex || rotationBefore,
+                scoreBefore,
+                scoreAfter
+            };
+
             matchStats.rallies.push({
                 ...rallyData,
                 timestamp: new Date().toISOString(),
@@ -2151,6 +2576,8 @@
         function rotateOurTeam() {
             console.log('🔄 Rotation de notre équipe (sens horaire)');
             
+            rotationTracker.currentIndex = (rotationTracker.currentIndex % 6) + 1;
+            
             // Rotation horaire: P1→P6→P5→P4→P3→P2→P1
             const newPositions = {};
             newPositions[1] = courtComposition.positions[2];  // P2 devient P1 (serveur)
@@ -2163,6 +2590,7 @@
             courtComposition.positions = newPositions;
             
             console.log('✅ Rotation effectuée', courtComposition.positions);
+            console.log('🔁 Index de rotation actuel:', rotationTracker.currentIndex);
             
             updateCourtDisplay();
             showNotification('🔄 Rotation effectuée');
@@ -2264,7 +2692,8 @@
                 selectedPlayer: null,
                 selectedAttacker: null,
                 waitingForAttacker: false,
-                rallyResult: null
+                rallyResult: null,
+                attackMeta: null
             };
             
             // Réafficher étape 1
@@ -2304,8 +2733,14 @@
                         return `Leur attaque → ${result}`;
                     } else if (a.type === 'our_attack') {
                         const player = a.player ? `#${a.player.player.number} ${a.player.player.firstName}` : '';
-                        const result = a.result === 'point' ? 'Point ✓' : (a.result === 'blocked' ? 'Bloquée ❌' : (a.result === 'out' ? 'Out ❌' : 'Défendue'));
-                        return `Attaque ${player} → ${result}`;
+                        const result = a.result === 'point' ? 'Point ✓' : (a.result === 'block_out' ? 'Point (bloc out) ✓' : (a.result === 'blocked_in' ? 'Bloquée ❌' : (a.result === 'out' ? 'Out ❌' : (a.result === 'net' ? 'Filet ❌' : a.result))));
+                        const typeLabel = ATTACK_TYPES.find(t => t.key === a.attackType)?.label;
+                        const tempoLabel = ATTACK_TEMPOS.find(t => t.key === a.attackTempo)?.label;
+                        const metaParts = [];
+                        if (typeLabel) metaParts.push(typeLabel);
+                        if (tempoLabel) metaParts.push(tempoLabel);
+                        const metaSuffix = metaParts.length ? ` (${metaParts.join(' • ')})` : '';
+                        return `Attaque ${player} → ${result}${metaSuffix}`;
                     }
                     return a.type;
                 }).join(' • ');
@@ -2981,24 +3416,124 @@
         
         // Calculer et afficher les statistiques du match
         function updateMatchStats() {
-            // Calculer les statistiques par joueur
             const playerStats = {};
-            
-            // Initialiser les stats pour tous les joueurs présents
+            const scoreboardData = LCVBScoreboard.getScoreData();
+            const defaultSetNumber = scoreboardData?.currentSet ?? 1;
             const presentPlayers = matchSetup?.homeTeam?.presentPlayers || [];
+
+            const extendedAttackTypes = [...ATTACK_TYPES.map(t => t.key), 'other'];
+            const extendedAttackTempos = [...ATTACK_TEMPOS.map(t => t.key), 'other'];
+
             presentPlayers.forEach(p => {
+                const attacksByType = {};
+                extendedAttackTypes.forEach(key => {
+                    attacksByType[key] = { total: 0, points: 0 };
+                });
+                const attacksByTempo = {};
+                extendedAttackTempos.forEach(key => {
+                    attacksByTempo[key] = { total: 0, points: 0 };
+                });
+
                 playerStats[p.id] = {
                     player: p,
                     services: { total: 0, aces: 0, faults: 0 },
                     receptions: { total: 0, perfect: 0, average: 0, failed: 0 },
-                    attacks: { total: 0, points: 0, blocked: 0, out: 0, net: 0 },
+                    attacks: { total: 0, points: 0, blocked: 0, out: 0, net: 0, byType: attacksByType, byTempo: attacksByTempo },
                     secondTouch: 0
                 };
             });
             
-            // Parcourir tous les rallyes pour calculer les stats
+            const createRotationStatsEntry = () => ({
+                rallies: 0,
+                pointsFor: 0,
+                pointsAgainst: 0,
+                servingRallies: 0,
+                receivingRallies: 0,
+                holds: 0,
+                sideOuts: 0
+            });
+
+            const rotationStats = {};
+            for (let i = 1; i <= 6; i++) {
+                rotationStats[i] = createRotationStatsEntry();
+            }
+
+            const summary = {
+                momentum: {
+                    team1: { current: 0, max: 0, history: [] },
+                    team2: { current: 0, max: 0, history: [] }
+                },
+                rotations: {
+                    team1: { stats: rotationStats }
+                }
+            };
+
+            let currentRunTeam1 = 0;
+            let currentRunTeam2 = 0;
+            let lastRunSetTeam1 = null;
+            let lastRunSetTeam2 = null;
+
+            const validAttackTypes = ATTACK_TYPES.map(t => t.key);
+            const validAttackTempos = ATTACK_TEMPOS.map(t => t.key);
+
             matchStats.rallies.forEach(rally => {
-                if (rally.type === 'substitution' || rally.type === 'card' || rally.type === 'timeout') return;
+                if (!rally || rally.type === 'substitution' || rally.type === 'card' || rally.type === 'timeout') {
+                    return;
+                }
+
+                const winnerLabel = rally.rallyResult?.winner;
+                const setNumber = rally.setNumber ?? defaultSetNumber;
+
+                if (winnerLabel === 'us') {
+                    if (currentRunTeam1 === 0) {
+                        lastRunSetTeam1 = setNumber;
+                    }
+                    currentRunTeam1 += 1;
+                    if (currentRunTeam1 > summary.momentum.team1.max) {
+                        summary.momentum.team1.max = currentRunTeam1;
+                    }
+                    if (currentRunTeam2 > 0) {
+                        summary.momentum.team2.history.push({ length: currentRunTeam2, set: lastRunSetTeam2 });
+                        currentRunTeam2 = 0;
+                        lastRunSetTeam2 = null;
+                    }
+                } else if (winnerLabel === 'them') {
+                    if (currentRunTeam2 === 0) {
+                        lastRunSetTeam2 = setNumber;
+                    }
+                    currentRunTeam2 += 1;
+                    if (currentRunTeam2 > summary.momentum.team2.max) {
+                        summary.momentum.team2.max = currentRunTeam2;
+                    }
+                    if (currentRunTeam1 > 0) {
+                        summary.momentum.team1.history.push({ length: currentRunTeam1, set: lastRunSetTeam1 });
+                        currentRunTeam1 = 0;
+                        lastRunSetTeam1 = null;
+                    }
+                }
+
+                const rotationBefore = rally.metadata?.rotationBefore ?? 1;
+                const serviceBefore = rally.metadata?.serviceBefore ?? null;
+                const rotationEntry = rotationStats[rotationBefore] || (rotationStats[rotationBefore] = createRotationStatsEntry());
+                rotationEntry.rallies += 1;
+
+                if (winnerLabel === 'us') {
+                    rotationEntry.pointsFor += 1;
+                } else if (winnerLabel === 'them') {
+                    rotationEntry.pointsAgainst += 1;
+                }
+
+                if (serviceBefore === 'team1') {
+                    rotationEntry.servingRallies += 1;
+                    if (winnerLabel === 'us') {
+                        rotationEntry.holds += 1;
+                    }
+                } else if (serviceBefore === 'team2') {
+                    rotationEntry.receivingRallies += 1;
+                    if (winnerLabel === 'us') {
+                        rotationEntry.sideOuts += 1;
+                    }
+                }
                 
                 rally.actions?.forEach(action => {
                     const playerId = action.player?.player?.id;
@@ -3006,14 +3541,12 @@
                     
                     const stats = playerStats[playerId];
                     
-                    // Services
-                    if (action.type === 'our_service') {
+                    if (action.type === 'service') {
                         stats.services.total++;
-                        if (action.quality === 'ace') stats.services.aces++;
-                        else if (action.quality === 'fault') stats.services.faults++;
+                        if (action.result === 'ace' || action.quality === 'ace') stats.services.aces++;
+                        if (action.result === 'fault' || action.quality === 'fault') stats.services.faults++;
                     }
                     
-                    // Réceptions
                     if (action.type === 'reception') {
                         stats.receptions.total++;
                         if (action.quality === 'perfect') stats.receptions.perfect++;
@@ -3021,13 +3554,31 @@
                         else if (action.quality === 'failed') stats.receptions.failed++;
                     }
                     
-                    // Attaques
                     if (action.type === 'our_attack') {
                         stats.attacks.total++;
+
+                        if (action.result === 'second_touch') {
+                            stats.secondTouch++;
+                            return;
+                        }
+
+                        const attackTypeKey = validAttackTypes.includes(action.attackType) ? action.attackType : (action.attackType ? 'other' : 'power');
+                        const tempoKey = validAttackTempos.includes(action.attackTempo) ? action.attackTempo : (action.attackTempo ? 'other' : 'tempo3');
+
+                        if (!stats.attacks.byType[attackTypeKey]) {
+                            stats.attacks.byType[attackTypeKey] = { total: 0, points: 0 };
+                        }
+                        if (!stats.attacks.byTempo[tempoKey]) {
+                            stats.attacks.byTempo[tempoKey] = { total: 0, points: 0 };
+                        }
+
+                        stats.attacks.byType[attackTypeKey].total++;
+                        stats.attacks.byTempo[tempoKey].total++;
+
                         if (action.result === 'point' || action.result === 'block_out') {
                             stats.attacks.points++;
-                        } else if (action.result === 'second_touch') {
-                            stats.secondTouch++;
+                            stats.attacks.byType[attackTypeKey].points++;
+                            stats.attacks.byTempo[tempoKey].points++;
                         } else if (action.result === 'blocked_in') {
                             stats.attacks.blocked++;
                         } else if (action.result === 'out') {
@@ -3039,10 +3590,19 @@
                 });
             });
             
-            // Afficher les statistiques d'équipe
+            if (currentRunTeam1 > 0) {
+                summary.momentum.team1.history.push({ length: currentRunTeam1, set: lastRunSetTeam1 });
+            }
+            if (currentRunTeam2 > 0) {
+                summary.momentum.team2.history.push({ length: currentRunTeam2, set: lastRunSetTeam2 });
+            }
+            summary.momentum.team1.current = currentRunTeam1;
+            summary.momentum.team2.current = currentRunTeam2;
+
+            matchStats.playerStats = playerStats;
+            matchStats.summary = summary;
+
             updateTeamStats(playerStats);
-            
-            // Afficher les statistiques par joueur
             updatePlayerStatsCards(playerStats);
         }
         
@@ -3070,27 +3630,82 @@
             const attackRate = teamTotals.attacks > 0 ? (teamTotals.attackPoints / teamTotals.attacks * 100).toFixed(1) : '0.0';
             const receptionRate = teamTotals.receptions > 0 ? (teamTotals.perfectReceptions / teamTotals.receptions * 100).toFixed(1) : '0.0';
             
-            document.getElementById('team-stats-content').innerHTML = `
+            const cards = [];
+
+            cards.push(`
                 <div style="background: white; padding: 0.75rem; border-radius: 6px; border: 2px solid #e5e7eb;">
                     <div style="font-weight: 700; color: #1f2937; margin-bottom: 0.25rem;">⚡ Services</div>
                     <div style="color: #6b7280;">${teamTotals.services} (${teamTotals.aces} ACE)</div>
                     <div style="color: #10b981; font-weight: 600; margin-top: 0.25rem;">${serviceRate}% réussite</div>
                 </div>
+            `);
+
+            cards.push(`
                 <div style="background: white; padding: 0.75rem; border-radius: 6px; border: 2px solid #e5e7eb;">
                     <div style="font-weight: 700; color: #1f2937; margin-bottom: 0.25rem;">📥 Réceptions</div>
                     <div style="color: #6b7280;">${teamTotals.receptions} (${teamTotals.perfectReceptions} parfaites)</div>
                     <div style="color: #10b981; font-weight: 600; margin-top: 0.25rem;">${receptionRate}% parfaites</div>
                 </div>
+            `);
+
+            cards.push(`
                 <div style="background: white; padding: 0.75rem; border-radius: 6px; border: 2px solid #e5e7eb;">
                     <div style="font-weight: 700; color: #1f2937; margin-bottom: 0.25rem;">🔥 Attaques</div>
                     <div style="color: #6b7280;">${teamTotals.attacks} (${teamTotals.attackPoints} pts)</div>
                     <div style="color: #10b981; font-weight: 600; margin-top: 0.25rem;">${attackRate}% réussite</div>
                 </div>
+            `);
+
+            cards.push(`
                 <div style="background: white; padding: 0.75rem; border-radius: 6px; border: 2px solid #e5e7eb;">
                     <div style="font-weight: 700; color: #1f2937; margin-bottom: 0.25rem;">✨ Secondes mains</div>
                     <div style="color: #6b7280; font-size: 1.5rem; font-weight: 700;">${teamTotals.secondTouch}</div>
                 </div>
-            `;
+            `);
+
+            const momentumSummary = matchStats.summary?.momentum;
+            if (momentumSummary) {
+                const longest = momentumSummary.team1?.max ?? 0;
+                const current = momentumSummary.team1?.current ?? 0;
+                const opponentLongest = momentumSummary.team2?.max ?? 0;
+                cards.push(`
+                    <div style="background: white; padding: 0.75rem; border-radius: 6px; border: 2px solid #e5e7eb;">
+                        <div style="font-weight: 700; color: #1f2937; margin-bottom: 0.25rem;">📈 Séries</div>
+                        <div style="color: #6b7280;">Plus longue série : <strong>${longest}</strong></div>
+                        <div style="color: #6b7280;">Série en cours : <strong>${current}</strong></div>
+                        <div style="color: #9ca3af; margin-top: 0.25rem;">Adverse max : ${opponentLongest}</div>
+                    </div>
+                `);
+            }
+
+            const rotationSummary = matchStats.summary?.rotations?.team1?.stats;
+            if (rotationSummary) {
+                let bestRotation = null;
+                Object.entries(rotationSummary).forEach(([rotation, stats]) => {
+                    if (!stats || stats.rallies === 0) return;
+                    const net = (stats.pointsFor ?? 0) - (stats.pointsAgainst ?? 0);
+                    if (!bestRotation || net > bestRotation.net) {
+                        bestRotation = { rotation, net, stats };
+                    }
+                });
+
+                if (bestRotation) {
+                    const { stats } = bestRotation;
+                    const sideOutRate = stats.receivingRallies > 0 ? Math.round((stats.sideOuts / stats.receivingRallies) * 100) : 0;
+                    const holdRate = stats.servingRallies > 0 ? Math.round((stats.holds / stats.servingRallies) * 100) : 0;
+                    const netDisplay = bestRotation.net >= 0 ? `+${bestRotation.net}` : `${bestRotation.net}`;
+                    cards.push(`
+                        <div style="background: white; padding: 0.75rem; border-radius: 6px; border: 2px solid #e5e7eb;">
+                            <div style="font-weight: 700; color: #1f2937; margin-bottom: 0.25rem;">🔁 Rotation la plus efficace</div>
+                            <div style="color: #6b7280;">Rotation R${bestRotation.rotation} : <strong>${netDisplay}</strong></div>
+                            <div style="color: #10b981;">Hold service : ${holdRate}%</div>
+                            <div style="color: #2563eb;">Side-out : ${sideOutRate}%</div>
+                        </div>
+                    `);
+                }
+            }
+
+            document.getElementById('team-stats-content').innerHTML = cards.join('');
         }
         
         // Afficher les cards par joueur
@@ -3128,6 +3743,38 @@
                 const serviceRate = stats.services.total > 0 ? ((stats.services.total - stats.services.faults) / stats.services.total * 100).toFixed(0) : '-';
                 const attackRate = stats.attacks.total > 0 ? (stats.attacks.points / stats.attacks.total * 100).toFixed(0) : '-';
                 const receptionRate = stats.receptions.total > 0 ? (stats.receptions.perfect / stats.receptions.total * 100).toFixed(0) : '-';
+
+                const typeDetails = [];
+                if (stats.attacks?.byType) {
+                    ATTACK_TYPES.forEach(item => {
+                        const info = stats.attacks.byType[item.key];
+                        if (info && info.total > 0) {
+                            const pct = info.total > 0 ? Math.round((info.points / info.total) * 100) : 0;
+                            typeDetails.push(`${item.icon} ${info.points}/${info.total} (${pct}%)`);
+                        }
+                    });
+                    const otherInfo = stats.attacks.byType.other;
+                    if (otherInfo && otherInfo.total > 0) {
+                        const pct = otherInfo.total > 0 ? Math.round((otherInfo.points / otherInfo.total) * 100) : 0;
+                        typeDetails.push(`🌀 ${otherInfo.points}/${otherInfo.total} (${pct}%)`);
+                    }
+                }
+
+                const tempoDetails = [];
+                if (stats.attacks?.byTempo) {
+                    ATTACK_TEMPOS.forEach(item => {
+                        const info = stats.attacks.byTempo[item.key];
+                        if (info && info.total > 0) {
+                            const pct = info.total > 0 ? Math.round((info.points / info.total) * 100) : 0;
+                            tempoDetails.push(`${item.icon} ${info.points}/${info.total} (${pct}%)`);
+                        }
+                    });
+                    const otherTempo = stats.attacks.byTempo.other;
+                    if (otherTempo && otherTempo.total > 0) {
+                        const pct = otherTempo.total > 0 ? Math.round((otherTempo.points / otherTempo.total) * 100) : 0;
+                        tempoDetails.push(`⏱️ ${otherTempo.points}/${otherTempo.total} (${pct}%)`);
+                    }
+                }
                 
                 // Créer la card
                 const card = `
@@ -3171,6 +3818,16 @@
                                 <span style="color: #9ca3af;">└ Points</span>
                                 <span style="font-weight: 700; color: #10b981;">${stats.attacks.points}</span>
                             </div>
+                            ${typeDetails.length ? `
+                            <div style="padding-left: 1.5rem; color: #6b7280; font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.25rem;">
+                                ${typeDetails.map(t => `<span>${t}</span>`).join('')}
+                            </div>
+                            ` : ''}
+                            ${tempoDetails.length ? `
+                            <div style="padding-left: 1.5rem; color: #6b7280; font-size: 0.75rem; display: flex; flex-direction: column; gap: 0.25rem;">
+                                ${tempoDetails.map(t => `<span>${t}</span>`).join('')}
+                            </div>
+                            ` : ''}
                             ` : ''}
                             
                             ${stats.secondTouch > 0 ? `
@@ -4523,6 +5180,63 @@
                 updateDisplay();
             }
         });
+
+        function clearStartingLineup() {
+            // Réinitialiser la composition du terrain
+            courtComposition.positions = {
+                1: null,
+                2: null,
+                3: null,
+                4: null,
+                5: null,
+                6: null
+            };
+            courtComposition.libero = {
+                player: null,
+                onCourt: false,
+                replacing: null,
+                enabled: false
+            };
+            updateCourtDisplay();
+            
+            // Réinitialiser les variables globales
+            window.setterPosition = null;
+            window.setterPlayerId = null;
+            window.selectedStartingLibero = null;
+            window.isPositioningMode = true;
+            window.startingLineupValidated = false;
+            
+            // Réinitialiser l'affichage du libéro sélectionné
+            const display = document.getElementById('selected-libero-display');
+            const info = document.getElementById('selected-libero-info');
+            if (display) {
+                display.style.display = 'none';
+            }
+            if (info) {
+                info.innerHTML = '';
+            }
+            
+            // Réinitialiser les boutons
+            const validateBtn = document.getElementById('validate-lineup-btn');
+            const liberoBtn = document.getElementById('choose-libero-btn');
+            if (validateBtn) {
+                validateBtn.disabled = true;
+                validateBtn.style.opacity = '0.5';
+                validateBtn.style.cursor = 'not-allowed';
+            }
+            if (liberoBtn) {
+                liberoBtn.disabled = true;
+                liberoBtn.style.opacity = '0.5';
+                liberoBtn.style.cursor = 'not-allowed';
+                liberoBtn.style.display = 'none';
+            }
+            
+            updatePositioningInstructions();
+            showNotification('🎯 Terrain vidé. Recommencez votre placement.', 'info');
+        }
+
+        // Choisir le libéro titulaire (7ème joueur)
+        window.selectedStartingLibero = null;
     </script>
 
     <!-- Bloc script supprimé - Fonctions déplacées dans le script principal pour accès aux variables -->

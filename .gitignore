@@ -21,11 +21,31 @@ venv/
 env/
 ENV/
 
+# Node.js
+node_modules/
+server/node_modules/
+
+# Environment variables
+server/.env
+
 # IDE
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
 
+# Database
+*.sqlite
+*.db
+*.sql.backup
+backup_*.sql
+
+# Docker volumes
+postgres_data/
+pgadmin_data/
+
+# Backup files
+*.backup-*
+*.bak
 
 .git-credential-helper.sh
