@@ -71,7 +71,7 @@ node -e "
 const { Pool } = require('pg');
 const pool = new Pool({
   host: '192.168.1.40',
-  port: 5432,
+  port: 5433,
   database: 'lcvb_scoreboard',
   user: 'lcvb_user',
   password: 'lcvb_password_2024'
@@ -321,7 +321,7 @@ Le workflow GitHub Actions fait ça automatiquement.
 │  └────────────┬──────────────────────┘  │
 │               │                         │
 │  ┌────────────▼──────────────────────┐  │
-│  │  postgres-17 (port 5432)          │  │
+│  │  postgres-17 (port 5433)          │  │
 │  │  - Base lcvb_scoreboard           │  │
 │  │  - User lcvb_user                 │  │
 │  └───────────────────────────────────┘  │

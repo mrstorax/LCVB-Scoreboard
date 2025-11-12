@@ -78,7 +78,7 @@ echo '$NAS_PASSWORD' | sudo -S docker run -d \
     -e NODE_ENV=production \
     -e PORT=$API_PORT \
     -e DB_HOST=192.168.1.40 \
-    -e DB_PORT=5432 \
+    -e DB_PORT=5433 \
     -e DB_NAME=lcvb_scoreboard \
     -e DB_USER=lcvb_user \
     -e DB_PASSWORD=lcvb_password_2024 \

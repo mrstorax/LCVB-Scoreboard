@@ -13,7 +13,7 @@ services:
     environment:
       PORT: 3000
       DB_HOST: ${DB_HOST:-postgres}
-      DB_PORT: ${DB_PORT:-5432}
+      DB_PORT: ${DB_PORT:-5433}
       DB_NAME: ${DB_NAME:-lcvb_scoreboard}
       DB_USER: ${DB_USER:-lcvb_user}
       DB_PASSWORD: ${DB_PASSWORD:-lcvb_password_2024}
@@ -40,7 +40,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-lcvb_password_2024}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql

@@ -36,8 +36,9 @@ router.get('/imports/latest', authenticate, async (req, res) => {
 
 router.get('/upcoming', authenticate, async (req, res) => {
     try {
-        const limit = Math.min(parseInt(req.query.limit, 10) || 3, 20);
-        const matches = await getUpcomingMatches({ clubCode: req.query.clubCode, limit });
+        const limit = req.query.limit ? Math.max(1, Math.min(parseInt(req.query.limit, 10), 50)) : null;
+        const rangeDays = Math.max(1, Math.min(parseInt(req.query.range, 10) || 7, 30));
+        const matches = await getUpcomingMatches({ clubCode: req.query.clubCode, rangeDays, limit });
         res.json({ success: true, matches });
     } catch (error) {
         console.error('FFVB upcoming error:', error);

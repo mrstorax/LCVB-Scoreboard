@@ -60,7 +60,7 @@ sshpass -p "$NAS_PASSWORD" ssh -t $NAS_HOST "echo '$NAS_PASSWORD' | sudo -S dock
     --restart unless-stopped \
     -p $PORT:$PORT \
     -e DB_HOST=192.168.1.40 \
-    -e DB_PORT=5432 \
+    -e DB_PORT=5433 \
     -e DB_NAME=lcvb_scoreboard \
     -e DB_USER=lcvb_user \
     -e DB_PASSWORD=lcvb_password_2024 \

@@ -104,7 +104,7 @@ node -e "
 const { Pool } = require('pg');
 const pool = new Pool({
   host: '192.168.1.40',
-  port: 5432,
+  port: 5433,
   database: 'lcvb_scoreboard',
   user: 'lcvb_user',
   password: 'lcvb_password_2024'
@@ -216,7 +216,7 @@ NAS ASUSTOR (192.168.1.40)
      │   └─> API Express + JWT
      │       └─> Connexion PostgreSQL
      │
-     └─> postgres-17 (port 5432)
+     └─> postgres-17 (port 5433)
          └─> Base lcvb_scoreboard
              └─> 12 tables
 ```
@@ -259,8 +259,8 @@ cd server && npm install && npm run dev
 ### Problème : Backend ne démarre pas
 **Solution :** Vérifier les logs : `docker logs lcvb_backend`
 
-### Problème : Port 5432 inaccessible
-**Solution :** Vérifier le firewall du NAS, autoriser port 5432
+### Problème : Port 5433 inaccessible
+**Solution :** Vérifier le firewall du NAS, autoriser port 5433
 
 ---
 
@@ -289,7 +289,7 @@ cd server && npm install && npm run dev
 Les scripts sont prêts, la structure est en place. Les seuls points de blocage possibles :
 1. **SSH** : Vérifier qu'il est activé sur le NAS
 2. **PostgreSQL** : Vérifier que le conteneur `postgres-17` tourne
-3. **Réseau** : Vérifier que ton Mac peut atteindre `192.168.1.40:5432`
+3. **Réseau** : Vérifier que ton Mac peut atteindre `192.168.1.40:5433`
 
 Tout est documenté dans `DEPLOY_GUIDE.md` avec tous les détails.
 

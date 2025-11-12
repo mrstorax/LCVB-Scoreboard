@@ -259,7 +259,7 @@ docker ps
 ```
 
 Vous devriez voir:
-- `lcvb_postgres` sur le port 5432
+- `lcvb_postgres` sur le port 5433
 - `lcvb_pgadmin` sur le port 5050
 
 #### 4. Démarrer le Backend

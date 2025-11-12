@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>Titre de la Page - LCVB Scoreboard Pro</title>
+
+    <!-- ✅ Design System (obligatoire) -->
+    <link rel="stylesheet" href="design-system.css">
+
+    <!-- ⚠️ Styles spécifiques page (optionnel - à utiliser avec parcimonie) -->
+    <!-- <link rel="stylesheet" href="page-specific.css"> -->
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         THEME TOGGLE BUTTON (Fixed top-right)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <button id="theme-toggle" class="ds-theme-toggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme">
+        🌙
+    </button>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         CONTAINER PRINCIPAL
+         ═══════════════════════════════════════════════════════════════════ -->
+    <div class="ds-container">
+
+
+        <!-- ───────────────────────────────────────────────────────────────
+             TOP BAR (Header avec info utilisateur et actions)
+             ─────────────────────────────────────────────────────────────── -->
+        <div class="ds-topbar">
+            <div class="ds-topbar-user">
+                <div class="ds-topbar-avatar" id="user-avatar">JD</div>
+                <div class="ds-topbar-user-info">
+                    <div class="ds-topbar-user-name" id="user-name">Jean Dupont</div>
+                    <div class="ds-topbar-user-role" id="user-role">Administrateur</div>
+                </div>
+            </div>
+            <div class="ds-flex ds-gap-2">
+                <button class="ds-btn ds-btn-secondary ds-btn-sm" onclick="goBack()">
+                    ← Retour
+                </button>
+                <button class="ds-btn ds-btn-danger ds-btn-sm" onclick="logout()">
+                    🚪 Déconnexion
+                </button>
+            </div>
+        </div>
+
+
+        <!-- ───────────────────────────────────────────────────────────────
+             HERO SECTION (Optionnel - pour pages principales)
+             Supprimer cette section si non nécessaire
+             ─────────────────────────────────────────────────────────────── -->
+        <div class="ds-hero">
+            <div class="ds-hero-title">🏐 Titre Principal de la Page</div>
+            <div class="ds-hero-subtitle">Description concise de la page</div>
+        </div>
+
+
+        <!-- ───────────────────────────────────────────────────────────────
+             NAVIGATION (Optionnel - si plusieurs sections/onglets)
+             Supprimer si non nécessaire
+             ─────────────────────────────────────────────────────────────── -->
+        <nav class="ds-nav ds-mb-6">
+            <a href="home.html" class="ds-nav-link">Accueil</a>
+            <a href="teams.html" class="ds-nav-link is-active">Équipes</a>
+            <a href="setup.html" class="ds-nav-link">Match</a>
+            <a href="stats.html" class="ds-nav-link">Statistiques</a>
+            <a href="settings.html" class="ds-nav-link">Paramètres</a>
+        </nav>
+
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             CONTENU PRINCIPAL
+             ═══════════════════════════════════════════════════════════════ -->
+        <main>
+
+            <!-- ───────────────────────────────────────────────────────────
+                 SECTION 1 : Cards avec grille
+                 ─────────────────────────────────────────────────────────── -->
+            <section class="ds-mb-8">
+                <h2 class="ds-text-2xl ds-font-bold ds-mb-4">📊 Section Cards</h2>
+
+                <div class="ds-grid ds-grid-cols-3 ds-gap-6">
+                    <!-- Card 1 -->
+                    <div class="ds-card ds-card-interactive">
+                        <div class="ds-card-header">
+                            <h3 class="ds-card-title">Card Title 1</h3>
+                            <p class="ds-card-subtitle">Subtitle description</p>
+                        </div>
+                        <div class="ds-card-body">
+                            <p>Card content goes here. Lorem ipsum dolor sit amet.</p>
+                        </div>
+                        <div class="ds-card-footer">
+                            <button class="ds-btn ds-btn-primary ds-btn-sm">Action</button>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="ds-card ds-card-interactive">
+                        <div class="ds-card-header">
+                            <h3 class="ds-card-title">Card Title 2</h3>
+                            <p class="ds-card-subtitle">Subtitle description</p>
+                        </div>
+                        <div class="ds-card-body">
+                            <p>Card content goes here. Lorem ipsum dolor sit amet.</p>
+                        </div>
+                        <div class="ds-card-footer">
+                            <button class="ds-btn ds-btn-primary ds-btn-sm">Action</button>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="ds-card ds-card-interactive">
+                        <div class="ds-card-header">
+                            <h3 class="ds-card-title">Card Title 3</h3>
+                            <p class="ds-card-subtitle">Subtitle description</p>
+                        </div>
+                        <div class="ds-card-body">
+                            <p>Card content goes here. Lorem ipsum dolor sit amet.</p>
+                        </div>
+                        <div class="ds-card-footer">
+                            <button class="ds-btn ds-btn-primary ds-btn-sm">Action</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ───────────────────────────────────────────────────────────
+                 SECTION 2 : Formulaire
+                 ─────────────────────────────────────────────────────────── -->
+            <section class="ds-mb-8">
+                <div class="ds-card">
+                    <div class="ds-card-header">
+                        <h2 class="ds-card-title">📝 Formulaire</h2>
+                        <p class="ds-card-subtitle">Remplissez les informations ci-dessous</p>
+                    </div>
+
+                    <div class="ds-card-body">
+                        <form onsubmit="handleSubmit(event)">
+                            <div class="ds-grid ds-grid-cols-2 ds-gap-4">
+                                <!-- Input texte -->
+                                <div class="ds-form-group">
+                                    <label class="ds-form-label ds-form-label-required">Nom</label>
+                                    <input type="text" class="ds-form-input" placeholder="Entrez votre nom" required>
+                                    <small class="ds-form-help">Votre nom complet</small>
+                                </div>
+
+                                <!-- Input email -->
+                                <div class="ds-form-group">
+                                    <label class="ds-form-label ds-form-label-required">Email</label>
+                                    <input type="email" class="ds-form-input" placeholder="email@exemple.com" required>
+                                </div>
+
+                                <!-- Select -->
+                                <div class="ds-form-group">
+                                    <label class="ds-form-label">Catégorie</label>
+                                    <select class="ds-form-select">
+                                        <option value="">Sélectionnez...</option>
+                                        <option value="1">Option 1</option>
+                                        <option value="2">Option 2</option>
+                                        <option value="3">Option 3</option>
+                                    </select>
+                                </div>
+
+                                <!-- Input numérique -->
+                                <div class="ds-form-group">
+                                    <label class="ds-form-label">Numéro</label>
+                                    <input type="number" class="ds-form-input" placeholder="0" min="0">
+                                </div>
+
+                                <!-- Textarea -->
+                                <div class="ds-form-group" style="grid-column: 1 / -1;">
+                                    <label class="ds-form-label">Message</label>
+                                    <textarea class="ds-form-textarea" placeholder="Votre message..."></textarea>
+                                </div>
+
+                                <!-- Checkbox -->
+                                <div class="ds-form-group" style="grid-column: 1 / -1;">
+                                    <label class="ds-flex ds-items-center ds-gap-2">
+                                        <input type="checkbox" class="ds-form-checkbox" required>
+                                        <span>J'accepte les conditions d'utilisation</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="ds-flex ds-gap-3 ds-mt-6">
+                                <button type="submit" class="ds-btn ds-btn-primary">
+                                    <span>✓</span>
+                                    <span>Valider</span>
+                                </button>
+                                <button type="reset" class="ds-btn ds-btn-secondary">Réinitialiser</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ───────────────────────────────────────────────────────────
+                 SECTION 3 : Liste avec actions
+                 ─────────────────────────────────────────────────────────── -->
+            <section class="ds-mb-8">
+                <div class="ds-card">
+                    <div class="ds-card-header">
+                        <div class="ds-flex ds-justify-between ds-items-center">
+                            <div>
+                                <h2 class="ds-card-title">📋 Liste d'éléments</h2>
+                                <p class="ds-card-subtitle">Gérez vos éléments</p>
+                            </div>
+                            <button class="ds-btn ds-btn-primary ds-btn-sm">
+                                <span>➕</span>
+                                <span>Ajouter</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ds-card-body">
+                        <!-- Liste -->
+                        <div class="ds-flex ds-flex-col ds-gap-3">
+                            <!-- Item 1 -->
+                            <div class="ds-flex ds-justify-between ds-items-center ds-p-4 ds-rounded-lg" style="background: var(--ds-bg-tertiary);">
+                                <div>
+                                    <div class="ds-font-semibold ds-text-primary">Élément 1</div>
+                                    <div class="ds-text-sm ds-text-secondary">Description de l'élément</div>
+                                </div>
+                                <div class="ds-flex ds-gap-2">
+                                    <span class="ds-badge ds-badge-success">Actif</span>
+                                    <button class="ds-btn ds-btn-secondary ds-btn-sm">Modifier</button>
+                                    <button class="ds-btn ds-btn-danger ds-btn-sm">Supprimer</button>
+                                </div>
+                            </div>
+
+                            <!-- Item 2 -->
+                            <div class="ds-flex ds-justify-between ds-items-center ds-p-4 ds-rounded-lg" style="background: var(--ds-bg-tertiary);">
+                                <div>
+                                    <div class="ds-font-semibold ds-text-primary">Élément 2</div>
+                                    <div class="ds-text-sm ds-text-secondary">Description de l'élément</div>
+                                </div>
+                                <div class="ds-flex ds-gap-2">
+                                    <span class="ds-badge ds-badge-warning">En attente</span>
+                                    <button class="ds-btn ds-btn-secondary ds-btn-sm">Modifier</button>
+                                    <button class="ds-btn ds-btn-danger ds-btn-sm">Supprimer</button>
+                                </div>
+                            </div>
+
+                            <!-- Item 3 -->
+                            <div class="ds-flex ds-justify-between ds-items-center ds-p-4 ds-rounded-lg" style="background: var(--ds-bg-tertiary);">
+                                <div>
+                                    <div class="ds-font-semibold ds-text-primary">Élément 3</div>
+                                    <div class="ds-text-sm ds-text-secondary">Description de l'élément</div>
+                                </div>
+                                <div class="ds-flex ds-gap-2">
+                                    <span class="ds-badge ds-badge-danger">Inactif</span>
+                                    <button class="ds-btn ds-btn-secondary ds-btn-sm">Modifier</button>
+                                    <button class="ds-btn ds-btn-danger ds-btn-sm">Supprimer</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- ───────────────────────────────────────────────────────────
+                 SECTION 4 : États et Alerts
+                 ─────────────────────────────────────────────────────────── -->
+            <section class="ds-mb-8">
+                <h2 class="ds-text-2xl ds-font-bold ds-mb-4">⚠️ Alerts & États</h2>
+
+                <div class="ds-alert ds-alert-success">
+                    <strong>Succès !</strong> L'opération a été effectuée avec succès.
+                </div>
+
+                <div class="ds-alert ds-alert-info">
+                    <strong>Information :</strong> Voici une information importante.
+                </div>
+
+                <div class="ds-alert ds-alert-warning">
+                    <strong>Attention !</strong> Cette action nécessite votre attention.
+                </div>
+
+                <div class="ds-alert ds-alert-danger">
+                    <strong>Erreur !</strong> Une erreur est survenue lors du traitement.
+                </div>
+            </section>
+
+        </main>
+
+
+        <!-- ───────────────────────────────────────────────────────────────
+             FOOTER (Optionnel)
+             ─────────────────────────────────────────────────────────────── -->
+        <footer class="ds-mt-12 ds-mb-6 ds-text-center ds-text-sm ds-text-tertiary">
+            <p>&copy; 2025 Le Crès Volley-Ball - LCVB Scoreboard Pro</p>
+            <p class="ds-mt-2">
+                <a href="design-system-showcase.html" class="ds-text-primary" style="text-decoration: underline;">
+                    Design System
+                </a>
+            </p>
+        </footer>
+
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SCRIPTS
+         ═══════════════════════════════════════════════════════════════════ -->
+
+    <!-- Theme Manager -->
+    <script src="theme.js"></script>
+
+    <!-- Scripts de la page -->
+    <script>
+        // Fonction de retour
+        function goBack() {
+            window.history.back();
+        }
+
+        // Fonction de déconnexion
+        function logout() {
+            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                localStorage.removeItem('lcvb_auth_token');
+                localStorage.removeItem('lcvb_user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Gestion du formulaire
+        function handleSubmit(event) {
+            event.preventDefault();
+            alert('Formulaire soumis !');
+            // Votre logique ici
+        }
+
+        // Initialisation de la page
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('Page chargée');
+
+            // Exemple : charger les données utilisateur
+            loadUserData();
+        });
+
+        // Charger les données utilisateur
+        function loadUserData() {
+            const user = JSON.parse(localStorage.getItem('lcvb_user') || '{}');
+
+            if (user.firstName) {
+                document.getElementById('user-name').textContent =
+                    `${user.firstName} ${user.lastName || ''}`.trim();
+            }
+
+            if (user.role) {
+                const roleLabels = {
+                    'admin': 'Administrateur',
+                    'coach': 'Entraîneur',
+                    'operator': 'Opérateur',
+                    'statistician': 'Statisticien'
+                };
+                document.getElementById('user-role').textContent =
+                    roleLabels[user.role] || user.role;
+            }
+
+            if (user.firstName || user.email) {
+                const initial = (user.firstName || user.email || '?')[0].toUpperCase();
+                document.getElementById('user-avatar').textContent = initial;
+            }
+        }
+    </script>
+
+</body>
+</html>

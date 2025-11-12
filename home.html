@@ -601,7 +601,8 @@
     </div>
 
     <script>
-        const API_URL = 'http://192.168.1.40:5700';
+        // API URL dynamique : utilise le domaine actuel (prod ou local)
+        const API_URL = window.location.origin;
         let userData = null;
 
         // ==========================================
@@ -665,7 +666,7 @@
                 // Charger en parallèle
                 const [liveMatches, upcomingMatches, recentMatches, teams, players] = await Promise.all([
                     fetchAPI('/api/matches?status=live&limit=5'),
-                    fetchAPI('/api/ffvb/upcoming?limit=3'),
+                    fetchAPI('/api/ffvb/upcoming?range=10'),
                     fetchAPI('/api/matches?limit=10'),
                     fetchAPI('/api/teams'),
                     fetchAPI('/api/players')

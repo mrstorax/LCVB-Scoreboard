@@ -70,7 +70,7 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - DB_HOST=192.168.1.40
-      - DB_PORT=5432
+      - DB_PORT=5433
       - DB_NAME=lcvb_scoreboard
       - DB_USER=lcvb_user
       - DB_PASSWORD=lcvb_password_2024

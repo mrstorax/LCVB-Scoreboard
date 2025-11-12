@@ -65,7 +65,7 @@ Les scripts utilisent ces valeurs par défaut :
 
 - **NAS_HOST** : `admin@192.168.1.40`
 - **DB_HOST** : `192.168.1.40`
-- **DB_PORT** : `5432`
+- **DB_PORT** : `5433`
 - **DB_NAME** : `lcvb_scoreboard`
 - **DB_USER** : `lcvb_user`
 - **DB_PASS** : `lcvb_password_2024`
@@ -103,7 +103,7 @@ export NAS_HOST="user@192.168.1.50"
 │  │   Port 3000                        │
 │  │                                    │
 │  └─> postgres-17 (existant)          │
-│      Port 5432                        │
+│      Port 5433                        │
 │                                       │
 └───────────────────────────────────────┘
 ```

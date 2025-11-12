@@ -9,3 +9,8 @@ docker-compose.local.yml
 .env*
 backup
 volleyball-analysis
+*.md
+home2.html
+design-system*.html
+template-page.html
+design-system.css

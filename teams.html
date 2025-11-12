@@ -109,6 +109,17 @@
             margin-bottom: 0.25rem;
         }
 
+        .captain-badge {
+            display: inline-block;
+            margin-left: 0.4rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(234, 179, 8, 0.15);
+            color: #b45309;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
         .team-category {
             font-size: 0.9rem;
             color: var(--text-tertiary);
@@ -564,6 +575,13 @@
                     </select>
                 </div>
 
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="player-is-captain" style="margin-right: 0.5rem;">
+                        Capitaine de l'équipe
+                    </label>
+                </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" onclick="closePlayerModal()">Annuler</button>
                     <button type="submit" class="btn-primary">
@@ -586,11 +604,13 @@
     </div>
 
     <script>
-        const API_URL = 'http://192.168.1.40:5700';
+        // API URL dynamique : utilise le domaine actuel (prod ou local)
+        const API_URL = window.location.origin;
         let teams = [];
         let currentTeamId = null;
         let editingTeamId = null;
         let editingPlayerId = null;
+        const teamPlayersCache = {};
 
         // ==========================================
         // AUTH
@@ -713,6 +733,7 @@
             try {
                 const data = await fetchAPI(`/api/teams/${teamId}`);
                 const team = data.team;
+                teamPlayersCache[team.id] = team.players || [];
                 showTeamDetailsModal(team);
             } catch (error) {
                 alert('Erreur lors du chargement des détails: ' + error.message);
@@ -726,6 +747,7 @@
             if (!modal || !body || !title) return;
 
             title.textContent = team.name;
+            teamPlayersCache[team.id] = (team.players || []).map(player => ({ ...player }));
 
             let html = `
                 <div style="margin-bottom: 2rem;">
@@ -757,12 +779,13 @@
 
             if (team.players && team.players.length > 0) {
                 team.players.forEach(player => {
+                    const captainBadge = player.is_captain ? '<span class="captain-badge">Capitaine</span>' : '';
                     html += `
                         <div class="player-item">
                             <div class="player-info">
                                 <div class="player-number ${player.is_libero ? 'libero' : ''}">${player.number}</div>
                                 <div class="player-details">
-                                    <div class="player-name">${player.first_name} ${player.last_name}</div>
+                                    <div class="player-name">${player.first_name} ${player.last_name} ${captainBadge}</div>
                                     <div class="player-position">${player.position || 'Position non définie'}</div>
                                 </div>
                             </div>
@@ -889,6 +912,7 @@
             try {
                 await fetchAPI(`/api/teams/${teamId}`, { method: 'DELETE' });
                 alert('✅ Équipe supprimée');
+                delete teamPlayersCache[teamId];
                 loadTeams();
             } catch (error) {
                 alert('❌ Erreur: ' + error.message);
@@ -977,12 +1001,20 @@
             return refs;
         }
 
+        function isNumberTaken(teamId, number, excludePlayerId = null) {
+            const players = teamPlayersCache[teamId] || [];
+            return players.some(player => player.number === number && player.id !== excludePlayerId);
+        }
+
         function openAddPlayerModal(evt, teamIdParam) {
             if (evt && typeof evt.stopPropagation === 'function') {
                 evt.stopPropagation();
             }
 
-            const teamId = typeof teamIdParam === 'number' ? teamIdParam : evt;
+            const teamId = typeof teamIdParam === 'number'
+                ? teamIdParam
+                : Number.isInteger(teamIdParam) ? teamIdParam : parseInt(teamIdParam, 10);
+            if (!teamId || Number.isNaN(teamId)) return;
             const refs = getPlayerModalRefs();
             if (!refs) return;
 
@@ -992,6 +1024,7 @@
             refs.saveBtnText.textContent = 'Ajouter le joueur';
             refs.form.reset();
             refs.teamIdInput.value = teamId;
+            document.getElementById('player-is-captain').checked = false;
 
             closeTeamDetailsModal();
             refs.modal.classList.add('show');
@@ -1015,6 +1048,7 @@
                 document.getElementById('player-first-name').value = player.first_name;
                 document.getElementById('player-last-name').value = player.last_name;
                 document.getElementById('player-position').value = player.position || '';
+                document.getElementById('player-is-captain').checked = !!player.is_captain;
 
                 refs.modal.classList.add('show');
             } catch (error) {
@@ -1052,18 +1086,31 @@
                 is_libero: positionValue === 'Libéro'
             };
 
+            if (!playerData.number || Number.isNaN(playerData.number)) {
+                alert('❌ Numéro de maillot invalide.');
+                return;
+            }
+
+            if (isNumberTaken(playerData.team_id, playerData.number, editingPlayerId)) {
+                alert(`❌ Le numéro ${playerData.number} est déjà attribué dans cette équipe.`);
+                return;
+            }
+
             try {
+                let savedPlayer = null;
                 if (editingPlayerId) {
-                    await fetchAPI(`/api/players/${editingPlayerId}`, {
+                    const response = await fetchAPI(`/api/players/${editingPlayerId}`, {
                         method: 'PUT',
                         body: JSON.stringify(playerData)
                     });
+                    savedPlayer = response.player;
                     alert('✅ Joueur modifié avec succès !');
                 } else {
-                    await fetchAPI('/api/players', {
+                    const response = await fetchAPI('/api/players', {
                         method: 'POST',
                         body: JSON.stringify(playerData)
                     });
+                    savedPlayer = response.player;
                     alert('✅ Joueur ajouté avec succès !');
                 }
 
@@ -1071,6 +1118,13 @@
 
                 // Recharger les détails de l'équipe
                 if (currentTeamId) {
+                    if (savedPlayer) {
+                        const cache = teamPlayersCache[playerData.team_id] || [];
+                        const idx = cache.findIndex(p => p.id === savedPlayer.id);
+                        if (idx >= 0) cache[idx] = savedPlayer;
+                        else cache.push(savedPlayer);
+                        teamPlayersCache[playerData.team_id] = cache;
+                    }
                     viewTeamDetails(currentTeamId);
                 }
             } catch (error) {
@@ -1086,6 +1140,9 @@
             try {
                 await fetchAPI(`/api/players/${playerId}`, { method: 'DELETE' });
                 alert('✅ Joueur supprimé');
+
+                const cache = teamPlayersCache[teamId] || [];
+                teamPlayersCache[teamId] = cache.filter(player => player.id !== playerId);
 
                 // Recharger les détails de l'équipe
                 viewTeamDetails(teamId);

@@ -1,6 +1,7 @@
 const express = require('express');
 const { query } = require('../config/database');
 const { authenticate, authorize } = require('../middleware/auth');
+const { ensureProfile, updateProfile, getProfile } = require('../services/teamProfileService');
 
 const router = express.Router();
 
@@ -12,10 +13,14 @@ router.get('/', authenticate, async (req, res) => {
         const result = await query(`
             SELECT
                 t.*,
+                tp.primary_venue,
+                tp.default_lineup_id,
+                tp.captain_player_id,
                 u.first_name || ' ' || u.last_name as coach_name,
                 (SELECT COUNT(*) FROM players WHERE team_id = t.id AND active = true) as player_count
             FROM teams t
             LEFT JOIN users u ON t.coach_id = u.id
+            LEFT JOIN team_profiles tp ON tp.team_id = t.id
             WHERE t.active = true
             ORDER BY t.category, t.name
         `);
@@ -41,10 +46,14 @@ router.get('/:id', authenticate, async (req, res) => {
         const result = await query(`
             SELECT
                 t.*,
+                tp.primary_venue,
+                tp.default_lineup_id,
+                tp.captain_player_id,
                 u.first_name || ' ' || u.last_name as coach_name,
                 (SELECT COUNT(*) FROM players WHERE team_id = t.id AND active = true) as player_count
             FROM teams t
             LEFT JOIN users u ON t.coach_id = u.id
+            LEFT JOIN team_profiles tp ON tp.team_id = t.id
             WHERE t.id = $1 AND t.active = true
         `, [id]);
 
@@ -59,11 +68,16 @@ router.get('/:id', authenticate, async (req, res) => {
             ORDER BY is_libero DESC, number
         `, [id]);
 
+        const captainId = result.rows[0].captain_player_id;
+
         res.json({
             success: true,
             team: {
                 ...result.rows[0],
-                players: playersResult.rows
+                players: playersResult.rows.map(player => ({
+                    ...player,
+                    is_captain: captainId ? player.id === captainId : false
+                }))
             }
         });
 
@@ -78,7 +92,7 @@ router.get('/:id', authenticate, async (req, res) => {
 // ==========================================
 router.post('/', authenticate, authorize('admin', 'coach'), async (req, res) => {
     try {
-        const { name, category, logo_url, primary_color, secondary_color, coach_id } = req.body;
+        const { name, category, logo_url, primary_color, secondary_color, coach_id, primary_venue } = req.body;
 
         // Validation
         if (!name || !category) {
@@ -90,6 +104,10 @@ router.post('/', authenticate, authorize('admin', 'coach'), async (req, res) => 
             VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *
         `, [name, category, logo_url || null, primary_color || '#E91E63', secondary_color || '#FF69B4', coach_id || null]);
+
+        if (primary_venue) {
+            await updateProfile(result.rows[0].id, { primary_venue });
+        }
 
         // Log de l'action
         await query(
@@ -114,7 +132,7 @@ router.post('/', authenticate, authorize('admin', 'coach'), async (req, res) => 
 router.put('/:id', authenticate, authorize('admin', 'coach'), async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, category, logo_url, primary_color, secondary_color, coach_id } = req.body;
+        const { name, category, logo_url, primary_color, secondary_color, coach_id, primary_venue } = req.body;
 
         const result = await query(`
             UPDATE teams
@@ -132,15 +150,26 @@ router.put('/:id', authenticate, authorize('admin', 'coach'), async (req, res) =
             return res.status(404).json({ error: 'Équipe non trouvée' });
         }
 
+        if (primary_venue !== undefined) {
+            await updateProfile(id, { primary_venue: primary_venue || null });
+        }
+
         // Log de l'action
         await query(
             'INSERT INTO activity_logs (user_id, action, entity_type, entity_id) VALUES ($1, $2, $3, $4)',
             [req.user.id, 'update_team', 'team', id]
         );
 
+        const profile = await getProfile(id);
+
         res.json({
             success: true,
-            team: result.rows[0]
+            team: {
+                ...result.rows[0],
+                primary_venue: profile?.primary_venue || null,
+                default_lineup_id: profile?.default_lineup_id || null,
+                captain_player_id: profile?.captain_player_id || null
+            }
         });
 
     } catch (error) {

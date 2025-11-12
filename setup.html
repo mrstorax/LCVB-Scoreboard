@@ -490,6 +490,9 @@
     </div>
     
     <script>
+        // API URL dynamique : utilise le domaine actuel (prod ou local)
+        const API_URL = window.location.origin;
+
         // État global
         let currentStep = 1;
         let allTeamsData = null; // Toutes les équipes du club
@@ -508,7 +511,7 @@
                 }
 
                 // Charger les équipes avec leurs joueurs
-                const response = await fetch('http://192.168.1.40:5700/api/teams', {
+                const response = await fetch(`${API_URL}/api/teams`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -523,7 +526,7 @@
                 // Charger les détails de chaque équipe avec ses joueurs
                 const teamsWithPlayers = await Promise.all(
                     data.teams.map(async (team) => {
-                        const teamResponse = await fetch(`http://192.168.1.40:5700/api/teams/${team.id}`, {
+                        const teamResponse = await fetch(`${API_URL}/api/teams/${team.id}`, {
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
                     const teamData = await teamResponse.json();
@@ -897,7 +900,7 @@
                         primary_color: '#111111',
                         secondary_color: '#eeeeee'
                     };
-                    const createAway = await fetch('http://192.168.1.40:5700/api/teams', {
+                    const createAway = await fetch(`${API_URL}/api/teams`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -933,7 +936,7 @@
                     }
                 };
 
-                const response = await fetch('http://192.168.1.40:5700/api/matches', {
+                const response = await fetch(`${API_URL}/api/matches`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

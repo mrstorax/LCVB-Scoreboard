@@ -73,7 +73,7 @@ node -e "
 const { Pool } = require('pg');
 const pool = new Pool({
   host: '192.168.1.40',
-  port: 5432,
+  port: 5433,
   database: 'lcvb_scoreboard',
   user: 'lcvb_user',
   password: 'lcvb_password_2024'

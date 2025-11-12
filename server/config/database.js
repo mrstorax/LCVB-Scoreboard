@@ -4,7 +4,7 @@ require('dotenv').config();
 // Configuration de la connexion PostgreSQL
 const pool = new Pool({
     host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
+    port: process.env.DB_PORT || 5433,
     database: process.env.DB_NAME || 'lcvb_scoreboard',
     user: process.env.DB_USER || 'lcvb_user',
     password: process.env.DB_PASSWORD || 'lcvb_password_2024',

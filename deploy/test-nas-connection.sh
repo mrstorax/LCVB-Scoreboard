@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 # Configuration
 NAS_HOST="admin@192.168.1.40"
 DB_HOST="192.168.1.40"
-DB_PORT="5432"
+DB_PORT="5433"
 DB_NAME="lcvb_scoreboard"
 DB_USER="lcvb_user"
 DB_PASS="lcvb_password_2024"
@@ -95,7 +95,7 @@ if command -v psql &> /dev/null; then
         echo -e "${GREEN}✅ Connexion locale OK${NC}"
     else
         echo -e "${RED}❌ Connexion locale FAIL${NC}"
-        echo "Vérifiez que le port 5432 est accessible depuis votre réseau"
+        echo "Vérifiez que le port 5433 est accessible depuis votre réseau"
     fi
 else
     echo -e "${YELLOW}⚠️  psql non installé localement (pas grave)${NC}"

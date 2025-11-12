@@ -34,8 +34,27 @@ app.use(helmet({
 }));
 
 // CORS
+const defaultOrigins = [
+    'http://localhost:3000',
+    'http://localhost:8000',
+    'http://192.168.1.40:5700',
+    'http://192.168.1.40:3000',
+    'https://lcvb.twittiz.fr',
+    process.env.PUBLIC_URL?.replace(/\/$/, '')
+].filter(Boolean);
+
+const allowedOrigins = (process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
+    : defaultOrigins
+).filter(Boolean);
+
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:8000',
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true
 }));
 

@@ -105,7 +105,7 @@ Ce script va automatiquement:
 
 ### Connexion
 - **Host**: 192.168.1.40
-- **Port**: 5432
+- **Port**: 5433
 - **Database**: lcvb_scoreboard
 - **User**: lcvb_user
 - **Container**: postgres-17

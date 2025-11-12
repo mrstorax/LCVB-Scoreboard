@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>Design System - LCVB Scoreboard</title>
+    <link rel="stylesheet" href="design-system.css">
+    <style>
+        /* Styles spécifiques showcase */
+        .showcase-section {
+            margin-bottom: var(--ds-space-12);
+            padding: var(--ds-space-8);
+            background: var(--ds-bg-secondary);
+            border-radius: var(--ds-radius-xl);
+            border: 1px solid var(--ds-border-color);
+        }
+
+        .showcase-title {
+            font-size: var(--ds-text-3xl);
+            font-weight: var(--ds-font-bold);
+            margin-bottom: var(--ds-space-6);
+            padding-bottom: var(--ds-space-4);
+            border-bottom: 2px solid var(--ds-border-color);
+            color: var(--ds-primary);
+        }
+
+        .showcase-subtitle {
+            font-size: var(--ds-text-xl);
+            font-weight: var(--ds-font-semibold);
+            margin-top: var(--ds-space-6);
+            margin-bottom: var(--ds-space-4);
+            color: var(--ds-text-primary);
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--ds-space-4);
+            margin-bottom: var(--ds-space-6);
+        }
+
+        .code-block {
+            background: var(--ds-bg-tertiary);
+            padding: var(--ds-space-4);
+            border-radius: var(--ds-radius-md);
+            font-family: var(--ds-font-mono);
+            font-size: var(--ds-text-sm);
+            overflow-x: auto;
+            margin-top: var(--ds-space-2);
+            color: var(--ds-text-secondary);
+        }
+
+        .color-swatch {
+            height: 80px;
+            border-radius: var(--ds-radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--ds-font-semibold);
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .example-box {
+            padding: var(--ds-space-6);
+            background: var(--ds-bg-tertiary);
+            border-radius: var(--ds-radius-lg);
+            margin-bottom: var(--ds-space-4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <button class="ds-theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span id="theme-icon">🌙</span>
+    </button>
+
+    <div class="ds-container" style="padding-top: var(--ds-space-8); padding-bottom: var(--ds-space-8);">
+
+        <!-- Header -->
+        <div class="ds-hero">
+            <div class="ds-hero-title">🎨 Design System LCVB Scoreboard</div>
+            <div class="ds-hero-subtitle">Documentation complète des composants réutilisables</div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════
+             1. COULEURS
+             ═══════════════════════════════════════════════════════ -->
+        <section class="showcase-section">
+            <h2 class="showcase-title">1. Couleurs</h2>
+
+            <h3 class="showcase-subtitle">Couleurs Principales</h3>
+            <div class="ds-grid ds-grid-cols-4">
+                <div>
+                    <div class="color-swatch" style="background: var(--ds-primary);">Primary</div>
+                    <div class="code-block">--ds-primary</div>
+                </div>
+                <div>
+                    <div class="color-swatch" style="background: var(--ds-success);">Success</div>
+                    <div class="code-block">--ds-success</div>
+                </div>
+                <div>
+                    <div class="color-swatch" style="background: var(--ds-danger);">Danger</div>
+                    <div class="code-block">--ds-danger</div>
+                </div>
+                <div>
+                    <div class="color-swatch" style="background: var(--ds-warning);">Warning</div>
+                    <div class="code-block">--ds-warning</div>
+                </div>
+            </div>
+
+            <h3 class="showcase-subtitle">Backgrounds</h3>
+            <div class="ds-grid ds-grid-cols-3">
+                <div>
+                    <div style="height: 60px; background: var(--ds-bg-primary); border: 1px solid var(--ds-border-color); border-radius: var(--ds-radius-md);"></div>
+                    <div class="code-block">--ds-bg-primary</div>
+                </div>
+                <div>
+                    <div style="height: 60px; background: var(--ds-bg-secondary); border: 1px solid var(--ds-border-color); border-radius: var(--ds-radius-md);"></div>
+                    <div class="code-block">--ds-bg-secondary</div>
+                </div>
+                <div>
+                    <div style="height: 60px; background: var(--ds-bg-tertiary); border: 1px solid var(--ds-border-color); border-radius: var(--ds-radius-md);"></div>
+                    <div class="code-block">--ds-bg-tertiary</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             2. TYPOGRAPHIE
+             ═══════════════════════════════════════════════════════ -->
+        <section class="showcase-section">
+            <h2 class="showcase-title">2. Typographie</h2>
+
+            <h3 class="showcase-subtitle">Tailles de texte</h3>
+            <div class="example-box">
+                <p class="ds-text-xs">Extra Small - The quick brown fox (12px)</p>
+                <p class="ds-text-sm">Small - The quick brown fox (14px)</p>
+                <p class="ds-text-base">Base - The quick brown fox (16px)</p>
+                <p class="ds-text-lg">Large - The quick brown fox (18px)</p>
+                <p class="ds-text-xl">Extra Large - The quick brown fox (20px)</p>
+                <p class="ds-text-2xl">2XL - The quick brown fox (24px)</p>
+                <p class="ds-text-3xl">3XL - The quick brown fox (30px)</p>
+            </div>
+
+            <h3 class="showcase-subtitle">Poids de police</h3>
+            <div class="example-box">
+                <p class="ds-font-normal">Normal - The quick brown fox</p>
+                <p class="ds-font-medium">Medium - The quick brown fox</p>
+                <p class="ds-font-semibold">Semi Bold - The quick brown fox</p>
+                <p class="ds-font-bold">Bold - The quick brown fox</p>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             3. BOUTONS
+             ═══════════════════════════════════════════════════════ -->
+        <section class="showcase-section">
+            <h2 class="showcase-title">3. Boutons</h2>
+
+            <h3 class="showcase-subtitle">Variantes</h3>
+            <div class="ds-flex ds-flex-wrap ds-gap-4">
+                <button class="ds-btn ds-btn-primary">Primary</button>
+                <button class="ds-btn ds-btn-secondary">Secondary</button>
+                <button class="ds-btn ds-btn-success">Success</button>
+                <button class="ds-btn ds-btn-danger">Danger</button>
+                <button class="ds-btn ds-btn-warning">Warning</button>
+                <button class="ds-btn ds-btn-ghost">Ghost</button>
+                <button class="ds-btn ds-btn-outline">Outline</button>
+            </div>
+            <div class="code-block">
+&lt;button class="ds-btn ds-btn-primary"&gt;Primary&lt;/button&gt;
+&lt;button class="ds-btn ds-btn-secondary"&gt;Secondary&lt;/button&gt;
+            </div>
+
+            <h3 class="showcase-subtitle">Tailles</h3>
+            <div class="ds-flex ds-flex-wrap ds-items-center ds-gap-4">
+                <button class="ds-btn ds-btn-primary ds-btn-sm">Small</button>
+                <button class="ds-btn ds-btn-primary">Default</button>
+                <button class="ds-btn ds-btn-primary ds-btn-lg">Large</button>
+                <button class="ds-btn ds-btn-primary ds-btn-xl">Extra Large</button>
+            </div>
+
+            <h3 class="showcase-subtitle">États</h3>
+            <div class="ds-flex ds-flex-wrap ds-gap-4">
+                <button class="ds-btn ds-btn-primary">Normal</button>
+                <button class="ds-btn ds-btn-primary" disabled>Disabled</button>
+            </div>
+
+            <h3 class="showcase-subtitle">Avec icônes</h3>
+            <div class="ds-flex ds-flex-wrap ds-gap-4">
+                <button class="ds-btn ds-btn-primary">
+                    <span>➕</span>
+                    <span>Ajouter</span>
+                </button>
+                <button class="ds-btn ds-btn-success">
+                    <span>✓</span>
+                    <span>Valider</span>
+                </button>
+                <button class="ds-btn ds-btn-danger">
+                    <span>🗑️</span>
+                    <span>Supprimer</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             4. CARDS
+             ═══════════════════════════════════════════════════════ -->
+        <section class="showcase-section">
+            <h2 class="showcase-title">4. Cards</h2>
+
+            <h3 class="showcase-subtitle">Card Standard</h3>
+            <div class="ds-grid ds-grid-cols-3">
+                <div class="ds-card">
+                    <div class="ds-card-header">
+                        <h3 class="ds-card-title">Titre de la Card</h3>
+                        <p class="ds-card-subtitle">Sous-titre descriptif</p>
+                    </div>
+                    <div class="ds-card-body">
+                        <p>Contenu principal de la card avec du texte explicatif.</p>
+                    </div>
+                    <div class="ds-card-footer">
+                        <button class="ds-btn ds-btn-primary ds-btn-sm">Action</button>
+                    </div>
+                </div>
+
+                <div class="ds-card ds-card-interactive">
+                    <h3 class="ds-card-title">Card Interactive</h3>
+                    <p>Survolez-moi ! J'ai un effet hover.</p>
+                </div>
+
+                <div class="ds-card ds-card-compact">
+                    <h3 class="ds-card-title">Card Compacte</h3>
+                    <p>Padding réduit pour économiser l'espace.</p>
+                </div>
+            </div>
+
+            <div class="code-block">
+&lt;div class="ds-card"&gt;
+    &lt;div class="ds-card-header"&gt;
+        &lt;h3 class="ds-card-title"&gt;Titre&lt;/h3&gt;
+    &lt;/div&gt;
+    &lt;div class="ds-card-body"&gt;Contenu&lt;/div&gt;
+&lt;/div&gt;
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             5. FORMULAIRES
+             ═══════════════════════════════════════════════════════ -->
+        <section class="showcase-section">
+            <h2 class="showcase-title">5. Formulaires</h2>
+
+            <div class="ds-grid ds-grid-cols-2">
+                <div>
+                    <h3 class="showcase-subtitle">Inputs</h3>
+                    <div class="ds-form-group">
+                        <label class="ds-form-label">Nom complet</label>
+                        <input type="text" class="ds-form-input" placeholder="Entrez votre nom">
+                        <small class="ds-form-help">Aide contextuelle pour l'utilisateur</small>
+                    </div>
+
+                    <div class="ds-form-group">
+                        <label class="ds-form-label ds-form-label-required">Email</label>
+                        <input type="email" class="ds-form-input" placeholder="email@exemple.com">
+                    </div>
+
+                    <div class="ds-form-group">
+                        <label class="ds-form-label">Message</label>
+                        <textarea class="ds-form-textarea" placeholder="Votre message..."></textarea>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="showcase-subtitle">Select & Checkbox</h3>
+                    <div class="ds-form-group">
+                        <label class="ds-form-label">Catégorie</label>
+                        <select class="ds-form-select">
+                            <option>Option 1</option>
+                            <option>Option 2</option>
+                            <option>Option 3</option>
+                        </select>
+                    </div>
+
+                    <div class="ds-form-group">
+                        <label class="ds-flex ds-items-center ds-gap-2">
+                            <input type="checkbox" class="ds-form-checkbox">
+                            <span>J'accepte les conditions</span>
+                        </label>
+                    </div>
+
+                    <h3 class="showcase-subtitle">États de validation</h3>
+                    <div class="ds-form-group">
+                        <label class="ds-form-label">Input en erreur</label>
+                        <input type="text" class="ds-form-input is-error" value="Valeur invalide">
+                        <small class="ds-form-error">Ce champ est requis</small>
+                    </div>
+
+                    <div class="ds-form-group">
+                        <label class="ds-form-label">Input valide</label>
+                        <input type="text" class="ds-form-input is-success" value="Valeur valide">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             6. BADGES
+             ═══════════════════════════════════════════════════════ -->
+        <section class="showcase-section">
+            <h2 class="showcase-title">6. Badges</h2>
+
+            <div class="ds-flex ds-flex-wrap ds-gap-3">
+                <span class="ds-badge ds-badge-primary">Primary</span>
+                <span class="ds-badge ds-badge-success">Success</span>
+                <span class="ds-badge ds-badge-danger">Danger</span>
+                <span class="ds-badge ds-badge-warning">Warning</span>
+                <span class="ds-badge ds-badge-info">Info</span>
+            </div>
+
+            <div class="code-block ds-mt-4">
+&lt;span class="ds-badge ds-badge-primary"&gt;Primary&lt;/span&gt;
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             7. ALERTS
+             ═══════════════════════════════════════════════════════ -->
+        <section class="showcase-section">
+            <h2 class="showcase-title">7. Alerts</h2>
+
+            <div class="ds-alert ds-alert-primary">
+                <strong>Information :</strong> Ceci est une alerte informative.
+            </div>
+
+            <div class="ds-alert ds-alert-success">
+                <strong>Succès :</strong> Votre action a été effectuée avec succès !
+            </div>
+
+            <div class="ds-alert ds-alert-warning">
+                <strong>Attention :</strong> Cette action nécessite votre attention.
+            </div>
+
+            <div class="ds-alert ds-alert-danger">
+                <strong>Erreur :</strong> Une erreur est survenue lors du traitement.
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             8. NAVIGATION
+             ═══════════════════════════════════════════════════════ -->
+        <section class="showcase-section">
+            <h2 class="showcase-title">8. Navigation</h2>
+
+            <nav class="ds-nav">
+                <a href="#" class="ds-nav-link is-active">Accueil</a>
+                <a href="#" class="ds-nav-link">Équipes</a>
+                <a href="#" class="ds-nav-link">Matchs</a>
+                <a href="#" class="ds-nav-link">Statistiques</a>
+                <a href="#" class="ds-nav-link">Paramètres</a>
+            </nav>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             9. TOP BAR
+             ═══════════════════════════════════════════════════════ -->
+        <section class="showcase-section">
+            <h2 class="showcase-title">9. Top Bar</h2>
+
+            <div class="ds-topbar">
+                <div class="ds-topbar-user">
+                    <div class="ds-topbar-avatar">JD</div>
+                    <div class="ds-topbar-user-info">
+                        <div class="ds-topbar-user-name">Jean Dupont</div>
+                        <div class="ds-topbar-user-role">Administrateur</div>
+                    </div>
+                </div>
+                <button class="ds-btn ds-btn-danger ds-btn-sm">Déconnexion</button>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             10. LOADING
+             ═══════════════════════════════════════════════════════ -->
+        <section class="showcase-section">
+            <h2 class="showcase-title">10. Loading Spinner</h2>
+
+            <div class="ds-flex ds-items-center ds-gap-6">
+                <div class="ds-spinner ds-spinner-sm"></div>
+                <div class="ds-spinner"></div>
+                <div class="ds-spinner ds-spinner-lg"></div>
+            </div>
+
+            <div class="code-block ds-mt-4">
+&lt;div class="ds-spinner"&gt;&lt;/div&gt;
+&lt;div class="ds-spinner ds-spinner-sm"&gt;&lt;/div&gt;
+&lt;div class="ds-spinner ds-spinner-lg"&gt;&lt;/div&gt;
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             11. GRILLE
+             ═══════════════════════════════════════════════════════ -->
+        <section class="showcase-section">
+            <h2 class="showcase-title">11. Système de Grille</h2>
+
+            <h3 class="showcase-subtitle">Grid 2 colonnes</h3>
+            <div class="ds-grid ds-grid-cols-2">
+                <div class="ds-card ds-card-compact">Colonne 1</div>
+                <div class="ds-card ds-card-compact">Colonne 2</div>
+            </div>
+
+            <h3 class="showcase-subtitle">Grid 3 colonnes</h3>
+            <div class="ds-grid ds-grid-cols-3">
+                <div class="ds-card ds-card-compact">Colonne 1</div>
+                <div class="ds-card ds-card-compact">Colonne 2</div>
+                <div class="ds-card ds-card-compact">Colonne 3</div>
+            </div>
+
+            <h3 class="showcase-subtitle">Grid Responsive (auto-fill)</h3>
+            <div class="ds-grid ds-grid-responsive">
+                <div class="ds-card ds-card-compact">Card 1</div>
+                <div class="ds-card ds-card-compact">Card 2</div>
+                <div class="ds-card ds-card-compact">Card 3</div>
+                <div class="ds-card ds-card-compact">Card 4</div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             12. ESPACEMENTS
+             ═══════════════════════════════════════════════════════ -->
+        <section class="showcase-section">
+            <h2 class="showcase-title">12. Espacements</h2>
+
+            <p class="ds-mb-4">Variables d'espacement disponibles :</p>
+
+            <div class="ds-grid ds-grid-cols-2">
+                <div>
+                    <div class="code-block">--ds-space-0: 0</div>
+                    <div class="code-block">--ds-space-1: 0.25rem (4px)</div>
+                    <div class="code-block">--ds-space-2: 0.5rem (8px)</div>
+                    <div class="code-block">--ds-space-3: 0.75rem (12px)</div>
+                    <div class="code-block">--ds-space-4: 1rem (16px)</div>
+                    <div class="code-block">--ds-space-6: 1.5rem (24px)</div>
+                </div>
+                <div>
+                    <div class="code-block">--ds-space-8: 2rem (32px)</div>
+                    <div class="code-block">--ds-space-10: 2.5rem (40px)</div>
+                    <div class="code-block">--ds-space-12: 3rem (48px)</div>
+                    <div class="code-block">--ds-space-16: 4rem (64px)</div>
+                    <div class="code-block">--ds-space-20: 5rem (80px)</div>
+                </div>
+            </div>
+
+            <p class="ds-mt-6 ds-mb-4">Classes utilitaires :</p>
+            <div class="code-block">
+.ds-m-4 (margin)
+.ds-mt-4 (margin-top)
+.ds-mb-4 (margin-bottom)
+.ds-p-4 (padding)
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            const icon = document.getElementById('theme-icon');
+
+            html.setAttribute('data-theme', newTheme);
+            icon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+
+            // Sauvegarder dans localStorage
+            localStorage.setItem('lcvb-theme', newTheme);
+        }
+
+        // Charger le thème sauvegardé
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('lcvb-theme') || 'light';
+            const icon = document.getElementById('theme-icon');
+
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            icon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        });
+    </script>
+</body>
+</html>

@@ -2,9 +2,70 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../config/database');
 const { authenticate, authorize } = require('../middleware/auth');
+const { ensureProfile, updateProfile, getProfile } = require('../services/teamProfileService');
 
 // All routes require authentication
 router.use(authenticate);
+
+const toPositionsObject = (raw) => {
+    if (!raw) return {};
+    if (typeof raw === 'object') {
+        return { ...raw };
+    }
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return {};
+    }
+};
+
+const sanitizePositionsPayload = (positions = {}, extras = {}) => {
+    const parsedPositions = toPositionsObject(positions);
+
+    const slots = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'];
+    const cleanPositions = {};
+
+    slots.forEach(slot => {
+        const raw = parsedPositions[slot] ?? parsedPositions[slot.toUpperCase()];
+        const parsed = raw !== undefined && raw !== null ? parseInt(raw, 10) : null;
+        cleanPositions[slot] = Number.isInteger(parsed) ? parsed : null;
+    });
+
+    const normalizedLibero = extras.liberoId ?? parsedPositions.libero;
+    if (normalizedLibero) {
+        const val = parseInt(normalizedLibero, 10);
+        cleanPositions.libero = Number.isInteger(val) ? val : null;
+    }
+
+    const normalizedCaptain = extras.captainId ?? parsedPositions.captain;
+    if (normalizedCaptain) {
+        const val = parseInt(normalizedCaptain, 10);
+        cleanPositions.captain = Number.isInteger(val) ? val : null;
+    }
+
+    return cleanPositions;
+};
+
+const toNullableInt = (value) => {
+    if (value === null || value === undefined || value === '') {
+        return null;
+    }
+    const parsed = parseInt(value, 10);
+    return Number.isNaN(parsed) ? null : parsed;
+};
+
+const hydrateLineupMeta = (lineup) => {
+    const positions = toPositionsObject(lineup.positions);
+    const resolvedCaptain = lineup.captain_player_id || positions.captain || null;
+    const resolvedLibero = lineup.libero_player_id || positions.libero || null;
+
+    return {
+        ...lineup,
+        positions,
+        libero_id: resolvedLibero,
+        captain_id: resolvedCaptain
+    };
+};
 
 /**
  * GET /api/lineups
@@ -21,7 +82,7 @@ router.get('/', async (req, res) => {
                 t.category as team_category
             FROM lineups l
             LEFT JOIN teams t ON l.team_id = t.id
-            WHERE l.active = true
+            WHERE 1=1
         `;
 
         const params = [];
@@ -37,7 +98,7 @@ router.get('/', async (req, res) => {
 
         res.json({
             success: true,
-            lineups: result.rows
+            lineups: result.rows.map(hydrateLineupMeta)
         });
     } catch (error) {
         console.error('Erreur GET /api/lineups:', error);
@@ -60,7 +121,7 @@ router.get('/:id', async (req, res) => {
                 t.category as team_category
             FROM lineups l
             LEFT JOIN teams t ON l.team_id = t.id
-            WHERE l.id = $1 AND l.active = true
+            WHERE l.id = $1
         `, [id]);
 
         if (result.rows.length === 0) {
@@ -68,7 +129,7 @@ router.get('/:id', async (req, res) => {
         }
 
         // Get player details for each position
-        const lineup = result.rows[0];
+        const lineup = hydrateLineupMeta(result.rows[0]);
         const positions = lineup.positions || {};
         const playerIds = Object.values(positions).filter(id => id);
 
@@ -115,7 +176,7 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', authorize('admin', 'coach'), async (req, res) => {
     try {
-        const { team_id, name, positions, libero_id, is_default } = req.body;
+        const { team_id, name, positions, libero_id, captain_id, is_default } = req.body;
 
         // Validation
         if (!team_id || !name || !positions) {
@@ -140,12 +201,19 @@ router.post('/', authorize('admin', 'coach'), async (req, res) => {
             );
         }
 
-        // Insert lineup
+        const cleansedPositions = sanitizePositionsPayload(positions, {
+            liberoId: libero_id,
+            captainId: captain_id
+        });
+
+        const captainValue = cleansedPositions.captain || null;
+        const liberoValue = cleansedPositions.libero || null;
+
         const result = await query(`
-            INSERT INTO lineups (team_id, name, positions, libero_id, is_default)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO lineups (team_id, name, positions, is_default, captain_player_id, libero_player_id)
+            VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING *
-        `, [team_id, name, JSON.stringify(positions), libero_id || null, is_default || false]);
+        `, [team_id, name, JSON.stringify(cleansedPositions), is_default || false, captainValue, liberoValue]);
 
         // Log activity
         await query(
@@ -155,7 +223,7 @@ router.post('/', authorize('admin', 'coach'), async (req, res) => {
 
         res.status(201).json({
             success: true,
-            lineup: result.rows[0],
+            lineup: hydrateLineupMeta(result.rows[0]),
             message: 'Composition créée avec succès'
         });
     } catch (error) {
@@ -171,11 +239,11 @@ router.post('/', authorize('admin', 'coach'), async (req, res) => {
 router.put('/:id', authorize('admin', 'coach'), async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, positions, libero_id, is_default } = req.body;
+        const { name, positions, libero_id, captain_id, is_default } = req.body;
 
         // Check lineup exists
         const checkResult = await query(
-            'SELECT * FROM lineups WHERE id = $1 AND active = true',
+            'SELECT * FROM lineups WHERE id = $1',
             [id]
         );
 
@@ -193,10 +261,14 @@ router.put('/:id', authorize('admin', 'coach'), async (req, res) => {
             );
         }
 
-        // Build update query dynamically
         const updates = [];
         const params = [];
         let paramCount = 1;
+        const existingPositions = toPositionsObject(existingLineup.positions);
+        let nextPositions = existingPositions;
+        let nextCaptainId = existingLineup.captain_player_id || existingPositions.captain || null;
+        let nextLiberoId = existingLineup.libero_player_id || existingPositions.libero || null;
+        let positionsChanged = false;
 
         if (name !== undefined) {
             updates.push(`name = $${paramCount++}`);
@@ -204,13 +276,47 @@ router.put('/:id', authorize('admin', 'coach'), async (req, res) => {
         }
 
         if (positions !== undefined) {
-            updates.push(`positions = $${paramCount++}`);
-            params.push(JSON.stringify(positions));
+            const cleansed = sanitizePositionsPayload(positions, {
+                liberoId: libero_id,
+                captainId: captain_id
+            });
+            nextPositions = cleansed;
+            nextCaptainId = cleansed.captain || null;
+            nextLiberoId = cleansed.libero || null;
+            positionsChanged = true;
+        } else {
+            if (captain_id !== undefined) {
+                nextCaptainId = toNullableInt(captain_id);
+                nextPositions = {
+                    ...nextPositions,
+                    captain: nextCaptainId
+                };
+                positionsChanged = true;
+            }
+
+            if (libero_id !== undefined) {
+                nextLiberoId = toNullableInt(libero_id);
+                nextPositions = {
+                    ...nextPositions,
+                    libero: nextLiberoId
+                };
+                positionsChanged = true;
+            }
         }
 
-        if (libero_id !== undefined) {
-            updates.push(`libero_id = $${paramCount++}`);
-            params.push(libero_id || null);
+        if (positionsChanged) {
+            updates.push(`positions = $${paramCount++}`);
+            params.push(JSON.stringify(nextPositions));
+        }
+
+        if (nextCaptainId !== existingLineup.captain_player_id) {
+            updates.push(`captain_player_id = $${paramCount++}`);
+            params.push(nextCaptainId);
+        }
+
+        if (nextLiberoId !== existingLineup.libero_player_id) {
+            updates.push(`libero_player_id = $${paramCount++}`);
+            params.push(nextLiberoId);
         }
 
         if (is_default !== undefined) {
@@ -238,7 +344,7 @@ router.put('/:id', authorize('admin', 'coach'), async (req, res) => {
 
         res.json({
             success: true,
-            lineup: result.rows[0],
+            lineup: hydrateLineupMeta(result.rows[0]),
             message: 'Composition mise à jour avec succès'
         });
     } catch (error) {
@@ -257,7 +363,7 @@ router.put('/:id/default', authorize('admin', 'coach'), async (req, res) => {
 
         // Check lineup exists
         const checkResult = await query(
-            'SELECT team_id, is_default FROM lineups WHERE id = $1 AND active = true',
+            'SELECT team_id, is_default FROM lineups WHERE id = $1',
             [id]
         );
 
@@ -279,6 +385,8 @@ router.put('/:id/default', authorize('admin', 'coach'), async (req, res) => {
             [id]
         );
 
+        await updateProfile(lineup.team_id, { default_lineup_id: id });
+
         // Log activity
         await query(
             'INSERT INTO activity_logs (user_id, action, entity_type, entity_id) VALUES ($1, $2, $3, $4)',
@@ -287,7 +395,7 @@ router.put('/:id/default', authorize('admin', 'coach'), async (req, res) => {
 
         res.json({
             success: true,
-            lineup: result.rows[0],
+            lineup: hydrateLineupMeta(result.rows[0]),
             message: 'Composition définie par défaut'
         });
     } catch (error) {
@@ -306,7 +414,7 @@ router.delete('/:id', authorize('admin', 'coach'), async (req, res) => {
 
         // Check lineup exists
         const checkResult = await query(
-            'SELECT id FROM lineups WHERE id = $1 AND active = true',
+            'SELECT id, team_id FROM lineups WHERE id = $1',
             [id]
         );
 
@@ -315,10 +423,12 @@ router.delete('/:id', authorize('admin', 'coach'), async (req, res) => {
         }
 
         // Soft delete
-        await query(
-            'UPDATE lineups SET active = false WHERE id = $1',
-            [id]
-        );
+        await query('DELETE FROM lineups WHERE id = $1', [id]);
+
+        const profile = await getProfile(checkResult.rows[0].team_id);
+        if (profile?.default_lineup_id === parseInt(id, 10)) {
+            await updateProfile(checkResult.rows[0].team_id, { default_lineup_id: null });
+        }
 
         // Log activity
         await query(
@@ -347,14 +457,14 @@ router.get('/team/:teamId/default', async (req, res) => {
         const result = await query(`
             SELECT l.*
             FROM lineups l
-            WHERE l.team_id = $1 AND l.is_default = true AND l.active = true
+            WHERE l.team_id = $1 AND l.is_default = true
         `, [teamId]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Aucune composition par défaut définie pour cette équipe' });
         }
 
-        const lineup = result.rows[0];
+        const lineup = hydrateLineupMeta(result.rows[0]);
 
         // Get player details
         const positions = lineup.positions || {};

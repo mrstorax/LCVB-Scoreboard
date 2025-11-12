@@ -23,7 +23,7 @@ docker-compose up -d
 ```
 
 Cela va démarrer:
-- PostgreSQL sur le port 5432
+- PostgreSQL sur le port 5433
 - pgAdmin sur http://localhost:5050 (admin@lcvb.com / admin)
 
 3. **Configurer les variables d'environnement**
@@ -52,7 +52,7 @@ Le serveur sera accessible sur **http://localhost:3000**
 
 Pour connecter pgAdmin à PostgreSQL:
 - Host: postgres (ou localhost si depuis votre machine)
-- Port: 5432
+- Port: 5433
 - Database: lcvb_scoreboard
 - Username: lcvb_user
 - Password: lcvb_password_2024

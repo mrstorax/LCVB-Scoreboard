@@ -117,7 +117,7 @@ http://192.168.1.40:5700  ← Port public exposé
      ↓
 http://localhost:3000  ← Backend Node.js (interne au container)
      ↓
-PostgreSQL (192.168.1.40:5432)
+PostgreSQL (192.168.1.40:5433)
 ```
 
 **Important** : 

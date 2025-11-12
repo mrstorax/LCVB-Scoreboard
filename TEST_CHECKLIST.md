@@ -250,7 +250,7 @@ localStorage.getItem('lcvb_auth_token')
 2. [ ] Ajouter serveur:
    - Name: LCVB Local
    - Host: lcvb_postgres
-   - Port: 5432
+   - Port: 5433
    - Database: lcvb_scoreboard
    - Username: lcvb_user
    - Password: lcvb_password_2024

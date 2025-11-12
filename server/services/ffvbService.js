@@ -5,11 +5,11 @@ const fetch = require('node-fetch');
 
 const BASE_URL = 'https://www.ffvbbeach.org';
 
-const decodeBuffer = (buffer, contentType = '', fallback = 'utf-8') => {
-    if (/charset\s*=\s*iso-8859-1/i.test(contentType) || /charset\s*=\s*latin-1/i.test(contentType)) {
-        return iconv.decode(buffer, 'latin1');
+const decodeBuffer = (buffer, contentType = '') => {
+    if (/charset\s*=\s*utf-?8/i.test(contentType)) {
+        return iconv.decode(buffer, 'utf8');
     }
-    return iconv.decode(buffer, fallback);
+    return iconv.decode(buffer, 'latin1');
 };
 
 const fetchText = async (url, options) => {
@@ -127,18 +127,18 @@ const buildTeamNaming = (team, clubPrefix = 'LCVB') => {
     const { level, gender } = deriveLevelGenderFromPoule(team.poule, normalized);
 
     const displayParts = [clubPrefix];
-    if (level) displayParts.push(stripAccents(level).toUpperCase());
-    if (gender) displayParts.push(stripAccents(gender).toUpperCase());
+    if (level) displayParts.push(level.toUpperCase());
+    if (gender) displayParts.push(gender.toUpperCase());
 
-    const displayName = displayParts.join(' - ') || `${clubPrefix} - ${stripAccents(team.name || 'Équipe')}`;
+    const displayName = displayParts.join(' - ') || `${clubPrefix} - ${(team.name || 'Équipe').toUpperCase()}`;
     const categoryLabel = [
-        level || label || 'Équipe',
+        level || label || 'Équipe FFVB',
         gender || ''
-    ].filter(Boolean).join(' ').trim();
+    ].filter(Boolean).join(' • ').trim();
 
     return {
         displayName,
-        categoryLabel: categoryLabel || 'Équipe FFVB',
+        categoryLabel,
         level,
         gender
     };
@@ -438,7 +438,19 @@ const parseFfvbDateTime = (dateStr, timeStr) => {
     if (!dateStr) return null;
     const parts = dateStr.split(/[\/\-]/).map(part => parseInt(part, 10));
     if (parts.length < 3 || parts.some(isNaN)) return null;
-    const [day, month, year] = parts;
+
+    let day;
+    let month;
+    let year;
+
+    if (parts[0] > 1900) {
+        [year, month, day] = parts;
+    } else if (parts[2] > 1900) {
+        [day, month, year] = parts;
+    } else {
+        [day, month, year] = parts;
+    }
+
     let hours = 12;
     let minutes = 0;
     if (timeStr) {
@@ -451,17 +463,19 @@ const parseFfvbDateTime = (dateStr, timeStr) => {
     return new Date(year, month - 1, day, hours, minutes, 0);
 };
 
-const extractUpcomingMatches = (payload, limit = 3) => {
+const extractUpcomingMatches = (payload, { rangeDays = 7, limit = null } = {}) => {
     if (!payload?.teams?.length) return [];
     const clubName = payload.club?.name || '';
     const clubUpper = clubName.toUpperCase();
     const now = new Date();
+    const end = new Date(now);
+    end.setDate(end.getDate() + rangeDays);
 
     const matches = [];
     payload.teams.forEach(team => {
         (team.calendar || []).forEach(match => {
             const matchDate = parseFfvbDateTime(match.date, match.time);
-            if (!matchDate || matchDate < now) return;
+            if (!matchDate || matchDate < now || matchDate > end) return;
 
             const homeName = (match.home?.name || '').toUpperCase();
             const awayName = (match.away?.name || '').toUpperCase();
@@ -483,10 +497,13 @@ const extractUpcomingMatches = (payload, limit = 3) => {
     });
 
     matches.sort((a, b) => new Date(a.date) - new Date(b.date));
-    return matches.slice(0, limit);
+    if (limit && limit > 0) {
+        return matches.slice(0, limit);
+    }
+    return matches;
 };
 
-const getUpcomingMatches = async ({ clubCode, limit = 3 }) => {
+const getUpcomingMatches = async ({ clubCode, rangeDays = 7, limit = null }) => {
     let targetClubCode = clubCode;
     if (!targetClubCode) {
         const latestClub = await query('SELECT club_code FROM ffvb_imports ORDER BY created_at DESC LIMIT 1');
@@ -496,7 +513,7 @@ const getUpcomingMatches = async ({ clubCode, limit = 3 }) => {
 
     const latest = await getLatestImport(targetClubCode);
     if (!latest?.payload) return [];
-    return extractUpcomingMatches(latest.payload, limit);
+    return extractUpcomingMatches(latest.payload, { rangeDays, limit });
 };
 
 module.exports = {

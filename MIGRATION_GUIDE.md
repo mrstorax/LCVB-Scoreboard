@@ -110,7 +110,7 @@ open http://localhost:5050
 
 **Connexion PostgreSQL:**
 - Host: lcvb_postgres (ou localhost si externe)
-- Port: 5432
+- Port: 5433
 - Database: lcvb_scoreboard
 - User: lcvb_user
 - Password: lcvb_password_2024

@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>Hub du Club - LCVB Scoreboard Pro</title>
+
+    <!-- ✅ Design System (nouvelle base) -->
+    <link rel="stylesheet" href="design-system.css">
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="ds-theme-toggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme">
+        🌙
+    </button>
+
+    <div class="ds-container">
+        <!-- Top Bar avec info utilisateur -->
+        <div class="ds-topbar">
+            <div class="ds-topbar-user">
+                <div class="ds-topbar-avatar" id="user-avatar">👤</div>
+                <div class="ds-topbar-user-info">
+                    <div class="ds-topbar-user-name" id="user-name">Chargement...</div>
+                    <div class="ds-topbar-user-role" id="user-role">-</div>
+                </div>
+            </div>
+            <button class="ds-btn ds-btn-danger ds-btn-sm" onclick="logout()">
+                🚪 Déconnexion
+            </button>
+        </div>
+
+        <!-- Hero Section -->
+        <div class="ds-hero">
+            <div class="ds-hero-title">🏐 Hub du Club</div>
+            <div class="ds-hero-subtitle">Le Crès Volley-Ball - Gestion Complète</div>
+        </div>
+
+        <!-- Live Matches Section -->
+        <div id="live-matches-section" class="ds-card ds-mb-8" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none;">
+            <div class="ds-flex ds-items-center ds-justify-center" style="min-height: 120px;">
+                <div class="ds-spinner" style="border-color: rgba(255,255,255,0.3); border-top-color: white;"></div>
+                <div class="ds-ml-4">Chargement des matchs en direct...</div>
+            </div>
+        </div>
+
+        <!-- Upcoming Matches -->
+        <section class="ds-card ds-mb-8">
+            <div class="ds-card-header">
+                <div class="ds-flex ds-justify-between ds-items-center">
+                    <h2 class="ds-card-title ds-mb-0">📅 Prochains matchs</h2>
+                    <a href="setup.html" class="ds-btn ds-btn-primary ds-btn-sm">
+                        <span>⚡</span>
+                        <span>Initier un match</span>
+                    </a>
+                </div>
+            </div>
+            <div class="ds-card-body">
+                <div id="upcoming-list" class="ds-grid ds-grid-cols-3 ds-gap-4">
+                    <div class="ds-flex ds-items-center ds-justify-center" style="grid-column: 1 / -1; min-height: 100px;">
+                        <div class="ds-spinner"></div>
+                        <div class="ds-ml-4 ds-text-secondary">Chargement du calendrier FFVB...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Actions Rapides -->
+        <div class="ds-grid ds-grid-cols-5 ds-gap-4 ds-mb-8">
+            <a href="teams.html" class="ds-btn ds-btn-secondary">
+                <span>👥</span>
+                <span>Équipes</span>
+            </a>
+            <a href="lineups.html" class="ds-btn ds-btn-secondary">
+                <span>📋</span>
+                <span>Compositions</span>
+            </a>
+            <a href="setup.html" class="ds-btn ds-btn-primary">
+                <span>➕</span>
+                <span>Nouveau match</span>
+            </a>
+            <a href="control.html" class="ds-btn ds-btn-secondary">
+                <span>▶️</span>
+                <span>Reprendre</span>
+            </a>
+            <a href="settings.html" class="ds-btn ds-btn-secondary">
+                <span>⚙️</span>
+                <span>Paramètres</span>
+            </a>
+        </div>
+
+        <!-- Modules Principaux -->
+        <h2 class="ds-text-2xl ds-font-bold ds-mb-6">🎯 Modules Disponibles</h2>
+        <div class="ds-grid ds-grid-cols-3 ds-gap-6 ds-mb-8">
+            <!-- Module 1 -->
+            <a href="teams.html" class="ds-card ds-card-interactive" style="text-decoration: none;">
+                <div class="ds-text-center ds-mb-4" style="font-size: 3rem;">👥</div>
+                <h3 class="ds-card-title">Gestion Équipes</h3>
+                <p class="ds-text-secondary ds-text-sm">
+                    Créer et gérer vos équipes, ajouter des joueurs, définir les compositions et les 7 de base
+                </p>
+                <div class="ds-mt-4">
+                    <span class="ds-badge ds-badge-info">🆕 Nouveau</span>
+                </div>
+            </a>
+
+            <!-- Module 2 -->
+            <a href="setup.html" class="ds-card ds-card-interactive" style="text-decoration: none;">
+                <div class="ds-text-center ds-mb-4" style="font-size: 3rem;">🔧</div>
+                <h3 class="ds-card-title">Initialisation Match</h3>
+                <p class="ds-text-secondary ds-text-sm">
+                    Configuration complète du match : équipes, joueurs, arbitres, lieu et paramètres techniques
+                </p>
+                <div class="ds-mt-4">
+                    <span class="ds-badge ds-badge-success">✓ Disponible</span>
+                </div>
+            </a>
+
+            <!-- Module 3 -->
+            <a href="control.html" class="ds-card ds-card-interactive" style="text-decoration: none;">
+                <div class="ds-text-center ds-mb-4" style="font-size: 3rem;">📊</div>
+                <h3 class="ds-card-title">Suivi Live</h3>
+                <p class="ds-text-secondary ds-text-sm">
+                    Interface de contrôle en temps réel avec scoreboard, chronomètres et diffusion OBS
+                </p>
+                <div class="ds-mt-4">
+                    <span class="ds-badge ds-badge-success">✓ Disponible</span>
+                </div>
+            </a>
+
+            <!-- Module 4 -->
+            <a href="stats.html" class="ds-card ds-card-interactive" style="text-decoration: none;">
+                <div class="ds-text-center ds-mb-4" style="font-size: 3rem;">📈</div>
+                <h3 class="ds-card-title">Statistiques</h3>
+                <p class="ds-text-secondary ds-text-sm">
+                    Consultation des statistiques détaillées par match, par set et par joueur avec export CSV
+                </p>
+                <div class="ds-mt-4">
+                    <span class="ds-badge ds-badge-success">✓ Disponible</span>
+                </div>
+            </a>
+
+            <!-- Module 5 -->
+            <a href="spectator.html" target="_blank" class="ds-card ds-card-interactive" style="text-decoration: none;">
+                <div class="ds-text-center ds-mb-4" style="font-size: 3rem;">🎥</div>
+                <h3 class="ds-card-title">Mode Spectateur</h3>
+                <p class="ds-text-secondary ds-text-sm">
+                    Affichage public avec live stream et statistiques en temps réel (configurable)
+                </p>
+                <div class="ds-mt-4">
+                    <span class="ds-badge ds-badge-success">✓ Disponible</span>
+                </div>
+            </a>
+
+            <!-- Module 6 -->
+            <a href="display.html" target="_blank" class="ds-card ds-card-interactive" style="text-decoration: none;">
+                <div class="ds-text-center ds-mb-4" style="font-size: 3rem;">🖥️</div>
+                <h3 class="ds-card-title">Affichage OBS</h3>
+                <p class="ds-text-secondary ds-text-sm">
+                    Interface d'affichage pour OBS avec différents templates visuels professionnels
+                </p>
+                <div class="ds-mt-4">
+                    <span class="ds-badge ds-badge-success">✓ Disponible</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Statistiques du Club -->
+        <h2 class="ds-text-2xl ds-font-bold ds-mb-6">📊 Statistiques du Club</h2>
+        <div class="ds-grid ds-grid-cols-4 ds-gap-6 ds-mb-8">
+            <div class="ds-card ds-text-center">
+                <div class="ds-text-4xl ds-font-bold ds-text-primary" id="total-teams">-</div>
+                <div class="ds-text-sm ds-text-secondary ds-mt-2">Équipes</div>
+            </div>
+            <div class="ds-card ds-text-center">
+                <div class="ds-text-4xl ds-font-bold ds-text-primary" id="total-players">-</div>
+                <div class="ds-text-sm ds-text-secondary ds-mt-2">Joueurs</div>
+            </div>
+            <div class="ds-card ds-text-center">
+                <div class="ds-text-4xl ds-font-bold ds-text-primary" id="total-matches">-</div>
+                <div class="ds-text-sm ds-text-secondary ds-mt-2">Matchs cette saison</div>
+            </div>
+            <div class="ds-card ds-text-center">
+                <div class="ds-text-4xl ds-font-bold ds-text-primary" id="total-wins">-</div>
+                <div class="ds-text-sm ds-text-secondary ds-mt-2">Victoires</div>
+            </div>
+        </div>
+
+        <!-- Matchs Récents -->
+        <div class="ds-card ds-mb-8">
+            <div class="ds-card-header">
+                <h2 class="ds-card-title">📅 Matchs Récents</h2>
+            </div>
+            <div class="ds-card-body" id="matches-list">
+                <div class="ds-flex ds-items-center ds-justify-center" style="min-height: 150px;">
+                    <div class="ds-spinner"></div>
+                    <div class="ds-ml-4 ds-text-secondary">Chargement des matchs...</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="theme.js"></script>
+    <script>
+        // API URL dynamique : utilise le domaine actuel (prod ou local)
+        const API_URL = window.location.origin;
+        let userData = null;
+
+        // ==========================================
+        // AUTHENTIFICATION
+        // ==========================================
+        function checkAuth() {
+            const token = localStorage.getItem('lcvb_auth_token');
+            const user = localStorage.getItem('lcvb_user');
+
+            if (!token || !user) {
+                window.location.href = 'login.html';
+                return false;
+            }
+
+            userData = JSON.parse(user);
+            displayUserInfo();
+            return true;
+        }
+
+        function displayUserInfo() {
+            const roleLabels = {
+                'admin': 'Administrateur',
+                'coach': 'Entraîneur',
+                'operator': 'Opérateur',
+                'statistician': 'Statisticien'
+            };
+
+            document.getElementById('user-name').textContent =
+                `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || userData.email;
+            document.getElementById('user-role').textContent = roleLabels[userData.role] || userData.role;
+            document.getElementById('user-avatar').textContent =
+                (userData.firstName || userData.email || '?')[0].toUpperCase();
+        }
+
+        function logout() {
+            if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                const token = localStorage.getItem('lcvb_auth_token');
+
+                if (token) {
+                    fetch(`${API_URL}/api/auth/logout`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).catch(() => {});
+                }
+
+                localStorage.removeItem('lcvb_auth_token');
+                localStorage.removeItem('lcvb_user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ==========================================
+        // CHARGEMENT DES DONNÉES
+        // ==========================================
+        async function loadDashboardData() {
+            const token = localStorage.getItem('lcvb_auth_token');
+            if (!token) return;
+
+            try {
+                const [liveMatches, upcomingMatches, recentMatches, teams, players] = await Promise.all([
+                    fetchAPI('/api/matches?status=live&limit=5'),
+                    fetchAPI('/api/ffvb/upcoming?range=10'),
+                    fetchAPI('/api/matches?limit=10'),
+                    fetchAPI('/api/teams'),
+                    fetchAPI('/api/players')
+                ]);
+
+                displayLiveMatches(liveMatches);
+                displayUpcomingMatches(upcomingMatches);
+                displayRecentMatches(recentMatches);
+                displayClubStats(teams, players, recentMatches);
+
+            } catch (error) {
+                console.error('Erreur chargement dashboard:', error);
+            }
+        }
+
+        async function fetchAPI(endpoint) {
+            const token = localStorage.getItem('lcvb_auth_token');
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    localStorage.removeItem('lcvb_auth_token');
+                    localStorage.removeItem('lcvb_user');
+                    window.location.href = 'login.html';
+                }
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            return await response.json();
+        }
+
+        function displayLiveMatches(data) {
+            const section = document.getElementById('live-matches-section');
+            const matches = data.matches || [];
+
+            if (matches.length === 0) {
+                section.style.background = 'var(--ds-bg-secondary)';
+                section.style.color = 'var(--ds-text-secondary)';
+                section.innerHTML = `
+                    <div class="ds-text-center" style="padding: 2rem;">
+                        <div style="font-size: 4rem; opacity: 0.5; margin-bottom: 1rem;">🏐</div>
+                        <div>Aucun match en direct actuellement</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="ds-flex ds-items-center ds-gap-2 ds-mb-4" style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 999px; display: inline-flex;">
+                    <div style="width: 8px; height: 8px; background: white; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                    <div style="font-weight: 600;">LIVE - Matchs en cours</div>
+                </div>
+            `;
+
+            matches.forEach(match => {
+                html += `
+                    <div class="ds-flex ds-justify-between ds-items-center ds-p-4 ds-mb-2"
+                         style="background: rgba(255,255,255,0.1); border-radius: var(--ds-radius-lg); cursor: pointer;"
+                         onclick="openMatch(${match.id})">
+                        <div>
+                            <div class="ds-font-semibold">${match.home_team_name} vs ${match.away_team_name}</div>
+                            <div class="ds-text-sm" style="opacity: 0.8;">${match.competition || 'Match amical'}</div>
+                        </div>
+                        <div class="ds-text-2xl ds-font-bold">${match.home_sets_won || 0} - ${match.away_sets_won || 0}</div>
+                    </div>
+                `;
+            });
+
+            section.innerHTML = html;
+        }
+
+        function displayUpcomingMatches(data) {
+            const container = document.getElementById('upcoming-list');
+            const matches = data.matches || [];
+
+            if (matches.length === 0) {
+                container.innerHTML = `
+                    <div class="ds-text-center" style="grid-column: 1 / -1; padding: 2rem;">
+                        <div style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;">📅</div>
+                        <div class="ds-text-secondary">Synchronisez vos équipes via la FFVB pour afficher les prochains matchs.</div>
+                        <a href="settings.html" class="ds-btn ds-btn-primary ds-mt-4">⚙️ Ouvrir les paramètres</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = matches.map(match => {
+                const date = new Date(match.date);
+                const dateStr = date.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+                const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const domBadge = match.isHome ? '🏠 Domicile' : '🚌 Extérieur';
+                return `
+                    <div class="ds-card ds-card-compact">
+                        <div class="ds-font-semibold ds-text-primary ds-mb-2">${dateStr} • ${timeStr}</div>
+                        <div class="ds-font-semibold ds-mb-1">${match.teamName || 'Équipe'}</div>
+                        <div class="ds-text-sm ds-font-bold ds-mb-2">${domBadge} vs ${match.opponent}</div>
+                        <div class="ds-flex ds-flex-wrap ds-gap-2">
+                            <span class="ds-badge ds-badge-primary">🏆 ${match.competition || 'Compétition'}</span>
+                            <span class="ds-badge ds-badge-info">📍 ${match.location || 'Lieu'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function displayRecentMatches(data) {
+            const container = document.getElementById('matches-list');
+            const matches = data.matches || [];
+
+            if (matches.length === 0) {
+                container.innerHTML = `
+                    <div class="ds-text-center" style="padding: 2rem;">
+                        <div style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;">📅</div>
+                        <div class="ds-text-secondary ds-mb-4">Aucun match enregistré</div>
+                        <a href="setup.html" class="ds-btn ds-btn-primary">➕ Créer un match</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = matches.map(match => {
+                const date = new Date(match.match_date);
+                const dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                const statusLabels = {
+                    'scheduled': 'À venir',
+                    'live': 'En direct',
+                    'finished': 'Terminé',
+                    'cancelled': 'Annulé'
+                };
+
+                const statusColors = {
+                    'scheduled': 'ds-badge-primary',
+                    'live': 'ds-badge-danger',
+                    'finished': 'ds-badge-success',
+                    'cancelled': 'ds-badge-warning'
+                };
+
+                return `
+                    <div class="ds-flex ds-justify-between ds-items-center ds-p-4 ds-mb-2"
+                         style="background: var(--ds-bg-tertiary); border-radius: var(--ds-radius-lg); cursor: pointer;"
+                         onclick="openMatch(${match.id})">
+                        <div class="ds-flex ds-items-center ds-gap-4">
+                            <div class="ds-text-sm ds-text-tertiary" style="min-width: 80px;">${dateStr}</div>
+                            <div>
+                                <div class="ds-font-semibold">${match.home_team_name} vs ${match.away_team_name}</div>
+                                <div class="ds-text-sm ds-text-secondary">${match.competition || 'Match amical'} • ${match.location || 'Lieu non défini'}</div>
+                            </div>
+                        </div>
+                        <div class="ds-flex ds-items-center ds-gap-4">
+                            <span class="ds-badge ${statusColors[match.status] || 'ds-badge-primary'}">${statusLabels[match.status] || match.status}</span>
+                            ${match.status === 'finished' ? `<div class="ds-font-bold ds-text-lg">${match.home_sets_won || 0} - ${match.away_sets_won || 0}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function displayClubStats(teamsData, playersData, matchesData) {
+            const teams = teamsData.teams || [];
+            const players = playersData.players || [];
+            const matches = matchesData.matches || [];
+
+            document.getElementById('total-teams').textContent = teams.length;
+            document.getElementById('total-players').textContent = players.length;
+
+            const finishedMatches = matches.filter(m => m.status === 'finished');
+            document.getElementById('total-matches').textContent = finishedMatches.length;
+
+            const wins = finishedMatches.filter(m => m.home_sets_won > m.away_sets_won).length;
+            document.getElementById('total-wins').textContent = wins;
+        }
+
+        function openMatch(matchId) {
+            console.log('Open match:', matchId);
+            alert(`Ouverture du match #${matchId}\n\nFonctionnalité en cours de développement.`);
+        }
+
+        // ==========================================
+        // INITIALISATION
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', () => {
+            if (checkAuth()) {
+                loadDashboardData();
+            }
+        });
+    </script>
+
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</body>
+</html>

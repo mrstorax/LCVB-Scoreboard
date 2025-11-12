@@ -54,7 +54,7 @@ Quand tu passeras sur ton NAS :
 1. Modifier `server/.env` :
 ```
 DB_HOST=192.168.X.X  # IP du NAS
-DB_PORT=5432
+DB_PORT=5433
 DB_NAME=lcvb_scoreboard
 DB_USER=lcvb_user
 DB_PASSWORD=ton_password

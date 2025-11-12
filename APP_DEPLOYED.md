@@ -23,7 +23,7 @@ L'application **LCVB Scoreboard Pro** est maintenant **hébergée sur votre NAS*
 |---------|-----|--------|
 | **Frontend** | http://192.168.1.40:8000 | ✅ Actif |
 | **Backend API** | http://192.168.1.40:3000 | ✅ Actif |
-| **PostgreSQL** | 192.168.1.40:5432 | ✅ Actif (12 tables) |
+| **PostgreSQL** | 192.168.1.40:5433 | ✅ Actif (12 tables) |
 
 ---
 
@@ -100,7 +100,7 @@ sudo docker compose -f /volume1/docker/lcvb-scoreboard/docker-compose.yml restar
 
 ### Informations
 - **Host:** 192.168.1.40
-- **Port:** 5432
+- **Port:** 5433
 - **Database:** lcvb_scoreboard
 - **User:** lcvb_user
 - **Password:** lcvb_password_2024
